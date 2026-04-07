@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { useCardElo } from '../hooks/useElo';
 import { EloTable } from '../components/elo/EloTable';
@@ -5,6 +6,7 @@ import { EloTable } from '../components/elo/EloTable';
 export function CardEloPage() {
   const filteredRuns = useFilteredRuns();
   const cardElo = useCardElo(filteredRuns);
+  const navigate = useNavigate();
 
   if (filteredRuns.length === 0) {
     return (
@@ -20,6 +22,7 @@ export function CardEloPage() {
       title="Card ELO Rankings"
       entityLabel="Card"
       showCardMeta
+      onEntityClick={(id) => navigate(`/runs?card=${encodeURIComponent(id)}`)}
     />
   );
 }

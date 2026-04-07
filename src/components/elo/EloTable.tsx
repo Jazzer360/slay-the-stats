@@ -42,6 +42,7 @@ interface EloTableProps {
   title: string;
   entityLabel?: string; // "Card" or "Ancient Reward"
   showCardMeta?: boolean; // Show rarity/color columns for cards
+  onEntityClick?: (id: string) => void; // Navigate when a name is clicked
 }
 
 const columnHelper = createColumnHelper<EloEntry & { rank: number }>();
@@ -51,6 +52,7 @@ export function EloTable({
   title,
   entityLabel = 'Option',
   showCardMeta = false,
+  onEntityClick,
 }: EloTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'rating', desc: true },
@@ -77,8 +79,19 @@ export function EloTable({
           const id = info.getValue();
           const isSkip = id.startsWith('SKIP_');
           const isSacrifice = id === 'SACRIFICE';
+          const baseClass = isSkip ? 'text-yellow-400 italic' : isSacrifice ? 'text-purple-400 italic' : 'text-gray-200';
+          if (onEntityClick && !isSkip && !isSacrifice) {
+            return (
+              <button
+                className={`${baseClass} hover:underline cursor-pointer text-left`}
+                onClick={(e) => { e.stopPropagation(); onEntityClick(id); }}
+              >
+                {formatId(id)}
+              </button>
+            );
+          }
           return (
-            <span className={isSkip ? 'text-yellow-400 italic' : isSacrifice ? 'text-purple-400 italic' : 'text-gray-200'}>
+            <span className={baseClass}>
               {formatId(id)}
             </span>
           );
@@ -178,7 +191,7 @@ export function EloTable({
         sortingFn: (a, b) => a.original.runWinRate - b.original.runWinRate,
       }),
     ],
-    [entityLabel, showCardMeta]
+    [entityLabel, showCardMeta, onEntityClick]
   );
 
   const table = useReactTable({

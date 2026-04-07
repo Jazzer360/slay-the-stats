@@ -9,24 +9,68 @@ import {
   createColumnHelper,
   type SortingState,
 } from '@tanstack/react-table';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { summarizeRun, type RunSummary } from '../lib/stats';
 import { formatId, formatDate, formatDuration } from '../lib/format';
+import type { ParsedRun } from '../types/run';
+
+function runHasPickedCard(run: ParsedRun, cardId: string): boolean {
+  const isUpgraded = cardId.endsWith('+');
+  const baseId = isUpgraded ? cardId.slice(0, -1) : cardId;
+
+  for (const act of run.data.map_point_history) {
+    for (const point of act) {
+      const stats = point.player_stats?.[0];
+      if (!stats) continue;
+      if (stats.card_choices) {
+        for (const c of stats.card_choices) {
+          if (!c.was_picked) continue;
+          const upgraded = c.card.current_upgrade_level && c.card.current_upgrade_level > 0;
+          if (c.card.id === baseId && !!upgraded === isUpgraded) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function runHasPickedAncient(run: ParsedRun, ancientKey: string): boolean {
+  for (const act of run.data.map_point_history) {
+    for (const point of act) {
+      const stats = point.player_stats?.[0];
+      if (!stats?.ancient_choice) continue;
+      for (const a of stats.ancient_choice) {
+        if (a.was_chosen && a.TextKey === ancientKey) return true;
+      }
+    }
+  }
+  return false;
+}
 
 const columnHelper = createColumnHelper<RunSummary>();
 
 export function RunListPage() {
   const filteredRuns = useFilteredRuns();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const cardFilter = searchParams.get('card');
+  const ancientFilter = searchParams.get('ancient');
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'startTime', desc: true },
   ]);
   const [globalFilter, setGlobalFilter] = useState('');
 
+  const displayRuns = useMemo(() => {
+    let runs = filteredRuns;
+    if (cardFilter) runs = runs.filter((r) => runHasPickedCard(r, cardFilter));
+    if (ancientFilter) runs = runs.filter((r) => runHasPickedAncient(r, ancientFilter));
+    return runs;
+  }, [filteredRuns, cardFilter, ancientFilter]);
+
   const data = useMemo(
-    () => filteredRuns.map(summarizeRun),
-    [filteredRuns]
+    () => displayRuns.map(summarizeRun),
+    [displayRuns]
   );
 
   const columns = useMemo(
@@ -145,6 +189,25 @@ export function RunListPage() {
 
   return (
     <div>
+      {(cardFilter || ancientFilter) && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-gray-800/50 rounded-lg border border-gray-700">
+          <span className="text-sm text-gray-400">
+            Showing runs with{' '}
+            {cardFilter && (
+              <span className="text-green-400 font-medium">{formatId(cardFilter)}</span>
+            )}
+            {ancientFilter && (
+              <span className="text-purple-400 font-medium">{formatId(ancientFilter)}</span>
+            )}
+          </span>
+          <button
+            onClick={() => setSearchParams({})}
+            className="ml-auto px-2 py-0.5 rounded text-xs bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-gray-200"
+          >
+            Clear filter
+          </button>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-100">Run History</h2>
         <div className="flex items-center gap-3">

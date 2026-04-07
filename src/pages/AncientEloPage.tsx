@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { useAncientElo } from '../hooks/useElo';
 import { EloTable } from '../components/elo/EloTable';
@@ -8,6 +9,7 @@ import { formatId } from '../lib/format';
 export function AncientEloPage() {
   const filteredRuns = useFilteredRuns();
   const { elo: ancientElo, ancientMap } = useAncientElo(filteredRuns);
+  const navigate = useNavigate();
   const [selectedAncient, setSelectedAncient] = useState<string>('ALL');
 
   // Build list of unique ancient names from the ancientMap
@@ -57,6 +59,7 @@ export function AncientEloPage() {
         eloMap={filteredElo}
         title="Ancient Reward ELO Rankings"
         entityLabel="Ancient Reward"
+        onEntityClick={(id) => navigate(`/runs?ancient=${encodeURIComponent(id)}`)}
       />
     </div>
   );
