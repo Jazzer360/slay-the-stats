@@ -6,6 +6,7 @@ import { AncientEloPage } from './pages/AncientEloPage';
 import { RunListPage } from './pages/RunListPage';
 import { RunDetailPage } from './pages/RunDetailPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { AboutPage } from './pages/AboutPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/ancient-elo" element={<AncientEloPage />} />
           <Route path="/runs" element={<RunListPage />} />
           <Route path="/runs/:fileName" element={<RunDetailPage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

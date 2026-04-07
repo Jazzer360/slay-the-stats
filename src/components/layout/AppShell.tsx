@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/card-elo', label: 'Card ELO' },
   { to: '/ancient-elo', label: 'Ancient ELO' },
   { to: '/runs', label: 'Run List' },
+  { to: '/about', label: 'About' },
 ];
 
 export function AppShell() {

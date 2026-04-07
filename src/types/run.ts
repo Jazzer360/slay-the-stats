@@ -92,7 +92,7 @@ export interface PlayerStats {
 
   // Card choices (combat rewards, boss rewards)
   card_choices?: CardChoice[];
-  cards_gained?: { id: string }[];
+  cards_gained?: { id: string; current_upgrade_level?: number }[];
   cards_removed?: { id: string; floor_added_to_deck?: number }[];
   cards_transformed?: CardTransform[];
   cards_enchanted?: CardEnchant[];

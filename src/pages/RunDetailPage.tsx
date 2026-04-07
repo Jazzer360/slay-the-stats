@@ -84,7 +84,7 @@ export function RunDetailPage() {
           currentHp: stats.current_hp,
           maxHp: stats.max_hp,
           type: mp.map_point_type,
-          label: room ? formatId(room.model_id) : formatId(mp.map_point_type),
+          label: room?.model_id ? formatId(room.model_id.replace(/_(WEAK|NORMAL|ELITE|BOSS)$/i, '')) : formatId(mp.map_point_type),
         });
       }
     }
@@ -469,14 +469,17 @@ function FloorRow({ point, floorNum }: { point: MapPoint; floorNum: number }) {
       stats &&
       (stats.bought_relics?.length || stats.bought_potions?.length || stats.gold_spent > 0));
 
+  const modelId = room?.model_id ?? '';
+  const isWeak = /_WEAK$/i.test(modelId);
+
   const floorTitle = isShop
     ? 'Shop'
     : effectiveType === 'treasure'
     ? 'Chest'
     : effectiveType === 'rest_site'
     ? 'Rest Site'
-    : room
-    ? formatId(room.model_id)
+    : modelId
+    ? formatId(modelId.replace(/_(WEAK|NORMAL|ELITE|BOSS)$/i, ''))
     : formatId(point.map_point_type);
 
   return (
@@ -491,6 +494,9 @@ function FloorRow({ point, floorNum }: { point: MapPoint; floorNum: number }) {
         <span className="text-gray-300">
           {floorTitle}
         </span>
+        {isWeak && (
+          <span className="text-gray-600 text-xs ml-1">(weak)</span>
+        )}
         {room?.monster_ids && room.monster_ids.length > 0 && (
           <span className="text-gray-600 text-xs ml-2">
             vs {room.monster_ids.map(formatId).join(', ')}
@@ -622,7 +628,7 @@ function FloorDetails({ stats, isShop }: { stats: PlayerStats; isShop: boolean }
     for (const c of (stats.card_choices ?? []).filter((c) => c.was_picked)) {
       pickedCounts.set(c.card.id, (pickedCounts.get(c.card.id) ?? 0) + 1);
     }
-    const extraGained: { id: string }[] = [];
+    const extraGained: { id: string; current_upgrade_level?: number }[] = [];
     for (const c of stats.cards_gained) {
       const remaining = pickedCounts.get(c.id) ?? 0;
       if (remaining > 0) {
@@ -634,7 +640,7 @@ function FloorDetails({ stats, isShop }: { stats: PlayerStats; isShop: boolean }
     if (extraGained.length > 0) {
       items.push(
         <span key="gained" className={isShop ? 'text-green-400/70' : 'text-green-500/70'}>
-          {isShop ? 'Bought' : 'Gained'} {extraGained.map((c) => formatId(c.id)).join(', ')}
+          {isShop ? 'Bought' : 'Gained'} {extraGained.map((c) => formatId(c.id) + (c.current_upgrade_level ? '+' : '')).join(', ')}
         </span>
       );
     }
@@ -701,6 +707,30 @@ function FloorDetails({ stats, isShop }: { stats: PlayerStats; isShop: boolean }
       items.push(
         <span key="relic" className="text-yellow-400/70">
           Relic: {picked.map((r) => formatId(r.choice)).join(', ')}
+        </span>
+      );
+    }
+  }
+
+  // Ancient choices
+  if (stats.ancient_choice && stats.ancient_choice.length > 0) {
+    const chosen = stats.ancient_choice.find((a) => a.was_chosen);
+    const offered = stats.ancient_choice.map((a) => formatId(a.TextKey)).join(', ');
+    if (chosen) {
+      items.push(
+        <span key="ancient" className="text-purple-400/70">
+          Picked {formatId(chosen.TextKey)}
+        </span>
+      );
+      items.push(
+        <span key="ancient-offered" className="text-gray-600">
+          from [{offered}]
+        </span>
+      );
+    } else {
+      items.push(
+        <span key="ancient-skip" className="text-yellow-500/70">
+          Skipped [{offered}]
         </span>
       );
     }
