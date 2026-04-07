@@ -15,16 +15,6 @@ import { formatId, formatDate, formatDuration } from '../lib/format';
 import { getCardMeta } from '../lib/card-meta';
 import type { DeckCard, MapPoint, PlayerStats } from '../types/run';
 
-const CHARACTERS = ['DEFECT', 'IRONCLAD', 'SILENT', 'REGENT', 'NECROBINDER'];
-const STRIKE_IDS = new Set(CHARACTERS.map((c) => `CARD.STRIKE_${c}`));
-const DEFEND_IDS = new Set(CHARACTERS.map((c) => `CARD.DEFEND_${c}`));
-
-function formatDeckCardName(id: string): string {
-  if (STRIKE_IDS.has(id)) return 'Strike';
-  if (DEFEND_IDS.has(id)) return 'Defend';
-  return formatId(id);
-}
-
 interface ConsolidatedCard {
   id: string;
   upgraded: boolean;
@@ -56,7 +46,7 @@ function consolidateDeck(deck: DeckCard[]): ConsolidatedCard[] {
     const ra = rarityRank(getCardMeta(a.id)?.rarity);
     const rb = rarityRank(getCardMeta(b.id)?.rarity);
     if (ra !== rb) return ra - rb;
-    return formatDeckCardName(a.id).localeCompare(formatDeckCardName(b.id));
+    return formatId(a.id).localeCompare(formatId(b.id));
   });
 }
 
@@ -451,7 +441,7 @@ function DeckDisplay({ deck }: { deck: DeckCard[] }) {
                   key={i}
                   className={`bg-gray-800 text-xs px-2 py-1 rounded ${color}`}
                 >
-                  {formatDeckCardName(item.id)}
+                  {formatId(item.id)}
                   {item.upgraded ? '+' : ''}
                   {item.enchantment ? ` [${formatId(item.enchantment)}]` : ''}
                   {item.count > 1 && (
@@ -471,6 +461,24 @@ function FloorRow({ point, floorNum }: { point: MapPoint; floorNum: number }) {
   const room = point.rooms?.[0];
   const stats = point.player_stats?.[0];
 
+  const effectiveType = room?.room_type ?? point.map_point_type;
+
+  const isShop =
+    effectiveType === 'shop' ||
+    (point.map_point_type === 'unknown' &&
+      stats &&
+      (stats.bought_relics?.length || stats.bought_potions?.length || stats.gold_spent > 0));
+
+  const floorTitle = isShop
+    ? 'Shop'
+    : effectiveType === 'treasure'
+    ? 'Chest'
+    : effectiveType === 'rest_site'
+    ? 'Rest Site'
+    : room
+    ? formatId(room.model_id)
+    : formatId(point.map_point_type);
+
   return (
     <div className="flex gap-3 items-start py-1.5 px-3 hover:bg-gray-800/30 rounded text-sm">
       <span className="text-gray-600 w-6 text-right shrink-0 font-mono text-xs pt-0.5">
@@ -481,7 +489,7 @@ function FloorRow({ point, floorNum }: { point: MapPoint; floorNum: number }) {
 
       <div className="flex-1 min-w-0">
         <span className="text-gray-300">
-          {room ? formatId(room.model_id) : formatId(point.map_point_type)}
+          {floorTitle}
         </span>
         {room?.monster_ids && room.monster_ids.length > 0 && (
           <span className="text-gray-600 text-xs ml-2">
@@ -494,7 +502,7 @@ function FloorRow({ point, floorNum }: { point: MapPoint; floorNum: number }) {
           </span>
         ) : null}
 
-        {stats && <FloorDetails stats={stats} />}
+        {stats && <FloorDetails stats={stats} isShop={!!isShop} />}
       </div>
 
       {stats && (
@@ -563,41 +571,73 @@ function RoomBadge({ type }: { type: string }) {
   );
 }
 
-function FloorDetails({ stats }: { stats: PlayerStats }) {
+function FloorDetails({ stats, isShop }: { stats: PlayerStats; isShop: boolean }) {
   const items: React.ReactNode[] = [];
 
   // Card choices
   if (stats.card_choices && stats.card_choices.length > 0) {
-    const picked = stats.card_choices.find((c) => c.was_picked);
+    const pickedCards = stats.card_choices.filter((c) => c.was_picked);
     const offered = stats.card_choices.map((c) => formatId(c.card.id)).join(', ');
-    if (picked) {
-      items.push(
-        <span key="card" className="text-green-400/70">
-          Picked {formatId(picked.card.id)}
-          {picked.card.current_upgrade_level ? '+' : ''}
-        </span>
-      );
+    if (isShop) {
       items.push(
         <span key="card-offered" className="text-gray-600">
-          from [{offered}]
+          Cards [{offered}]
         </span>
       );
+      if (pickedCards.length > 0) {
+        items.push(
+          <span key="card" className="text-green-400/70">
+            Bought {pickedCards.map((c) => formatId(c.card.id) + (c.card.current_upgrade_level ? '+' : '')).join(', ')}
+          </span>
+        );
+      }
     } else {
-      items.push(
-        <span key="card-skip" className="text-yellow-500/70">
-          Skipped [{offered}]
-        </span>
-      );
+      const firstPicked = pickedCards[0];
+      if (firstPicked) {
+        items.push(
+          <span key="card" className="text-green-400/70">
+            Picked {formatId(firstPicked.card.id)}
+            {firstPicked.card.current_upgrade_level ? '+' : ''}
+          </span>
+        );
+        items.push(
+          <span key="card-offered" className="text-gray-600">
+            from [{offered}]
+          </span>
+        );
+      } else {
+        items.push(
+          <span key="card-skip" className="text-yellow-500/70">
+            Skipped [{offered}]
+          </span>
+        );
+      }
     }
   }
 
-  // Cards gained outside of choices (e.g., events)
+  // Cards gained outside of choices (e.g., events, Bing Bong duplicates)
   if (stats.cards_gained && stats.cards_gained.length > 0) {
-    items.push(
-      <span key="gained" className="text-green-500/70">
-        +{stats.cards_gained.map((c) => formatId(c.id)).join(', ')}
-      </span>
-    );
+    // Remove one instance per picked card; extra copies (e.g., Bing Bong) remain
+    const pickedCounts = new Map<string, number>();
+    for (const c of (stats.card_choices ?? []).filter((c) => c.was_picked)) {
+      pickedCounts.set(c.card.id, (pickedCounts.get(c.card.id) ?? 0) + 1);
+    }
+    const extraGained: { id: string }[] = [];
+    for (const c of stats.cards_gained) {
+      const remaining = pickedCounts.get(c.id) ?? 0;
+      if (remaining > 0) {
+        pickedCounts.set(c.id, remaining - 1);
+      } else {
+        extraGained.push(c);
+      }
+    }
+    if (extraGained.length > 0) {
+      items.push(
+        <span key="gained" className={isShop ? 'text-green-400/70' : 'text-green-500/70'}>
+          {isShop ? 'Bought' : 'Gained'} {extraGained.map((c) => formatId(c.id)).join(', ')}
+        </span>
+      );
+    }
   }
 
   // Cards removed
@@ -640,32 +680,38 @@ function FloorDetails({ stats }: { stats: PlayerStats }) {
     );
   }
 
-  // Ancient choices
-  if (stats.ancient_choice && stats.ancient_choice.length > 0) {
-    const chosen = stats.ancient_choice.find((c) => c.was_chosen);
-    if (chosen) {
-      items.push(
-        <span key="ancient" className="text-purple-400/70">
-          Ancient: {formatId(chosen.TextKey)}
-        </span>
-      );
-    }
-  }
-
   // Relic choices
   if (stats.relic_choices && stats.relic_choices.length > 0) {
-    const picked = stats.relic_choices.find((c) => c.was_picked);
-    if (picked) {
+    const picked = stats.relic_choices.filter((c) => c.was_picked);
+    const offered = stats.relic_choices.map((r) => formatId(r.choice)).join(', ');
+    if (isShop) {
+      items.push(
+        <span key="relic-offered" className="text-gray-600">
+          Relics [{offered}]
+        </span>
+      );
+      if (picked.length > 0) {
+        items.push(
+          <span key="relic" className="text-yellow-400/70">
+            Bought {picked.map((r) => formatId(r.choice)).join(', ')}
+          </span>
+        );
+      }
+    } else if (picked.length > 0) {
       items.push(
         <span key="relic" className="text-yellow-400/70">
-          Relic: {formatId(picked.choice)}
+          Relic: {picked.map((r) => formatId(r.choice)).join(', ')}
         </span>
       );
     }
   }
 
-  // Bought relics
-  if (stats.bought_relics && stats.bought_relics.length > 0) {
+  // Bought relics (only show if no relic_choices — avoids duplication)
+  if (
+    stats.bought_relics &&
+    stats.bought_relics.length > 0 &&
+    !(stats.relic_choices && stats.relic_choices.length > 0)
+  ) {
     items.push(
       <span key="bought-relic" className="text-yellow-400/70">
         Bought {stats.bought_relics.map(formatId).join(', ')}
@@ -673,12 +719,18 @@ function FloorDetails({ stats }: { stats: PlayerStats }) {
     );
   }
 
-  // Event choices
+  // Event choices (skip ancient floor events — already shown as relic)
   if (stats.event_choices && stats.event_choices.length > 0) {
     for (const ev of stats.event_choices) {
+      if (ev.title.table === 'relics') continue;
+      // Extract option name from key like "EVENT.pages.PAGE.options.OPTION.title"
+      const parts = ev.title.key.split('.');
+      const titleIdx = parts.lastIndexOf('title');
+      const optionName =
+        titleIdx > 0 ? parts[titleIdx - 1] : parts[0];
       items.push(
         <span key={`event-${ev.title.key}`} className="text-teal-400/70">
-          Event: {formatId(ev.title.key)}
+          Choice: {formatId(optionName)}
         </span>
       );
     }
@@ -687,7 +739,21 @@ function FloorDetails({ stats }: { stats: PlayerStats }) {
   // Potion choices
   if (stats.potion_choices && stats.potion_choices.length > 0) {
     const pickedPotions = stats.potion_choices.filter((p) => p.was_picked);
-    if (pickedPotions.length > 0) {
+    const offeredPotions = stats.potion_choices.map((p) => formatId(p.choice)).join(', ');
+    if (isShop) {
+      items.push(
+        <span key="potion-offered" className="text-gray-600">
+          Potions [{offeredPotions}]
+        </span>
+      );
+      if (pickedPotions.length > 0) {
+        items.push(
+          <span key="potion-pick" className="text-cyan-400/70">
+            Bought {pickedPotions.map((p) => formatId(p.choice)).join(', ')}
+          </span>
+        );
+      }
+    } else if (pickedPotions.length > 0) {
       items.push(
         <span key="potion-pick" className="text-cyan-400/70">
           Grabbed {pickedPotions.map((p) => formatId(p.choice)).join(', ')}
@@ -705,8 +771,12 @@ function FloorDetails({ stats }: { stats: PlayerStats }) {
     );
   }
 
-  // Bought potions
-  if (stats.bought_potions && stats.bought_potions.length > 0) {
+  // Bought potions (only show if no potion_choices — avoids duplication)
+  if (
+    stats.bought_potions &&
+    stats.bought_potions.length > 0 &&
+    !(stats.potion_choices && stats.potion_choices.length > 0)
+  ) {
     items.push(
       <span key="bought-pot" className="text-cyan-400/70">
         Bought {stats.bought_potions.map(formatId).join(', ')}

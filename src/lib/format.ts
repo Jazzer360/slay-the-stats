@@ -22,7 +22,10 @@ export function formatId(id: string): string {
   const base = upgraded ? id.slice(0, -1) : id;
   const withoutPrefix = base.includes('.') ? base.split('.').slice(1).join('.') : base;
 
-  const name = withoutPrefix
+  // Normalize Strike/Defend — drop character suffix (e.g. STRIKE_IRONCLAD → STRIKE)
+  const normalized = withoutPrefix.replace(/^(STRIKE|DEFEND)_\w+$/i, '$1');
+
+  const name = normalized
     .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
