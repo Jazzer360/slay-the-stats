@@ -26,6 +26,14 @@ const COLORS = [
   '#a78bfa',
 ];
 
+const CHARACTER_COLORS: Record<string, string> = {
+  'CHARACTER.IRONCLAD': '#ef4444',   // red-500
+  'CHARACTER.SILENT': '#22c55e',     // green-500
+  'CHARACTER.DEFECT': '#60a5fa',     // blue-400
+  'CHARACTER.REGENT': '#fbbf24',     // amber-400
+  'CHARACTER.NECROBINDER': '#8b5cf6', // violet-500
+};
+
 export function DashboardPage() {
   const filteredRuns = useFilteredRuns();
   const stats = useMemo(
@@ -114,10 +122,10 @@ export function DashboardPage() {
                   dataKey="value"
                   label={({ name, value }) => `${name} (${value})`}
                 >
-                  {stats.characterBreakdown.map((_, idx) => (
+                  {stats.characterBreakdown.map((cb, idx) => (
                     <Cell
                       key={idx}
-                      fill={COLORS[idx % COLORS.length]}
+                      fill={CHARACTER_COLORS[cb.character] ?? COLORS[idx % COLORS.length]}
                       stroke="transparent"
                     />
                   ))}

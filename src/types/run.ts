@@ -187,5 +187,6 @@ export interface PotionChoice {
 // Parsed run with metadata
 export interface ParsedRun {
   fileName: string;
+  profile: string | null;
   data: RunData;
 }

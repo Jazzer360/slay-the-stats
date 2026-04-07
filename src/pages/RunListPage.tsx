@@ -192,7 +192,7 @@ export function RunListPage() {
               <tr
                 key={row.id}
                 className="hover:bg-gray-900/50 transition-colors cursor-pointer"
-                onClick={() => navigate(`/runs/${row.original.fileName}`)}
+                onClick={() => navigate(`/runs/${encodeURIComponent(row.original.fileName.replace(/\.run$/, ''))}`)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-3 py-2">

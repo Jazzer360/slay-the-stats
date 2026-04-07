@@ -4,11 +4,15 @@ import { formatId } from '../../lib/format';
 
 export function FilterBar() {
   const {
+    profile,
     character,
+    playerMode,
     ascensionMin,
     ascensionMax,
     result,
+    setProfile,
     setCharacter,
+    setPlayerMode,
     setAscensionRange,
     setResult,
     resetFilters,
@@ -16,7 +20,9 @@ export function FilterBar() {
   const options = useFilterOptions();
 
   const hasActiveFilters =
+    profile !== null ||
     character !== null ||
+    playerMode !== 'all' ||
     ascensionMin !== null ||
     ascensionMax !== null ||
     result !== 'all';
@@ -27,6 +33,36 @@ export function FilterBar() {
         <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">
           Filters
         </span>
+
+        {/* Profile single-select */}
+        {options.profiles.length > 1 && (
+          <div className="flex items-center gap-1">
+            <label className="text-xs text-gray-500">Profile:</label>
+            <button
+              onClick={() => setProfile(null)}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                profile === null
+                  ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
+                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600'
+              }`}
+            >
+              All
+            </button>
+            {options.profiles.map((p) => (
+              <button
+                key={p}
+                onClick={() => setProfile(p)}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  profile === p
+                    ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
+                    : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600'
+                }`}
+              >
+                {formatId(p)}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Character single-select */}
         <div className="flex items-center gap-1">
@@ -113,6 +149,25 @@ export function FilterBar() {
             </button>
           ))}
         </div>
+
+        {/* Solo/Multi */}
+        {options.hasMultiplayer && (
+          <div className="flex items-center gap-1">
+            {(['all', 'solo', 'multi'] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setPlayerMode(m)}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  playerMode === m
+                    ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
+                    : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600'
+                }`}
+              >
+                {m === 'all' ? 'All' : m === 'solo' ? 'Solo' : 'Multiplayer'}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Reset */}
         {hasActiveFilters && (

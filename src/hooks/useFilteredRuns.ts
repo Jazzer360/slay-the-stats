@@ -10,16 +10,7 @@ export function useFilteredRuns(): ParsedRun[] {
 
   return useMemo(
     () => applyFilters(runs, filters),
-    [
-      runs,
-      filters.character,
-      filters.ascensionMin,
-      filters.ascensionMax,
-      filters.result,
-      filters.dateFrom,
-      filters.dateTo,
-      filters.buildIds,
-    ]
+    [runs, filters]
   );
 }
 

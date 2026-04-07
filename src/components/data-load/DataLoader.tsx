@@ -3,12 +3,10 @@ import { useFileLoader } from '../../hooks/useFileLoader';
 import { useRunsStore } from '../../store/runs';
 
 export function DataLoader() {
-  const { loadFromDirectoryPicker, loadFromFileInput, expectedPath } =
+  const { loadFromFileInput, expectedPath } =
     useFileLoader();
   const { isLoading, loadProgress, error } = useRunsStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const supportsDirectoryPicker = 'showDirectoryPicker' in window;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8">
@@ -35,45 +33,31 @@ export function DataLoader() {
         </div>
 
         <div className="flex flex-col gap-3">
-          {supportsDirectoryPicker && (
-            <button
-              onClick={loadFromDirectoryPicker}
-              disabled={isLoading}
-              className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
-            >
-              {isLoading ? 'Loading...' : 'Select History Folder'}
-            </button>
-          )}
-
-          <div className="relative">
-            <input
-              ref={fileInputRef}
-              type="file"
-              /* @ts-expect-error webkitdirectory is non-standard */
-              webkitdirectory="true"
-              multiple
-              onChange={(e) => {
-                if (e.target.files) loadFromFileInput(e.target.files);
-              }}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
-              className={`w-full font-medium py-2.5 px-4 rounded-lg transition-colors ${
-                supportsDirectoryPicker
-                  ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700'
-                  : 'bg-purple-600 hover:bg-purple-500 text-white'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {supportsDirectoryPicker
-                ? 'Or use file browser fallback'
-                : isLoading
-                ? 'Loading...'
-                : 'Select History Folder'}
-            </button>
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            /* @ts-expect-error webkitdirectory is non-standard */
+            webkitdirectory="true"
+            multiple
+            onChange={(e) => {
+              if (e.target.files) loadFromFileInput(e.target.files);
+            }}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+          >
+            {isLoading ? 'Loading...' : 'Select SlayTheSpire2 Folder'}
+          </button>
         </div>
+
+        <p className="mt-3 text-xs text-gray-500">
+          All .run files are loaded recursively from the selected directory.
+          You can select the root SlayTheSpire2 folder to load all profiles,
+          or a single profile folder to load just that one.
+        </p>
 
         {/* Progress */}
         {loadProgress && (

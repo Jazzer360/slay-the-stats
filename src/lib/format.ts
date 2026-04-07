@@ -6,6 +6,7 @@
  * or "ENCOUNTER.QUEEN_BOSS" to "Queen Boss"
  */
 export function formatId(id: string): string {
+  if (!id) return '';
   // Skip entities
   if (id.startsWith('SKIP_BOSS_ACT_')) {
     const act = id.replace('SKIP_BOSS_ACT_', '');

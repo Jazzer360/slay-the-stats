@@ -1,6 +1,6 @@
 import type { RunData, ParsedRun } from '../types/run';
 
-export function parseRunFile(fileName: string, jsonText: string): ParsedRun {
+export function parseRunFile(fileName: string, jsonText: string, profile: string | null = null): ParsedRun {
   const data = JSON.parse(jsonText) as RunData;
 
   // Basic validation
@@ -11,7 +11,7 @@ export function parseRunFile(fileName: string, jsonText: string): ParsedRun {
     throw new Error(`Invalid run file ${fileName}: no map_point_history`);
   }
 
-  return { fileName, data };
+  return { fileName, profile, data };
 }
 
 export async function loadRunFiles(files: File[]): Promise<ParsedRun[]> {
