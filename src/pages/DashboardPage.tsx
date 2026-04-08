@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { computeAggregateStats } from '../lib/stats';
 import { formatId, formatPercent, formatDuration } from '../lib/format';
@@ -41,39 +41,33 @@ export function DashboardPage() {
     [filteredRuns]
   );
 
-  // Win rate over time (group by week)
-  const winRateOverTime = useMemo(() => {
-    if (filteredRuns.length === 0) return [];
+  // Win rate moving average
+  const [maWindow, setMaWindow] = useState(10);
 
-    const weekBuckets = new Map<
-      string,
-      { week: string; wins: number; total: number }
-    >();
+  const winRateMA = useMemo(() => {
+    if (filteredRuns.length === 0 || filteredRuns.length < maWindow) return [];
 
-    for (const run of filteredRuns) {
-      const date = new Date(run.data.start_time * 1000);
-      const weekStart = new Date(date);
-      weekStart.setDate(date.getDate() - date.getDay());
-      const key = weekStart.toISOString().slice(0, 10);
+    // Sort by start time ascending
+    const sorted = [...filteredRuns].sort(
+      (a, b) => a.data.start_time - b.data.start_time
+    );
 
-      const bucket = weekBuckets.get(key) ?? {
-        week: key,
-        wins: 0,
-        total: 0,
-      };
-      bucket.total++;
-      if (run.data.win) bucket.wins++;
-      weekBuckets.set(key, bucket);
+    const result: { run: number; winRate: number }[] = [];
+    let wins = 0;
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i].data.win) wins++;
+      if (i >= maWindow) {
+        if (sorted[i - maWindow].data.win) wins--;
+      }
+      if (i >= maWindow - 1) {
+        result.push({
+          run: i + 1,
+          winRate: (wins / maWindow) * 100,
+        });
+      }
     }
-
-    return [...weekBuckets.values()]
-      .sort((a, b) => a.week.localeCompare(b.week))
-      .map((b) => ({
-        week: b.week,
-        winRate: b.total > 0 ? (b.wins / b.total) * 100 : 0,
-        runs: b.total,
-      }));
-  }, [filteredRuns]);
+    return result;
+  }, [filteredRuns, maWindow]);
 
   if (filteredRuns.length === 0) {
     return (
@@ -186,20 +180,43 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* Win rate over time */}
-      {winRateOverTime.length > 1 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-            Win Rate Over Time (Weekly)
+      {/* Win rate moving average */}
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+            Win Rate (Moving Average)
           </h3>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-gray-500">Window:</label>
+            <input
+              type="number"
+              min={2}
+              max={filteredRuns.length}
+              value={maWindow}
+              onChange={(e) => {
+                const v = parseInt(e.target.value, 10);
+                if (v >= 2) setMaWindow(v);
+              }}
+              className="w-16 bg-gray-800 border border-gray-700 rounded px-2 py-0.5 text-sm text-gray-300 text-center"
+            />
+            <span className="text-xs text-gray-600">runs</span>
+          </div>
+        </div>
+        {winRateMA.length > 0 ? (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={winRateOverTime}>
+              <LineChart data={winRateMA}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="week" stroke="#6b7280" fontSize={11} />
+                <XAxis
+                  dataKey="run"
+                  stroke="#6b7280"
+                  fontSize={11}
+                  label={{ value: 'Run #', position: 'insideBottomRight', offset: -5, fill: '#6b7280', fontSize: 11 }}
+                />
                 <YAxis
                   stroke="#6b7280"
                   fontSize={12}
+                  domain={[0, 100]}
                   tickFormatter={(v) => `${v.toFixed(0)}%`}
                 />
                 <Tooltip
@@ -209,24 +226,25 @@ export function DashboardPage() {
                     borderRadius: '8px',
                     color: '#e5e7eb',
                   }}
-                  formatter={(value, name) => {
-                    if (name === 'winRate')
-                      return [`${Number(value).toFixed(1)}%`, 'Win Rate'];
-                    return [value, name];
-                  }}
+                  formatter={(value: number) => [`${value.toFixed(1)}%`, 'Win Rate']}
+                  labelFormatter={(label) => `Run #${label}`}
                 />
                 <Line
                   type="monotone"
                   dataKey="winRate"
                   stroke="#c084fc"
                   strokeWidth={2}
-                  dot={{ fill: '#c084fc', r: 3 }}
+                  dot={false}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-gray-600 text-sm text-center py-8">
+            Not enough runs ({filteredRuns.length}) for a {maWindow}-run moving average.
+          </p>
+        )}
+      </div>
 
       {/* Common deaths */}
       {stats.commonDeaths.length > 0 && (
