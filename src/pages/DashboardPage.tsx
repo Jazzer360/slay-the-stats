@@ -137,23 +137,31 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Win rate by ascension */}
+        {/* Win rate by character */}
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-            Win Rate by Ascension
+            Win Rate by Character
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.ascensionBreakdown}>
+              <BarChart
+                data={stats.characterBreakdown.map((cb) => ({
+                  name: formatId(cb.character),
+                  character: cb.character,
+                  winRate: cb.winRate,
+                  count: cb.count,
+                }))}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis
-                  dataKey="ascension"
+                  dataKey="name"
                   stroke="#6b7280"
                   fontSize={12}
                 />
                 <YAxis
                   stroke="#6b7280"
                   fontSize={12}
+                  domain={[0, 1]}
                   tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
                 />
                 <Tooltip
@@ -163,17 +171,19 @@ export function DashboardPage() {
                     borderRadius: '8px',
                     color: '#e5e7eb',
                   }}
-                  formatter={(value) => [
-                    formatPercent(Number(value)),
+                  formatter={(value: number, _name: string, props: { payload: { count: number } }) => [
+                    `${formatPercent(value)} (${props.payload.count} runs)`,
                     'Win Rate',
                   ]}
-                  labelFormatter={(l) => `Ascension ${l}`}
                 />
-                <Bar
-                  dataKey="winRate"
-                  fill="#c084fc"
-                  radius={[4, 4, 0, 0]}
-                />
+                <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>
+                  {stats.characterBreakdown.map((cb, idx) => (
+                    <Cell
+                      key={idx}
+                      fill={CHARACTER_COLORS[cb.character] ?? COLORS[idx % COLORS.length]}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
