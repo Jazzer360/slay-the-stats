@@ -10,6 +10,7 @@ export function SharedRunPage() {
   const { token } = useParams<{ token: string }>();
   const [pageState, setPageState] = useState<'loading' | 'not-found' | 'loaded' | 'error'>('loading');
   const [run, setRun] = useState<ParsedRun | null>(null);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -22,6 +23,7 @@ export function SharedRunPage() {
           setPageState('not-found');
           return;
         }
+        setIsAnonymous(share.uid === null);
         const parsed = parseRunFile(share.fileName, share.runContent);
         setRun(parsed);
         setPageState('loaded');
@@ -70,6 +72,12 @@ export function SharedRunPage() {
         </Link>
         <span className="text-xs text-gray-600 bg-gray-800 px-2 py-1 rounded">Shared Run</span>
       </div>
+
+      {isAnonymous && (
+        <div className="bg-blue-900/20 border border-blue-800/40 rounded-lg px-4 py-2.5 mb-4 text-xs text-blue-400/80">
+          This run was shared without an account.
+        </div>
+      )}
 
       <RunDetail run={run} />
     </div>

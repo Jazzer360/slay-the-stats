@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { to: '/card-elo', label: 'Card ELO' },
   { to: '/ancient-elo', label: 'Ancient ELO' },
   { to: '/runs', label: 'Run List' },
+  { to: '/import', label: 'Import' },
   { to: '/about', label: 'About' },
 ];
 

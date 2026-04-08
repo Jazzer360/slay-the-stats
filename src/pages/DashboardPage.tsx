@@ -17,8 +17,7 @@ import {
   Line,
 } from 'recharts';
 
-const COLORS = [
-  '#c084fc',
+const COLORS = [  '#c084fc',
   '#60a5fa',
   '#34d399',
   '#fbbf24',
@@ -52,17 +51,25 @@ export function DashboardPage() {
       (a, b) => a.data.start_time - b.data.start_time
     );
 
-    const result: { run: number; winRate: number }[] = [];
+    const runFloors = sorted.map((r) =>
+      r.data.map_point_history.reduce((s, act) => s + act.length, 0)
+    );
+
+    const result: { run: number; winRate: number; avgFloors: number }[] = [];
     let wins = 0;
+    let floorsSum = 0;
     for (let i = 0; i < sorted.length; i++) {
       if (sorted[i].data.win) wins++;
+      floorsSum += runFloors[i];
       if (i >= maWindow) {
         if (sorted[i - maWindow].data.win) wins--;
+        floorsSum -= runFloors[i - maWindow];
       }
       if (i >= maWindow - 1) {
         result.push({
           run: i + 1,
           winRate: (wins / maWindow) * 100,
+          avgFloors: floorsSum / maWindow,
         });
       }
     }
@@ -100,8 +107,7 @@ export function DashboardPage() {
           <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
             Character Distribution
           </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%" debounce={200}>
+          <ResponsiveContainer width="100%" height={256}>
               <PieChart>
                 <Pie
                   data={stats.characterBreakdown.map((cb) => ({
@@ -133,8 +139,7 @@ export function DashboardPage() {
                   }}
                 />
               </PieChart>
-            </ResponsiveContainer>
-          </div>
+          </ResponsiveContainer>
         </div>
 
         {/* Win rate by character */}
@@ -142,8 +147,7 @@ export function DashboardPage() {
           <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
             Win Rate by Character
           </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%" debounce={200}>
+          <ResponsiveContainer width="100%" height={256}>
               <BarChart
                 data={stats.characterBreakdown.map((cb) => ({
                   name: formatId(cb.character),
@@ -185,8 +189,7 @@ export function DashboardPage() {
                   ))}
                 </Bar>
               </BarChart>
-            </ResponsiveContainer>
-          </div>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -213,42 +216,78 @@ export function DashboardPage() {
           </div>
         </div>
         {winRateMA.length > 0 ? (
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%" debounce={200}>
-              <LineChart data={winRateMA}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis
-                  dataKey="run"
-                  stroke="#6b7280"
-                  fontSize={11}
-                  label={{ value: 'Run #', position: 'insideBottomRight', offset: -5, fill: '#6b7280', fontSize: 11 }}
-                />
-                <YAxis
-                  stroke="#6b7280"
-                  fontSize={12}
-                  domain={[0, 100]}
-                  tickFormatter={(v) => `${v.toFixed(0)}%`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: '#1f2937',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#e5e7eb',
-                  }}
-                  formatter={((value: unknown) => [`${(value as number).toFixed(1)}%`, 'Win Rate']) as never}
-                  labelFormatter={(label) => `Run #${label}`}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="winRate"
-                  stroke="#c084fc"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
+          <>
+            <div className="flex items-center gap-4 mb-3">
+              <span className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-block w-3 h-0.5 bg-purple-400 rounded" />
+                Win Rate
+              </span>
+              <span className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span className="inline-block w-3 h-0.5 bg-emerald-400 rounded" />
+                Avg Floors
+              </span>
+            </div>
+            <ResponsiveContainer width="100%" height={256}>
+                <LineChart data={winRateMA}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis
+                    dataKey="run"
+                    stroke="#6b7280"
+                    fontSize={11}
+                    label={{ value: 'Run #', position: 'insideBottomRight', offset: -5, fill: '#6b7280', fontSize: 11 }}
+                  />
+                  <YAxis
+                    yAxisId="left"
+                    stroke="#9f7aea"
+                    fontSize={11}
+                    domain={[0, 100]}
+                    tickFormatter={(v) => `${v.toFixed(0)}%`}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="#34d399"
+                    fontSize={11}
+                    domain={[0, 49]}
+                    tickCount={8}
+                    tickFormatter={(v) => `${v}`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: '#1f2937',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#e5e7eb',
+                      fontSize: '12px',
+                    }}
+                    formatter={((value: unknown, name: string) => {
+                      if (name === 'winRate') return [`${(value as number).toFixed(1)}%`, 'Win Rate'];
+                      if (name === 'avgFloors') return [(value as number).toFixed(1), 'Avg Floors'];
+                      return [value, name];
+                    }) as never}
+                    labelFormatter={(label) => `Run #${label}`}
+                  />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="winRate"
+                    stroke="#c084fc"
+                    strokeWidth={2}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="avgFloors"
+                    stroke="#34d399"
+                    strokeWidth={2}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
             </ResponsiveContainer>
-          </div>
+          </>
         ) : (
           <p className="text-gray-600 text-sm text-center py-8">
             Not enough runs ({filteredRuns.length}) for a {maWindow}-run moving average.
@@ -262,8 +301,7 @@ export function DashboardPage() {
           <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
             Most Common Deaths
           </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%" debounce={200}>
+          <ResponsiveContainer width="100%" height={256}>
               <BarChart
                 data={stats.commonDeaths.slice(0, 8)}
                 layout="vertical"
@@ -293,8 +331,7 @@ export function DashboardPage() {
                   radius={[0, 4, 4, 0]}
                 />
               </BarChart>
-            </ResponsiveContainer>
-          </div>
+          </ResponsiveContainer>
         </div>
       )}
     </div>

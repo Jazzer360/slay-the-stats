@@ -1,7 +1,7 @@
 import { useRunsStore } from '../store/runs';
 import { useAuthStore } from '../store/auth';
-import { checkRunExists, addRunMetadata } from '../lib/firestore';
-import { uploadRunFile } from '../lib/cloudStorage';
+import { checkRunExists, addRunMetadata, deleteAllRunMetadata } from '../lib/firestore';
+import { uploadRunFile, deleteAllRunFiles } from '../lib/cloudStorage';
 import { parseRunFile } from '../lib/parser';
 import type { ParsedRun } from '../types/run';
 
@@ -12,21 +12,35 @@ export interface UploadStatus {
   total: number;
 }
 
+export interface UploadOptions {
+  wipeFirst?: boolean;
+}
+
 const CONCURRENCY = 10;
 
 export function useRunUploader() {
-  const { runs, setRuns, setLoading, setLoadProgress } = useRunsStore();
+  const { setRuns, setLoading, setLoadProgress } = useRunsStore();
   const user = useAuthStore((s) => s.user);
 
   async function uploadFiles(
     fileList: FileList | File[],
     onProgress: (status: UploadStatus) => void,
+    options?: UploadOptions,
   ): Promise<UploadStatus> {
     const files = Array.from(fileList).filter((f) => f.name.endsWith('.run'));
     const total = files.length;
 
     setLoading(true);
-    setLoadProgress({ loaded: 0, total });
+    setLoadProgress({ loaded: 0, total: options?.wipeFirst ? 0 : total });
+
+    if (options?.wipeFirst) {
+      await Promise.all([
+        deleteAllRunFiles(user!.uid),
+        deleteAllRunMetadata(user!.uid),
+      ]);
+      setRuns([]);
+      setLoadProgress({ loaded: 0, total });
+    }
 
     const status: UploadStatus = { uploaded: 0, skipped: 0, failed: 0, total };
     const newRuns: ParsedRun[] = [];
@@ -64,7 +78,9 @@ export function useRunUploader() {
     const workers = Array.from({ length: Math.min(CONCURRENCY, files.length) }, () => worker());
     await Promise.all(workers);
 
-    const merged = [...runs, ...newRuns].sort(
+    // Use getState() for the current runs to correctly handle the wipeFirst case
+    const currentRuns = useRunsStore.getState().runs;
+    const merged = [...currentRuns, ...newRuns].sort(
       (a, b) => (a.data.start_time ?? 0) - (b.data.start_time ?? 0),
     );
     setRuns(merged);

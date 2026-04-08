@@ -25,13 +25,22 @@ service cloud.firestore {
                     && resource.data.uid == request.auth.uid;
     }
 
-    // Shared run tokens
+    // Shared run tokens (authenticated users)
     match /shares/{token} {
       allow read: if true;
       allow create: if request.auth != null
                     && request.resource.data.uid == request.auth.uid;
       allow delete: if request.auth != null
                     && resource.data.uid == request.auth.uid;
+    }
+
+    // Public / anonymous share tokens (no account required)
+    match /public_shares/{token} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['fileName', 'runContent', 'createdAt'])
+                    && request.resource.data.runContent is string
+                    && request.resource.data.runContent.size() <= 900000;
+      allow delete: if false;
     }
   }
 }

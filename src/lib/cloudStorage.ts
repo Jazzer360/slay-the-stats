@@ -1,4 +1,4 @@
-import { ref, uploadString, getDownloadURL, deleteObject, getBytes, type UploadMetadata } from 'firebase/storage';
+import { ref, uploadString, getDownloadURL, deleteObject, getBytes, listAll, type UploadMetadata } from 'firebase/storage';
 import { storage } from './firebase';
 
 function runRef(uid: string, fileName: string) {
@@ -28,4 +28,10 @@ export async function downloadRunFileBytes(uid: string, fileName: string): Promi
 
 export async function deleteRunFile(uid: string, fileName: string): Promise<void> {
   await deleteObject(runRef(uid, fileName));
+}
+
+export async function deleteAllRunFiles(uid: string): Promise<void> {
+  const dirRef = ref(storage, `users/${uid}/runs`);
+  const result = await listAll(dirRef);
+  await Promise.all(result.items.map((item) => deleteObject(item)));
 }

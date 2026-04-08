@@ -8,6 +8,7 @@ import {
   getDocs,
   runTransaction,
   serverTimestamp,
+  writeBatch,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -121,6 +122,14 @@ export async function deleteRunMetadata(uid: string, fileName: string): Promise<
   await deleteDoc(doc(db, 'users', uid, 'runs', fileName));
 }
 
+export async function deleteAllRunMetadata(uid: string): Promise<void> {
+  const snap = await getDocs(collection(db, 'users', uid, 'runs'));
+  if (snap.empty) return;
+  const batch = writeBatch(db);
+  snap.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+}
+
 export async function checkRunExists(uid: string, fileName: string): Promise<boolean> {
   const snap = await getDoc(doc(db, 'users', uid, 'runs', fileName));
   return snap.exists();
@@ -129,7 +138,7 @@ export async function checkRunExists(uid: string, fileName: string): Promise<boo
 // ─── Shares ──────────────────────────────────────────────────────
 
 export interface ShareDoc {
-  uid: string;
+  uid: string | null;
   fileName: string;
   runContent: string;
   createdAt: number;
@@ -148,15 +157,39 @@ export async function createShare(token: string, uid: string, fileName: string, 
 }
 
 export async function getShare(token: string): Promise<ShareDoc | null> {
+  // Check authenticated shares first
   const snap = await getDoc(doc(db, 'shares', token));
-  if (!snap.exists()) return null;
-  const d = snap.data();
+  if (snap.exists()) {
+    const d = snap.data();
+    return {
+      uid: d.uid ?? null,
+      fileName: d.fileName,
+      runContent: d.runContent,
+      createdAt: (d.createdAt as Timestamp)?.toMillis() ?? 0,
+    };
+  }
+
+  // Fall back to public (anonymous) shares
+  const pubSnap = await getDoc(doc(db, 'public_shares', token));
+  if (!pubSnap.exists()) return null;
+  const d = pubSnap.data();
   return {
-    uid: d.uid,
+    uid: null,
     fileName: d.fileName,
     runContent: d.runContent,
     createdAt: (d.createdAt as Timestamp)?.toMillis() ?? 0,
   };
+}
+
+export async function createPublicShare(token: string, fileName: string, runContent: string): Promise<void> {
+  if (runContent.length > 900_000) {
+    throw new Error('Run file is too large to share (> 900 KB).');
+  }
+  await setDoc(doc(db, 'public_shares', token), {
+    fileName,
+    runContent,
+    createdAt: serverTimestamp(),
+  });
 }
 
 export async function deleteShare(token: string): Promise<void> {

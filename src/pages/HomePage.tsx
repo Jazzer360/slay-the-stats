@@ -1,7 +1,6 @@
 import { useRunsStore } from '../store/runs';
 import { useAuthStore } from '../store/auth';
 import { DataLoader } from '../components/data-load/DataLoader';
-import { UploadMoreButton } from '../components/data-load/UploadMoreButton';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { computeAggregateStats } from '../lib/stats';
 import { formatId, formatPercent } from '../lib/format';
@@ -133,8 +132,6 @@ export function HomePage() {
           </div>
         </div>
       )}
-
-      <UploadMoreButton />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { RunListPage } from './pages/RunListPage';
 import { RunDetailPage } from './pages/RunDetailPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AboutPage } from './pages/AboutPage';
+import { ImportPage } from './pages/ImportPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SharedRunPage } from './pages/SharedRunPage';
@@ -28,6 +29,7 @@ function AppRoutes() {
         <Route path="/runs" element={<RunListPage />} />
         <Route path="/runs/:fileName" element={<RunDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/import" element={<ImportPage />} />
         <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
         <Route path="/u/:screenName" element={<ProfilePage />}>
           <Route index element={<DashboardPage />} />

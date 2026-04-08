@@ -175,7 +175,7 @@ export function RunDetail({ run }: { run: ParsedRun }) {
             Health Over Time
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%" debounce={200}>
+            <ResponsiveContainer width="100%" height={256}>
               <AreaChart data={hpData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis

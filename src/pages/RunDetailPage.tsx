@@ -4,7 +4,7 @@ import { useActiveRuns } from '../hooks/useActiveRuns';
 import { useProfileNav } from '../hooks/useProfileNav';
 import { useProfileRunsStore } from '../store/profileRuns';
 import { useAuthStore } from '../store/auth';
-import { createShare } from '../lib/firestore';
+import { createShare, createPublicShare } from '../lib/firestore';
 import { RunDetail } from '../components/run/RunDetail';
 
 
@@ -23,12 +23,16 @@ export function RunDetailPage() {
   const [shareState, setShareState] = useState<'idle' | 'sharing' | 'copied' | 'error'>('idle');
 
   async function handleShare() {
-    if (!run || !user) return;
+    if (!run) return;
     setShareState('sharing');
     try {
       const token = crypto.randomUUID();
       const runContent = JSON.stringify(run.data);
-      await createShare(token, user.uid, run.fileName, runContent);
+      if (user) {
+        await createShare(token, user.uid, run.fileName, runContent);
+      } else {
+        await createPublicShare(token, run.fileName, runContent);
+      }
       const shareUrl = `${window.location.origin}/share/${token}`;
       await navigator.clipboard.writeText(shareUrl);
       setShareState('copied');
@@ -91,10 +95,11 @@ export function RunDetailPage() {
           >
             Next →
           </button>
-          {user && !isProfileView && (
+          {!isProfileView && (
             <button
               onClick={handleShare}
               disabled={shareState === 'sharing'}
+              title={user ? 'Share this run' : 'Share this run (link is permanent)'}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                 shareState === 'copied'
                   ? 'bg-green-800 text-green-300'
