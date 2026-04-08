@@ -101,7 +101,7 @@ export function DashboardPage() {
             Character Distribution
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" debounce={200}>
               <PieChart>
                 <Pie
                   data={stats.characterBreakdown.map((cb) => ({
@@ -143,7 +143,7 @@ export function DashboardPage() {
             Win Rate by Character
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" debounce={200}>
               <BarChart
                 data={stats.characterBreakdown.map((cb) => ({
                   name: formatId(cb.character),
@@ -171,10 +171,10 @@ export function DashboardPage() {
                     borderRadius: '8px',
                     color: '#e5e7eb',
                   }}
-                  formatter={(value: number, _name: string, props: { payload: { count: number } }) => [
-                    `${formatPercent(value)} (${props.payload.count} runs)`,
+                  formatter={((value: unknown, _name: unknown, props: { payload: { count: number } }) => [
+                    `${formatPercent(value as number)} (${props.payload.count} runs)`,
                     'Win Rate',
-                  ]}
+                  ]) as never}
                 />
                 <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>
                   {stats.characterBreakdown.map((cb, idx) => (
@@ -214,7 +214,7 @@ export function DashboardPage() {
         </div>
         {winRateMA.length > 0 ? (
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" debounce={200}>
               <LineChart data={winRateMA}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis
@@ -236,7 +236,7 @@ export function DashboardPage() {
                     borderRadius: '8px',
                     color: '#e5e7eb',
                   }}
-                  formatter={(value: number) => [`${value.toFixed(1)}%`, 'Win Rate']}
+                  formatter={((value: unknown) => [`${(value as number).toFixed(1)}%`, 'Win Rate']) as never}
                   labelFormatter={(label) => `Run #${label}`}
                 />
                 <Line
@@ -263,7 +263,7 @@ export function DashboardPage() {
             Most Common Deaths
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" debounce={200}>
               <BarChart
                 data={stats.commonDeaths.slice(0, 8)}
                 layout="vertical"

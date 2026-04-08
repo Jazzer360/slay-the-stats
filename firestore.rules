@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User profiles
+    match /users/{uid} {
+      allow read: if (request.auth != null && request.auth.uid == uid)
+                  || resource.data.profileVisibility == 'public';
+      allow write: if request.auth != null && request.auth.uid == uid;
+
+      // Run metadata stored under the user
+      match /runs/{fileName} {
+        allow read: if (request.auth != null && request.auth.uid == uid)
+                    || get(/databases/$(database)/documents/users/$(uid)).data.profileVisibility == 'public';
+        allow write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // Screen name reservation (unique username index)
+    match /screenNames/{name} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+    }
+
+    // Shared run tokens
+    match /shares/{token} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+    }
+  }
+}

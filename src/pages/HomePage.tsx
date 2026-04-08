@@ -1,13 +1,52 @@
 import { useRunsStore } from '../store/runs';
+import { useAuthStore } from '../store/auth';
 import { DataLoader } from '../components/data-load/DataLoader';
+import { UploadMoreButton } from '../components/data-load/UploadMoreButton';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { computeAggregateStats } from '../lib/stats';
 import { formatId, formatPercent } from '../lib/format';
 
 export function HomePage() {
   const runs = useRunsStore((s) => s.runs);
+  const isLoading = useRunsStore((s) => s.isLoading);
+  const loadProgress = useRunsStore((s) => s.loadProgress);
+  const user = useAuthStore((s) => s.user);
+  const authLoading = useAuthStore((s) => s.authLoading);
   const filteredRuns = useFilteredRuns();
 
+  // While Firebase Auth is resolving, show nothing to avoid flash of DataLoader
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-gray-500 text-sm">Loading…</div>
+      </div>
+    );
+  }
+
+  // Logged-in: show loading progress while cloud runs are fetching
+  if (user && isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <p className="text-gray-400 text-sm">Loading your runs from cloud…</p>
+        {loadProgress && (
+          <div className="w-full max-w-sm">
+            <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+              <span>{loadProgress.loaded} / {loadProgress.total}</span>
+              <span>{Math.round((loadProgress.loaded / loadProgress.total) * 100)}%</span>
+            </div>
+            <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-purple-500 rounded-full transition-all duration-200"
+                style={{ width: `${(loadProgress.loaded / loadProgress.total) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // No runs loaded: show DataLoader (handles both guest and logged-in upload)
   if (runs.length === 0) {
     return <DataLoader />;
   }
@@ -94,6 +133,8 @@ export function HomePage() {
           </div>
         </div>
       )}
+
+      <UploadMoreButton />
     </div>
   );
 }

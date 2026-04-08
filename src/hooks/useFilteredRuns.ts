@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { useRunsStore } from '../store/runs';
+import { useActiveRuns } from './useActiveRuns';
 import { useFilterStore } from '../store/filters';
 import { applyFilters, extractFilterOptions } from '../lib/filters';
 import type { ParsedRun } from '../types/run';
 
 export function useFilteredRuns(): ParsedRun[] {
-  const runs = useRunsStore((s) => s.runs);
+  const runs = useActiveRuns();
   const filters = useFilterStore();
 
   return useMemo(
@@ -15,6 +15,6 @@ export function useFilteredRuns(): ParsedRun[] {
 }
 
 export function useFilterOptions() {
-  const runs = useRunsStore((s) => s.runs);
+  const runs = useActiveRuns();
   return useMemo(() => extractFilterOptions(runs), [runs]);
 }

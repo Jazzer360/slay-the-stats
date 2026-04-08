@@ -1,0 +1,18 @@
+[
+  {
+    "origin": ["*"],
+    "method": ["GET", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization"]
+  },
+  {
+    "origin": [
+      "http://localhost:5173",
+      "https://slay-the-stats.web.app",
+      "https://slay-the-stats.firebaseapp.com"
+    ],
+    "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization", "X-Requested-With"]
+  }
+]

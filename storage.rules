@@ -1,0 +1,12 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Raw .run files per user
+    match /users/{uid}/runs/{fileName} {
+      allow read: if (request.auth != null && request.auth.uid == uid)
+                  || firestore.get(/databases/(default)/documents/users/$(uid)).data.profileVisibility == 'public';
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

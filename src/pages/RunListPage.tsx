@@ -9,8 +9,9 @@ import {
   createColumnHelper,
   type SortingState,
 } from '@tanstack/react-table';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
+import { useProfileNav } from '../hooks/useProfileNav';
 import { summarizeRun, type RunSummary } from '../lib/stats';
 import { formatId, formatDate, formatDuration } from '../lib/format';
 import type { ParsedRun } from '../types/run';
@@ -52,7 +53,7 @@ const columnHelper = createColumnHelper<RunSummary>();
 
 export function RunListPage() {
   const filteredRuns = useFilteredRuns();
-  const navigate = useNavigate();
+  const { toRunDetail } = useProfileNav();
   const [searchParams, setSearchParams] = useSearchParams();
   const cardFilter = searchParams.get('card');
   const ancientFilter = searchParams.get('ancient');
@@ -255,7 +256,7 @@ export function RunListPage() {
               <tr
                 key={row.id}
                 className="hover:bg-gray-900/50 transition-colors cursor-pointer"
-                onClick={() => navigate(`/runs/${encodeURIComponent(row.original.fileName.replace(/\.run$/, ''))}`)}
+                onClick={() => toRunDetail(row.original.fileName)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-3 py-2">
