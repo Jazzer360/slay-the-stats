@@ -90,10 +90,16 @@ export function computeCardElo(runs: ParsedRun[]): EloMap {
         const stats = mapPoint.player_stats?.[0];
         if (!stats?.card_choices || stats.card_choices.length === 0) continue;
 
+        // Exclude floor 1 bonus picks (e.g. Leaded Paperweight) from ELO
+        if (currentFloor === 1) continue;
+
+        // Skip shop floors — buying cards is not a competitive choice like card rewards
+        if (mapPoint.rooms?.[0]?.room_type === 'shop') continue;
+
         const isBoss = mapPoint.map_point_type === 'boss';
         const hasPaelsWing = paelsWingFloor >= 0 && currentFloor > paelsWingFloor;
-        const pickedId = processCardChoices(elo, stats.card_choices, actIdx, isBoss, hasPaelsWing);
-        if (pickedId) pickedInRun.add(pickedId);
+        const pickedIds = processCardChoices(elo, stats.card_choices, actIdx, isBoss, hasPaelsWing);
+        for (const id of pickedIds) pickedInRun.add(id);
       }
     }
 
@@ -128,60 +134,89 @@ function getCardId(choice: CardChoice): string {
     : base;
 }
 
+/**
+ * Determine the reward group size from the total number of card choices.
+ * Cards are offered in groups of 3, or groups of 4 when Lasting Candy is active.
+ * Returns 0 if the total doesn't fit either grouping (skip this floor).
+ */
+function getGroupSize(total: number): number {
+  if (total > 0 && total % 4 === 0) return 4;
+  if (total > 0 && total % 3 === 0) return 3;
+  return 0;
+}
+
+/**
+ * Process card choices for a single floor, splitting them into reward groups.
+ * Each group of cards was presented as an independent reward with its own skip.
+ *
+ * Group size is inferred from the total: divisible by 4 → groups of 4 (Lasting
+ * Candy active), otherwise divisible by 3 → groups of 3.
+ */
 function processCardChoices(
   elo: EloMap,
   choices: CardChoice[],
   actIndex: number,
   isBoss: boolean,
-  hasPaelsWing: boolean
-): string | null {
-  const picked = choices.find((c) => c.was_picked);
+  hasPaelsWing: boolean,
+): string[] {
+  const total = choices.length;
+  const groupSize = getGroupSize(total);
+  if (groupSize === 0) return []; // Can't determine grouping, skip floor
+
   const skipId = getSkipId(actIndex, isBoss);
+  const numGroups = total / groupSize;
+  const allPickedIds: string[] = [];
 
-  // Track all presented options (with upgrade suffix)
-  const allIds: string[] = choices.map((c) => getCardId(c));
+  for (let g = 0; g < numGroups; g++) {
+    const groupChoices = choices.slice(g * groupSize, (g + 1) * groupSize);
+    const groupCardIds = groupChoices.map((c) => getCardId(c));
+    const picked = groupChoices.filter((c) => c.was_picked);
+    const pickedIds = picked.map((c) => getCardId(c));
+    const unpickedIds = groupChoices.filter((c) => !c.was_picked).map((c) => getCardId(c));
 
-  // If the player has Pael's Wing and skips, it's a "Sacrifice" instead of a normal skip.
-  // Both Sacrifice and the normal Skip are always implicit options.
-  if (hasPaelsWing) {
-    allIds.push('SACRIFICE');
-    allIds.push(skipId);
-  } else {
-    allIds.push(skipId);
-  }
-
-  // Update timesSeen for all options
-  for (const id of allIds) {
-    const entry = getOrCreateEntry(elo, id);
-    entry.timesSeen++;
-  }
-
-  if (picked) {
-    // A card was picked — it "wins" against every other option
-    const winnerId = getCardId(picked);
-    const winnerEntry = getOrCreateEntry(elo, winnerId);
-    winnerEntry.timesPicked++;
-
-    const losers = allIds.filter((id) => id !== winnerId);
-    for (const loserId of losers) {
-      const loserEntry = getOrCreateEntry(elo, loserId);
-      applyMatch(winnerEntry, loserEntry);
+    // Every group has a skip option (and sacrifice if Pael's Wing is active)
+    const allOptions = [...groupCardIds];
+    if (hasPaelsWing) {
+      allOptions.push('SACRIFICE');
+      allOptions.push(skipId);
+    } else {
+      allOptions.push(skipId);
     }
-    return winnerId;
-  } else {
-    // Skip was chosen
-    // If the player has Pael's Wing, this is a "Sacrifice"
-    const winnerId = hasPaelsWing ? 'SACRIFICE' : skipId;
-    const winnerEntry = getOrCreateEntry(elo, winnerId);
-    winnerEntry.timesPicked++;
 
-    const losers = allIds.filter((id) => id !== winnerId);
-    for (const loserId of losers) {
-      const loserEntry = getOrCreateEntry(elo, loserId);
-      applyMatch(winnerEntry, loserEntry);
+    // Update timesSeen for all options in this group
+    for (const id of allOptions) {
+      getOrCreateEntry(elo, id).timesSeen++;
     }
-    return winnerId;
+
+    if (picked.length > 0) {
+      // Picked card wins against unpicked cards + skip (+ sacrifice)
+      const loserIds = hasPaelsWing
+        ? [...unpickedIds, 'SACRIFICE', skipId]
+        : [...unpickedIds, skipId];
+
+      for (const winnerId of pickedIds) {
+        const winnerEntry = getOrCreateEntry(elo, winnerId);
+        winnerEntry.timesPicked++;
+        for (const loserId of loserIds) {
+          applyMatch(winnerEntry, getOrCreateEntry(elo, loserId));
+        }
+      }
+      allPickedIds.push(...pickedIds);
+    } else {
+      // Skip was chosen for this group
+      const winnerId = hasPaelsWing ? 'SACRIFICE' : skipId;
+      const winnerEntry = getOrCreateEntry(elo, winnerId);
+      winnerEntry.timesPicked++;
+
+      const losers = allOptions.filter((id) => id !== winnerId);
+      for (const loserId of losers) {
+        applyMatch(winnerEntry, getOrCreateEntry(elo, loserId));
+      }
+      allPickedIds.push(winnerId);
+    }
   }
+
+  return allPickedIds;
 }
 
 /**

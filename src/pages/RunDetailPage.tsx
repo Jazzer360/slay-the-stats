@@ -132,6 +132,8 @@ export function RunDetailPage() {
     );
   }
 
+  const bingBongRelic = player.relics.find((r) => r.id === 'RELIC.BING_BONG');
+  const bingBongFloor = bingBongRelic ? bingBongRelic.floor_added_to_deck : -1;
   const totalFloors = d.map_point_history.reduce((sum, act) => sum + act.length, 0);
 
   return (
@@ -370,22 +372,33 @@ export function RunDetailPage() {
           Floor-by-Floor Timeline
         </h3>
         <div className="space-y-1">
-          {d.map_point_history.map((act, actIdx) => (
-            <div key={actIdx}>
-              <div className="bg-purple-900/20 border border-purple-800/30 rounded px-3 py-1.5 mb-1 mt-2">
-                <span className="text-purple-400 text-sm font-medium">
-                  {d.acts[actIdx] ? formatId(d.acts[actIdx]) : `Act ${actIdx + 1}`}
-                </span>
-              </div>
-              {act.map((point, roomIdx) => (
-                <FloorRow
-                  key={roomIdx}
-                  point={point}
-                  floorNum={roomIdx + 1}
-                />
-              ))}
-            </div>
-          ))}
+          {d.map_point_history.reduce<{ elements: React.ReactNode[]; globalFloor: number }>(
+            (acc, act, actIdx) => {
+              acc.elements.push(
+                <div key={actIdx}>
+                  <div className="bg-purple-900/20 border border-purple-800/30 rounded px-3 py-1.5 mb-1 mt-2">
+                    <span className="text-purple-400 text-sm font-medium">
+                      {d.acts[actIdx] ? formatId(d.acts[actIdx]) : `Act ${actIdx + 1}`}
+                    </span>
+                  </div>
+                  {act.map((point, roomIdx) => {
+                    const globalFloor = acc.globalFloor + roomIdx + 1;
+                    return (
+                      <FloorRow
+                        key={roomIdx}
+                        point={point}
+                        floorNum={roomIdx + 1}
+                        hasBingBong={bingBongFloor >= 0 && globalFloor >= bingBongFloor}
+                      />
+                    );
+                  })}
+                </div>
+              );
+              acc.globalFloor += act.length;
+              return acc;
+            },
+            { elements: [], globalFloor: 0 }
+          ).elements}
         </div>
       </div>
     </div>
@@ -457,29 +470,23 @@ function DeckDisplay({ deck }: { deck: DeckCard[] }) {
   );
 }
 
-function FloorRow({ point, floorNum }: { point: MapPoint; floorNum: number }) {
+function FloorRow({ point, floorNum, hasBingBong }: { point: MapPoint; floorNum: number; hasBingBong: boolean }) {
   const room = point.rooms?.[0];
   const stats = point.player_stats?.[0];
 
-  const effectiveType = room?.room_type ?? point.map_point_type;
-
-  const isShop =
-    effectiveType === 'shop' ||
-    (point.map_point_type === 'unknown' &&
-      stats &&
-      (stats.bought_relics?.length || stats.bought_potions?.length || stats.gold_spent > 0));
-
   const modelId = room?.model_id ?? '';
+  const roomType = room?.room_type ?? point.map_point_type;
+  const isShop = roomType === 'shop' || modelId === 'EVENT.FAKE_MERCHANT';
   const isWeak = /_WEAK$/i.test(modelId);
 
-  const floorTitle = isShop
-    ? 'Shop'
-    : effectiveType === 'treasure'
-    ? 'Chest'
-    : effectiveType === 'rest_site'
-    ? 'Rest Site'
-    : modelId
+  const floorTitle = modelId
     ? formatId(modelId.replace(/_(WEAK|NORMAL|ELITE|BOSS)$/i, ''))
+    : roomType === 'shop'
+    ? 'Shop'
+    : roomType === 'treasure'
+    ? 'Chest'
+    : roomType === 'rest_site'
+    ? 'Rest Site'
     : formatId(point.map_point_type);
 
   return (
@@ -508,7 +515,7 @@ function FloorRow({ point, floorNum }: { point: MapPoint; floorNum: number }) {
           </span>
         ) : null}
 
-        {stats && <FloorDetails stats={stats} isShop={!!isShop} />}
+        {stats && <FloorDetails stats={stats} isShop={!!isShop} hasBingBong={hasBingBong} />}
       </div>
 
       {stats && (
@@ -577,7 +584,7 @@ function RoomBadge({ type }: { type: string }) {
   );
 }
 
-function FloorDetails({ stats, isShop }: { stats: PlayerStats; isShop: boolean }) {
+function FloorDetails({ stats, isShop, hasBingBong }: { stats: PlayerStats; isShop: boolean; hasBingBong: boolean }) {
   const items: React.ReactNode[] = [];
 
   // Card choices
@@ -637,7 +644,35 @@ function FloorDetails({ stats, isShop }: { stats: PlayerStats; isShop: boolean }
         extraGained.push(c);
       }
     }
-    if (extraGained.length > 0) {
+    if (isShop && hasBingBong && extraGained.length > 0) {
+      // Split into bought (first of each) and Bing Bong duplicates (extras)
+      const boughtCards: typeof extraGained = [];
+      const dupeCards: typeof extraGained = [];
+      const seenCount = new Map<string, number>();
+      for (const c of extraGained) {
+        const count = seenCount.get(c.id) ?? 0;
+        if (count === 0) {
+          boughtCards.push(c);
+        } else {
+          dupeCards.push(c);
+        }
+        seenCount.set(c.id, count + 1);
+      }
+      if (boughtCards.length > 0) {
+        items.push(
+          <span key="gained-bought" className="text-green-400/70">
+            Bought {boughtCards.map((c) => formatId(c.id) + (c.current_upgrade_level ? '+' : '')).join(', ')}
+          </span>
+        );
+      }
+      if (dupeCards.length > 0) {
+        items.push(
+          <span key="gained-dupe" className="text-green-500/70">
+            Gained {dupeCards.map((c) => formatId(c.id) + (c.current_upgrade_level ? '+' : '')).join(', ')}
+          </span>
+        );
+      }
+    } else if (extraGained.length > 0) {
       items.push(
         <span key="gained" className={isShop ? 'text-green-400/70' : 'text-green-500/70'}>
           {isShop ? 'Bought' : 'Gained'} {extraGained.map((c) => formatId(c.id) + (c.current_upgrade_level ? '+' : '')).join(', ')}
