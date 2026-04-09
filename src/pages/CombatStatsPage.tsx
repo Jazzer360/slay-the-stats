@@ -133,7 +133,7 @@ function ActSection({ group }: { group: ActGroup }) {
           <tr className="border-b border-gray-800 text-gray-500 text-xs tracking-wider">
             <th className="text-right px-3 py-1">Avg</th>
             <th className="text-right px-3 py-1">Med</th>
-            <th className="text-right px-3 py-1">σ</th>
+            <th className="text-right px-3 py-1">IQR</th>
           </tr>
         </thead>
         <tbody>
@@ -148,7 +148,7 @@ function ActSection({ group }: { group: ActGroup }) {
 
 function TierSection({ stats }: { stats: CombatBucketStats }) {
   const [expanded, setExpanded] = useState(false);
-  const { bucket, timesFought, avgDamageTaken, medianDamageTaken, stddevDamageTaken, timesDied, deathRate, encounters } = stats;
+  const { bucket, timesFought, avgDamageTaken, medianDamageTaken, iqrDamageTaken, timesDied, deathRate, encounters } = stats;
   const tierLabel = bucket.tier[0].toUpperCase() + bucket.tier.slice(1);
 
   return (
@@ -173,7 +173,7 @@ function TierSection({ stats }: { stats: CombatBucketStats }) {
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{timesFought}</td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{avgDamageTaken.toFixed(1)}</td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{medianDamageTaken.toFixed(1)}</td>
-        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{stddevDamageTaken.toFixed(1)}</td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{iqrDamageTaken.toFixed(1)}</td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{timesDied}</td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{formatPercent(deathRate)}</td>
       </tr>
@@ -201,7 +201,7 @@ function EncounterRow({ enc }: { enc: EncounterStats }) {
         {enc.medianDamageTaken.toFixed(1)}
       </td>
       <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
-        {enc.stddevDamageTaken.toFixed(1)}
+        {enc.iqrDamageTaken.toFixed(1)}
       </td>
       <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
         {enc.timesDied}

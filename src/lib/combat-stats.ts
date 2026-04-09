@@ -15,7 +15,7 @@ export interface EncounterStats {
   timesDied: number;
   avgDamageTaken: number;
   medianDamageTaken: number;
-  stddevDamageTaken: number;
+  iqrDamageTaken: number;
   deathRate: number;
 }
 
@@ -26,7 +26,7 @@ export interface CombatBucketStats {
   timesDied: number;
   avgDamageTaken: number;
   medianDamageTaken: number;
-  stddevDamageTaken: number;
+  iqrDamageTaken: number;
   deathRate: number;
   encounters: EncounterStats[];
 }
@@ -54,11 +54,19 @@ function median(values: number[]): number {
   return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
-function stddev(values: number[]): number {
+function iqr(values: number[]): number {
   if (values.length < 2) return 0;
-  const mean = values.reduce((s, v) => s + v, 0) / values.length;
-  const variance = values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length;
-  return Math.sqrt(variance);
+  const sorted = [...values].sort((a, b) => a - b);
+  const q1 = percentile(sorted, 25);
+  const q3 = percentile(sorted, 75);
+  return q3 - q1;
+}
+
+function percentile(sorted: number[], p: number): number {
+  const idx = (p / 100) * (sorted.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.ceil(idx);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
 }
 
 function bucketKey(act: number, actName: string, tier: CombatTier): string {
@@ -150,7 +158,7 @@ export function computeCombatStats(runs: ParsedRun[]): CombatBucketStats[] {
       timesDied: deaths,
       avgDamageTaken: fights > 0 ? totalDamage / fights : 0,
       medianDamageTaken: median(damages),
-      stddevDamageTaken: stddev(damages),
+      iqrDamageTaken: iqr(damages),
       deathRate: fights > 0 ? deaths / fights : 0,
       encounters: [...encounterMap.entries()]
         .map(([encounterId, e]) => ({
@@ -160,7 +168,7 @@ export function computeCombatStats(runs: ParsedRun[]): CombatBucketStats[] {
           timesDied: e.deaths,
           avgDamageTaken: e.fights > 0 ? e.totalDamage / e.fights : 0,
           medianDamageTaken: median(e.damages),
-          stddevDamageTaken: stddev(e.damages),
+          iqrDamageTaken: iqr(e.damages),
           deathRate: e.fights > 0 ? e.deaths / e.fights : 0,
         }))
         .sort((a, b) => b.avgDamageTaken - a.avgDamageTaken),
