@@ -11,6 +11,7 @@ import { ImportPage } from './pages/ImportPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SharedRunPage } from './pages/SharedRunPage';
+import { CombatStatsPage } from './pages/CombatStatsPage';
 import { RequireAuth } from './components/auth/RequireAuth';
 import { useCloudLoader } from './hooks/useCloudLoader';
 import { usePageTracking } from './hooks/usePageTracking';
@@ -26,6 +27,7 @@ function AppRoutes() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/card-elo" element={<CardEloPage />} />
         <Route path="/ancient-elo" element={<AncientEloPage />} />
+        <Route path="/combat-stats" element={<CombatStatsPage />} />
         <Route path="/runs" element={<RunListPage />} />
         <Route path="/runs/:fileName" element={<RunDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
@@ -35,6 +37,7 @@ function AppRoutes() {
           <Route index element={<DashboardPage />} />
           <Route path="card-elo" element={<CardEloPage />} />
           <Route path="ancient-elo" element={<AncientEloPage />} />
+          <Route path="combat-stats" element={<CombatStatsPage />} />
           <Route path="runs" element={<RunListPage />} />
           <Route path="runs/:fileName" element={<RunDetailPage />} />
         </Route>

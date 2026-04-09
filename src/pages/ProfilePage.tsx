@@ -144,6 +144,7 @@ export function ProfilePage() {
     { to: base, label: 'Dashboard', end: true },
     { to: `${base}/card-elo`, label: 'Card ELO' },
     { to: `${base}/ancient-elo`, label: 'Ancient ELO' },
+    { to: `${base}/combat-stats`, label: 'Combat Stats' },
     { to: `${base}/runs`, label: 'Run History' },
   ];
 

@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/card-elo', label: 'Card ELO' },
   { to: '/ancient-elo', label: 'Ancient ELO' },
+  { to: '/combat-stats', label: 'Combat Stats' },
   { to: '/runs', label: 'Run List' },
   { to: '/import', label: 'Import' },
   { to: '/about', label: 'About' },
