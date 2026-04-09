@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, NavLink, Outlet } from 'react-router';
-import { getUserByScreenName, listUserRuns } from '../lib/firestore';
-import { downloadRunFileBytes } from '../lib/cloudStorage';
-import { parseRunFile } from '../lib/parser';
+import { getUserByScreenName } from '../lib/firestore';
+import { downloadAllUserRuns } from '../lib/cloudStorage';
 import { useProfileRunsStore } from '../store/profileRuns';
 import type { UserProfile } from '../types/user';
 
@@ -39,30 +38,13 @@ export function ProfilePage() {
           return;
         }
 
-        const metadata = await listUserRuns(foundProfile.uid);
-        if (cancelled) return;
-
-        setLoadProgress({ loaded: 0, total: metadata.length });
-
-        const results = await Promise.allSettled(
-          metadata.map(async ({ fileName }) => {
-            const content = await downloadRunFileBytes(foundProfile.uid, fileName);
-            return parseRunFile(fileName, content);
-          })
-        );
+        const runs = await downloadAllUserRuns(foundProfile.uid, (p) => {
+          if (!cancelled) setLoadProgress(p);
+        });
 
         if (cancelled) return;
 
-        const loaded = [];
-        let count = 0;
-        for (const r of results) {
-          count++;
-          if (r.status === 'fulfilled') loaded.push(r.value);
-          setLoadProgress({ loaded: count, total: metadata.length });
-        }
-
-        loaded.sort((a, b) => (a.data.start_time ?? 0) - (b.data.start_time ?? 0));
-        setProfileRuns(loaded, foundProfile.screenName ?? screenName!);
+        setProfileRuns(runs, foundProfile.screenName ?? screenName!);
         setLoadProgress(null);
         setPageState('loaded');
       } catch (err) {

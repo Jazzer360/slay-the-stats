@@ -4,11 +4,8 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  collection,
-  getDocs,
   runTransaction,
   serverTimestamp,
-  writeBatch,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -88,51 +85,6 @@ export async function getUserByScreenName(screenName: string): Promise<UserProfi
     profileVisibility: data.profileVisibility ?? 'private',
     createdAt: (data.createdAt as Timestamp)?.toMillis() ?? Date.now(),
   };
-}
-
-// ─── Run Metadata ────────────────────────────────────────────────
-
-export interface RunMetadata {
-  fileName: string;
-  uploadedAt: number;
-  fileSize: number;
-}
-
-export async function listUserRuns(uid: string): Promise<RunMetadata[]> {
-  const snap = await getDocs(collection(db, 'users', uid, 'runs'));
-  return snap.docs.map((d) => {
-    const data = d.data();
-    return {
-      fileName: d.id,
-      uploadedAt: (data.uploadedAt as Timestamp)?.toMillis() ?? 0,
-      fileSize: data.fileSize ?? 0,
-    };
-  });
-}
-
-export async function addRunMetadata(uid: string, fileName: string, fileSize: number): Promise<void> {
-  await setDoc(doc(db, 'users', uid, 'runs', fileName), {
-    fileName,
-    uploadedAt: serverTimestamp(),
-    fileSize,
-  });
-}
-
-export async function deleteRunMetadata(uid: string, fileName: string): Promise<void> {
-  await deleteDoc(doc(db, 'users', uid, 'runs', fileName));
-}
-
-export async function deleteAllRunMetadata(uid: string): Promise<void> {
-  const snap = await getDocs(collection(db, 'users', uid, 'runs'));
-  if (snap.empty) return;
-  const batch = writeBatch(db);
-  snap.docs.forEach((d) => batch.delete(d.ref));
-  await batch.commit();
-}
-
-export async function checkRunExists(uid: string, fileName: string): Promise<boolean> {
-  const snap = await getDoc(doc(db, 'users', uid, 'runs', fileName));
-  return snap.exists();
 }
 
 // ─── Shares ──────────────────────────────────────────────────────

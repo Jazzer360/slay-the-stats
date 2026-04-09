@@ -1,5 +1,7 @@
 import { ref, uploadString, getDownloadURL, deleteObject, getBytes, listAll, type UploadMetadata } from 'firebase/storage';
 import { storage } from './firebase';
+import { parseRunFile } from './parser';
+import type { ParsedRun } from '../types/run';
 
 function runRef(uid: string, fileName: string) {
   return ref(storage, `users/${uid}/runs/${fileName}`);
@@ -30,8 +32,60 @@ export async function deleteRunFile(uid: string, fileName: string): Promise<void
   await deleteObject(runRef(uid, fileName));
 }
 
+export async function listUserRunFiles(uid: string): Promise<string[]> {
+  const dirRef = ref(storage, `users/${uid}/runs`);
+  const result = await listAll(dirRef);
+  return result.items.map((item) => item.name);
+}
+
 export async function deleteAllRunFiles(uid: string): Promise<void> {
   const dirRef = ref(storage, `users/${uid}/runs`);
   const result = await listAll(dirRef);
   await Promise.all(result.items.map((item) => deleteObject(item)));
+}
+
+// ─── Concurrent download helper ──────────────────────────────────
+
+export interface DownloadProgress {
+  loaded: number;
+  total: number;
+}
+
+/**
+ * Download and parse all run files for a user concurrently.
+ * Calls `onProgress` after each file completes (success or failure).
+ */
+export async function downloadAllUserRuns(
+  uid: string,
+  onProgress?: (progress: DownloadProgress) => void,
+): Promise<ParsedRun[]> {
+  const fileNames = await listUserRunFiles(uid);
+  if (fileNames.length === 0) return [];
+
+  const total = fileNames.length;
+  let loaded = 0;
+
+  onProgress?.({ loaded: 0, total });
+
+  const results = await Promise.allSettled(
+    fileNames.map(async (fileName) => {
+      const content = await downloadRunFileBytes(uid, fileName);
+      const run = parseRunFile(fileName, content);
+      loaded++;
+      onProgress?.({ loaded, total });
+      return run;
+    }),
+  );
+
+  const runs: ParsedRun[] = [];
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      runs.push(result.value);
+    } else {
+      console.warn('Failed to load run:', result.reason);
+    }
+  }
+
+  runs.sort((a, b) => (a.data.start_time ?? 0) - (b.data.start_time ?? 0));
+  return runs;
 }

@@ -7,13 +7,6 @@ service cloud.firestore {
       allow read: if (request.auth != null && request.auth.uid == uid)
                   || resource.data.profileVisibility == 'public';
       allow write: if request.auth != null && request.auth.uid == uid;
-
-      // Run metadata stored under the user
-      match /runs/{fileName} {
-        allow read: if (request.auth != null && request.auth.uid == uid)
-                    || get(/databases/$(database)/documents/users/$(uid)).data.profileVisibility == 'public';
-        allow write: if request.auth != null && request.auth.uid == uid;
-      }
     }
 
     // Screen name reservation (unique username index)

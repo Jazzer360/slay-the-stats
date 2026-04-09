@@ -6,11 +6,8 @@ import {
   updateUserProfile,
   reserveScreenName,
   isScreenNameAvailable,
-  listUserRuns,
-  deleteRunMetadata,
 } from '../lib/firestore';
-import { deleteRunFile } from '../lib/cloudStorage';
-import type { RunMetadata } from '../lib/firestore';
+import { deleteRunFile, listUserRunFiles } from '../lib/cloudStorage';
 
 type AvailabilityState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
@@ -86,31 +83,30 @@ export function SettingsPage() {
   }
 
   // ─── Runs section ─────────────────────────────────────────────
-  const [runMetadata, setRunMetadata] = useState<RunMetadata[]>([]);
+  const [runFileNames, setRunFileNames] = useState<string[]>([]);
   const [runsLoading, setRunsLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  const loadRunMetadata = useCallback(async () => {
+  const loadRunFileNames = useCallback(async () => {
     if (!user) return;
     try {
-      const list = await listUserRuns(user.uid);
-      list.sort((a, b) => b.uploadedAt - a.uploadedAt);
-      setRunMetadata(list);
+      const list = await listUserRunFiles(user.uid);
+      list.sort((a, b) => a.localeCompare(b));
+      setRunFileNames(list);
     } finally {
       setRunsLoading(false);
     }
   }, [user]);
 
-  useEffect(() => { loadRunMetadata(); }, [loadRunMetadata]);
+  useEffect(() => { loadRunFileNames(); }, [loadRunFileNames]);
 
   async function handleDeleteRun(fileName: string) {
     if (!user) return;
     setDeleting(fileName);
     try {
       await deleteRunFile(user.uid, fileName);
-      await deleteRunMetadata(user.uid, fileName);
-      setRunMetadata((prev) => prev.filter((r) => r.fileName !== fileName));
+      setRunFileNames((prev) => prev.filter((n) => n !== fileName));
       setRuns(runs.filter((r) => r.fileName !== fileName));
     } catch (err) {
       console.error('Failed to delete run:', err);
@@ -202,28 +198,28 @@ export function SettingsPage() {
       <section className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Uploaded Runs</h3>
-          <span className="text-xs text-gray-500">{runMetadata.length} total</span>
+          <span className="text-xs text-gray-500">{runFileNames.length} total</span>
         </div>
 
         {runsLoading && (
           <p className="text-sm text-gray-500">Loading…</p>
         )}
 
-        {!runsLoading && runMetadata.length === 0 && (
+        {!runsLoading && runFileNames.length === 0 && (
           <p className="text-sm text-gray-500">No runs uploaded yet.</p>
         )}
 
-        {!runsLoading && runMetadata.length > 0 && (
+        {!runsLoading && runFileNames.length > 0 && (
           <div className="divide-y divide-gray-800 max-h-96 overflow-y-auto rounded-lg border border-gray-800">
-            {runMetadata.map((r) => (
-              <div key={r.fileName} className="flex items-center justify-between px-4 py-2.5 gap-3">
-                <span className="text-xs text-gray-400 font-mono truncate">{r.fileName}</span>
+            {runFileNames.map((fileName) => (
+              <div key={fileName} className="flex items-center justify-between px-4 py-2.5 gap-3">
+                <span className="text-xs text-gray-400 font-mono truncate">{fileName}</span>
                 <button
-                  onClick={() => setDeleteConfirm(r.fileName)}
-                  disabled={deleting === r.fileName}
+                  onClick={() => setDeleteConfirm(fileName)}
+                  disabled={deleting === fileName}
                   className="text-xs text-red-500 hover:text-red-400 disabled:opacity-50 whitespace-nowrap transition-colors"
                 >
-                  {deleting === r.fileName ? 'Deleting…' : 'Delete'}
+                  {deleting === fileName ? 'Deleting…' : 'Delete'}
                 </button>
               </div>
             ))}

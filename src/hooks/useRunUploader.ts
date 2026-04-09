@@ -1,7 +1,6 @@
 import { useRunsStore } from '../store/runs';
 import { useAuthStore } from '../store/auth';
-import { checkRunExists, addRunMetadata, deleteAllRunMetadata } from '../lib/firestore';
-import { uploadRunFile, deleteAllRunFiles } from '../lib/cloudStorage';
+import { uploadRunFile, deleteAllRunFiles, listUserRunFiles } from '../lib/cloudStorage';
 import { parseRunFile } from '../lib/parser';
 import type { ParsedRun } from '../types/run';
 
@@ -34,13 +33,15 @@ export function useRunUploader() {
     setLoadProgress({ loaded: 0, total: options?.wipeFirst ? 0 : total });
 
     if (options?.wipeFirst) {
-      await Promise.all([
-        deleteAllRunFiles(user!.uid),
-        deleteAllRunMetadata(user!.uid),
-      ]);
+      await deleteAllRunFiles(user!.uid);
       setRuns([]);
       setLoadProgress({ loaded: 0, total });
     }
+
+    // Get existing file names to skip duplicates
+    const existingNames = options?.wipeFirst
+      ? new Set<string>()
+      : new Set(await listUserRunFiles(user!.uid));
 
     const status: UploadStatus = { uploaded: 0, skipped: 0, failed: 0, total };
     const newRuns: ParsedRun[] = [];
@@ -55,13 +56,11 @@ export function useRunUploader() {
         if (!file) return;
 
         try {
-          const exists = await checkRunExists(user!.uid, file.name);
-          if (exists) {
+          if (existingNames.has(file.name)) {
             status.skipped++;
           } else {
             const content = await file.text();
             await uploadRunFile(user!.uid, file.name, content);
-            await addRunMetadata(user!.uid, file.name, file.size);
             newRuns.push(parseRunFile(file.name, content));
             status.uploaded++;
           }
