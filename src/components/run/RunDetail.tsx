@@ -20,7 +20,7 @@ interface ConsolidatedCard {
   count: number;
 }
 
-const RARITY_ORDER = ['Ancient', 'Rare', 'Uncommon', 'Common', 'Basic', 'Curse'];
+const RARITY_ORDER = ['Ancient', 'Rare', 'Uncommon', 'Common', 'Basic', 'Curse', 'Deprecated'];
 
 function rarityRank(rarity: string | undefined): number {
   const idx = RARITY_ORDER.indexOf(rarity ?? '');
@@ -354,6 +354,7 @@ const RARITY_COLORS: Record<string, string> = {
   Common: 'text-gray-100',
   Basic: 'text-gray-400',
   Curse: 'text-purple-400',
+  Deprecated: 'text-gray-600',
 };
 
 const RARITY_LABEL_COLORS: Record<string, string> = {
@@ -363,6 +364,7 @@ const RARITY_LABEL_COLORS: Record<string, string> = {
   Common: 'text-gray-400',
   Basic: 'text-gray-500',
   Curse: 'text-purple-500',
+  Deprecated: 'text-gray-600',
 };
 
 function DeckDisplay({ deck }: { deck: DeckCard[] }) {
