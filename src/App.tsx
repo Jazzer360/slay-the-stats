@@ -13,6 +13,8 @@ import { ProfilePage } from './pages/ProfilePage';
 import { SharedRunPage } from './pages/SharedRunPage';
 import { CombatStatsPage } from './pages/CombatStatsPage';
 import { RequireAuth } from './components/auth/RequireAuth';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { useCloudLoader } from './hooks/useCloudLoader';
 import { usePageTracking } from './hooks/usePageTracking';
 
@@ -42,6 +44,7 @@ function AppRoutes() {
           <Route path="runs/:fileName" element={<RunDetailPage />} />
         </Route>
         <Route path="/share/:token" element={<SharedRunPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
@@ -49,9 +52,11 @@ function AppRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

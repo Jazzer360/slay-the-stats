@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { signInWithEmail, signUpWithEmail, signInWithGoogle } from '../../lib/auth';
+import { signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword } from '../../lib/auth';
 
 interface AuthModalProps {
   onClose: () => void;
 }
 
-type Tab = 'signin' | 'signup';
+type Tab = 'signin' | 'signup' | 'reset';
 
 export function AuthModal({ onClose }: AuthModalProps) {
   const [tab, setTab] = useState<Tab>('signin');
@@ -13,18 +13,23 @@ export function AuthModal({ onClose }: AuthModalProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      if (tab === 'signin') {
+      if (tab === 'reset') {
+        await resetPassword(email);
+        setResetSent(true);
+      } else if (tab === 'signin') {
         await signInWithEmail(email, password);
+        onClose();
       } else {
         await signUpWithEmail(email, password);
+        onClose();
       }
-      onClose();
     } catch (err) {
       setError(err instanceof Error ? formatAuthError(err.message) : 'An error occurred');
     } finally {
@@ -52,70 +57,131 @@ export function AuthModal({ onClose }: AuthModalProps) {
     >
       <div className="bg-gray-900 border border-gray-800 rounded-xl w-full max-w-sm mx-4 p-6">
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-gray-800 rounded-lg p-1">
-          {(['signin', 'signup'] as Tab[]).map((t) => (
+        {tab !== 'reset' ? (
+          <div className="flex gap-1 mb-6 bg-gray-800 rounded-lg p-1">
+            {(['signin', 'signup'] as Tab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => { setTab(t); setError(null); }}
+                className={`flex-1 py-1.5 rounded text-sm font-medium transition-colors ${
+                  tab === t
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {t === 'signin' ? 'Sign In' : 'Sign Up'}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <h2 className="text-lg font-semibold text-gray-100 mb-4">Reset Password</h2>
+        )}
+
+        {tab === 'reset' ? (
+          resetSent ? (
+            <div className="flex flex-col gap-4">
+              <p className="text-sm text-green-400">A password reset link has been sent to <strong>{email}</strong>. Check your inbox.</p>
+              <button
+                onClick={() => { setTab('signin'); setResetSent(false); setError(null); }}
+                className="bg-purple-600 hover:bg-purple-500 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+              >
+                Back to Sign In
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
+              <p className="text-sm text-gray-400">Enter your email and we'll send you a link to reset your password.</p>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2.5 text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500"
+              />
+
+              {error && (
+                <p className="text-sm text-red-400">{error}</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+              >
+                {loading ? 'Please wait…' : 'Send Reset Link'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setTab('signin'); setError(null); }}
+                className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
+              >
+                Back to Sign In
+              </button>
+            </form>
+          )
+        ) : (
+          <>
+            {/* Google button */}
             <button
-              key={t}
-              onClick={() => { setTab(t); setError(null); }}
-              className={`flex-1 py-1.5 rounded text-sm font-medium transition-colors ${
-                tab === t
-                  ? 'bg-purple-600 text-white'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
+              onClick={handleGoogle}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-white text-gray-900 font-medium py-2.5 px-4 rounded-lg hover:bg-gray-100 disabled:opacity-50 transition-colors mb-4"
             >
-              {t === 'signin' ? 'Sign In' : 'Sign Up'}
+              <GoogleIcon />
+              Continue with Google
             </button>
-          ))}
-        </div>
 
-        {/* Google button */}
-        <button
-          onClick={handleGoogle}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-white text-gray-900 font-medium py-2.5 px-4 rounded-lg hover:bg-gray-100 disabled:opacity-50 transition-colors mb-4"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </button>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-gray-800" />
+              <span className="text-xs text-gray-600">or</span>
+              <div className="flex-1 h-px bg-gray-800" />
+            </div>
 
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px bg-gray-800" />
-          <span className="text-xs text-gray-600">or</span>
-          <div className="flex-1 h-px bg-gray-800" />
-        </div>
+            {/* Email form */}
+            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2.5 text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2.5 text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500"
+              />
 
-        {/* Email form */}
-        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2.5 text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2.5 text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500"
-          />
+              {error && (
+                <p className="text-sm text-red-400">{error}</p>
+              )}
 
-          {error && (
-            <p className="text-sm text-red-400">{error}</p>
-          )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+              >
+                {loading ? 'Please wait…' : tab === 'signin' ? 'Sign In' : 'Create Account'}
+              </button>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
-          >
-            {loading ? 'Please wait…' : tab === 'signin' ? 'Sign In' : 'Create Account'}
-          </button>
-        </form>
+              {tab === 'signin' && (
+                <button
+                  type="button"
+                  onClick={() => { setTab('reset'); setError(null); }}
+                  className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
+                >
+                  Forgot password?
+                </button>
+              )}
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

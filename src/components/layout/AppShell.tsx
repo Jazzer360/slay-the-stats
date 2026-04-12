@@ -25,6 +25,7 @@ export function AppShell() {
   const { user, userProfile, authLoading } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const displayName =
     userProfile?.screenName ??
@@ -41,7 +42,8 @@ export function AppShell() {
             <h1 className="text-xl font-bold text-purple-400 whitespace-nowrap">
               ⚔ Slay the Stats
             </h1>
-            <nav className="flex gap-1">
+            {/* Desktop nav */}
+            <nav className="hidden lg:flex gap-1">
               {NAV_ITEMS.map((item) => (
                 <NavLink
                   key={item.to}
@@ -63,7 +65,7 @@ export function AppShell() {
 
           <div className="flex items-center gap-3">
             {runCount > 0 && !isProfileView && (
-              <span className="text-xs text-gray-500">{runCount} runs loaded</span>
+              <span className="hidden sm:inline text-xs text-gray-500">{runCount} runs loaded</span>
             )}
 
             {/* Auth area */}
@@ -77,7 +79,7 @@ export function AppShell() {
                     <span className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white">
                       {displayName[0].toUpperCase()}
                     </span>
-                    <span className="max-w-30 truncate">{displayName}</span>
+                    <span className="hidden sm:inline max-w-30 truncate">{displayName}</span>
                     <svg className="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -123,8 +125,48 @@ export function AppShell() {
                 </button>
               )
             )}
+
+            {/* Mobile hamburger button */}
+            <button
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="lg:hidden p-1.5 rounded text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Mobile nav menu */}
+        {mobileMenuOpen && (
+          <nav className="lg:hidden mt-3 pt-3 border-t border-gray-800 flex flex-col gap-1">
+            {NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                onClick={() => setMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-purple-600/20 text-purple-300'
+                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        )}
       </header>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
