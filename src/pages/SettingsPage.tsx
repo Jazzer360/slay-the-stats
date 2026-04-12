@@ -7,7 +7,9 @@ import {
   reserveScreenName,
   isScreenNameAvailable,
 } from '../lib/firestore';
-import { deleteRunFile, listUserRunFiles } from '../lib/cloudStorage';
+import { deleteRunFile, listUserRunFiles, deleteAllRunFiles } from '../lib/cloudStorage';
+import type { DefaultProfileFilters } from '../types/user';
+import { EMPTY_DEFAULT_FILTERS } from '../types/user';
 
 type AvailabilityState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
@@ -26,6 +28,17 @@ export function SettingsPage() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaveError, setProfileSaveError] = useState<string | null>(null);
   const [profileSaved, setProfileSaved] = useState(false);
+
+  // ─── Default filter settings ──────────────────────────────────
+  const [defaultFilters, setDefaultFilters] = useState<DefaultProfileFilters>(
+    userProfile?.defaultFilters ?? { ...EMPTY_DEFAULT_FILTERS }
+  );
+
+  useEffect(() => {
+    if (userProfile?.defaultFilters) {
+      setDefaultFilters(userProfile.defaultFilters);
+    }
+  }, [userProfile?.defaultFilters]);
 
   // Debounce screen name uniqueness check
   useEffect(() => {
@@ -68,11 +81,18 @@ export function SettingsPage() {
         }
       }
 
+      const updates: Record<string, unknown> = {};
       if (visibility !== userProfile.profileVisibility) {
-        await updateUserProfile(user.uid, { profileVisibility: visibility });
+        updates.profileVisibility = visibility;
+      }
+      if (JSON.stringify(defaultFilters) !== JSON.stringify(userProfile.defaultFilters)) {
+        updates.defaultFilters = defaultFilters;
+      }
+      if (Object.keys(updates).length > 0) {
+        await updateUserProfile(user.uid, updates as Parameters<typeof updateUserProfile>[1]);
       }
 
-      setUserProfile({ ...userProfile, screenName: trimmed || null, profileVisibility: visibility });
+      setUserProfile({ ...userProfile, screenName: trimmed || null, profileVisibility: visibility, defaultFilters });
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 3000);
     } catch (err) {
@@ -87,6 +107,8 @@ export function SettingsPage() {
   const [runsLoading, setRunsLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
 
   const loadRunFileNames = useCallback(async () => {
     if (!user) return;
@@ -116,6 +138,21 @@ export function SettingsPage() {
     }
   }
 
+  async function handleDeleteAllRuns() {
+    if (!user) return;
+    setDeletingAll(true);
+    try {
+      await deleteAllRunFiles(user.uid);
+      setRunFileNames([]);
+      setRuns([]);
+    } catch (err) {
+      console.error('Failed to delete all runs:', err);
+    } finally {
+      setDeletingAll(false);
+      setDeleteAllConfirm(false);
+    }
+  }
+
   const profileLink = userProfile?.screenName
     ? `${window.location.origin}/u/${userProfile.screenName}`
     : null;
@@ -131,6 +168,7 @@ export function SettingsPage() {
         {/* Screen name */}
         <div>
           <label className="block text-xs text-gray-400 mb-1.5">Screen Name</label>
+          <p className="text-xs text-gray-500 mb-2">A screen name is required to make your profile public.</p>
           <div className="relative">
             <input
               type="text"
@@ -160,19 +198,25 @@ export function SettingsPage() {
         <div>
           <label className="block text-xs text-gray-400 mb-1.5">Profile Visibility</label>
           <div className="flex gap-2">
-            {(['private', 'public'] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => setVisibility(v)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
-                  visibility === v
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
-                }`}
-              >
-                {v}
-              </button>
-            ))}
+            {(['private', 'public'] as const).map((v) => {
+              const needsScreenName = v === 'public' && !screenName.trim();
+              return (
+                <button
+                  key={v}
+                  onClick={() => !needsScreenName && setVisibility(v)}
+                  disabled={needsScreenName}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
+                    visibility === v
+                      ? 'bg-purple-600 text-white'
+                      : needsScreenName
+                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                        : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  {v}
+                </button>
+              );
+            })}
           </div>
           <p className="mt-1.5 text-xs text-gray-600">
             {visibility === 'public'
@@ -192,6 +236,102 @@ export function SettingsPage() {
         >
           {profileSaving ? 'Saving…' : profileSaved ? '✓ Saved' : 'Save Profile'}
         </button>
+      </section>
+
+      {/* ── Default Profile Filters ───────────────────────────── */}
+      <section className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Default Profile Filters</h3>
+          <p className="text-xs text-gray-500 mt-1.5">
+            When visitors view your public profile, these filters will be applied by default. They can still change the filters themselves.
+          </p>
+        </div>
+
+        {/* Character */}
+        <div>
+          <label className="block text-xs text-gray-400 mb-1.5">Character</label>
+          <select
+            value={defaultFilters.character ?? ''}
+            onChange={(e) => setDefaultFilters({ ...defaultFilters, character: e.target.value || null })}
+            className="bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 px-3 py-2"
+          >
+            <option value="">All</option>
+            <option value="IRONCLAD">Ironclad</option>
+            <option value="THE_SILENT">Silent</option>
+            <option value="DEFECT">Defect</option>
+            <option value="WATCHER">Watcher</option>
+          </select>
+        </div>
+
+        {/* Ascension range */}
+        <div>
+          <label className="block text-xs text-gray-400 mb-1.5">Ascension Range</label>
+          <div className="flex items-center gap-2">
+            <select
+              value={defaultFilters.ascensionMin ?? ''}
+              onChange={(e) => setDefaultFilters({ ...defaultFilters, ascensionMin: e.target.value ? Number(e.target.value) : null })}
+              className="bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 px-3 py-2"
+            >
+              <option value="">Min</option>
+              {Array.from({ length: 21 }, (_, i) => (
+                <option key={i} value={i}>{i}</option>
+              ))}
+            </select>
+            <span className="text-gray-600">–</span>
+            <select
+              value={defaultFilters.ascensionMax ?? ''}
+              onChange={(e) => setDefaultFilters({ ...defaultFilters, ascensionMax: e.target.value ? Number(e.target.value) : null })}
+              className="bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 px-3 py-2"
+            >
+              <option value="">Max</option>
+              {Array.from({ length: 21 }, (_, i) => (
+                <option key={i} value={i}>{i}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Result */}
+        <div>
+          <label className="block text-xs text-gray-400 mb-1.5">Result</label>
+          <div className="flex gap-2">
+            {(['all', 'win', 'loss'] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => setDefaultFilters({ ...defaultFilters, result: r })}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  defaultFilters.result === r
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {r === 'all' ? 'All' : r === 'win' ? 'Wins' : 'Losses'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Player mode */}
+        <div>
+          <label className="block text-xs text-gray-400 mb-1.5">Player Mode</label>
+          <div className="flex gap-2">
+            {(['all', 'solo', 'multi'] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setDefaultFilters({ ...defaultFilters, playerMode: m })}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  defaultFilters.playerMode === m
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {m === 'all' ? 'All' : m === 'solo' ? 'Solo' : 'Multiplayer'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-600">These defaults are saved with your profile settings above.</p>
       </section>
 
       {/* ── Uploaded Runs ─────────────────────────────────────── */}
@@ -224,6 +364,16 @@ export function SettingsPage() {
               </div>
             ))}
           </div>
+        )}
+
+        {!runsLoading && runFileNames.length > 0 && (
+          <button
+            onClick={() => setDeleteAllConfirm(true)}
+            disabled={deletingAll}
+            className="text-sm text-red-500 hover:text-red-400 disabled:opacity-50 transition-colors"
+          >
+            {deletingAll ? 'Deleting all…' : 'Delete All History'}
+          </button>
         )}
       </section>
 
@@ -258,6 +408,32 @@ export function SettingsPage() {
                 className="flex-1 bg-red-700 hover:bg-red-600 text-white py-2 rounded-lg text-sm transition-colors"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete All Confirmation Modal ──────────────────────── */}
+      {deleteAllConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-sm mx-4">
+            <h4 className="text-gray-100 font-medium mb-2">Delete All Run History?</h4>
+            <p className="text-sm text-gray-400 mb-1">This will permanently delete all <strong>{runFileNames.length}</strong> runs from your cloud storage.</p>
+            <p className="text-xs text-red-400 mb-5">This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteAllConfirm(false)}
+                className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded-lg text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAllRuns}
+                disabled={deletingAll}
+                className="flex-1 bg-red-700 hover:bg-red-600 disabled:bg-red-900 text-white py-2 rounded-lg text-sm transition-colors"
+              >
+                {deletingAll ? 'Deleting…' : 'Delete All'}
               </button>
             </div>
           </div>

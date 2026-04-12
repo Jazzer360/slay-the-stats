@@ -12,7 +12,7 @@ export function useFileLoader() {
   const { setRuns, setLoading, setLoadProgress, setError } = useRunsStore();
 
   const loadFromFileInput = useCallback(
-    async (fileList: FileList) => {
+    async (fileList: FileList | File[]) => {
       setLoading(true);
       setError(null);
 

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { FilterState } from '../lib/filters';
 import { DEFAULT_FILTERS } from '../lib/filters';
+import type { DefaultProfileFilters } from '../types/user';
 
 interface FilterStore extends FilterState {
   setProfile: (profile: string | null) => void;
@@ -11,6 +12,7 @@ interface FilterStore extends FilterState {
   setDateRange: (from: number | null, to: number | null) => void;
   setBuildIds: (buildIds: string[]) => void;
   resetFilters: () => void;
+  applyDefaults: (defaults: DefaultProfileFilters) => void;
 }
 
 export const useFilterStore = create<FilterStore>((set) => ({
@@ -24,4 +26,12 @@ export const useFilterStore = create<FilterStore>((set) => ({
   setDateRange: (dateFrom, dateTo) => set({ dateFrom, dateTo }),
   setBuildIds: (buildIds) => set({ buildIds }),
   resetFilters: () => set(DEFAULT_FILTERS),
+  applyDefaults: (defaults) => set({
+    ...DEFAULT_FILTERS,
+    character: defaults.character,
+    playerMode: defaults.playerMode,
+    ascensionMin: defaults.ascensionMin,
+    ascensionMax: defaults.ascensionMax,
+    result: defaults.result,
+  }),
 }));

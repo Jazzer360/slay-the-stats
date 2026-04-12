@@ -3,6 +3,7 @@ import { useParams, NavLink, Outlet } from 'react-router';
 import { getUserByScreenName } from '../lib/firestore';
 import { downloadAllUserRuns } from '../lib/cloudStorage';
 import { useProfileRunsStore } from '../store/profileRuns';
+import { useFilterStore } from '../store/filters';
 import type { UserProfile } from '../types/user';
 
 type PageState = 'loading' | 'not-found' | 'private' | 'loaded' | 'error';
@@ -14,6 +15,7 @@ export function ProfilePage() {
   const [loadProgress, setLoadProgress] = useState<{ loaded: number; total: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const { setProfileRuns, clearProfileRuns } = useProfileRunsStore();
+  const { applyDefaults, resetFilters } = useFilterStore();
 
   useEffect(() => {
     if (!screenName) return;
@@ -38,6 +40,9 @@ export function ProfilePage() {
           return;
         }
 
+        // Apply the profile owner's default filters
+        applyDefaults(foundProfile.defaultFilters);
+
         const runs = await downloadAllUserRuns(foundProfile.uid, (p) => {
           if (!cancelled) setLoadProgress(p);
         });
@@ -59,8 +64,9 @@ export function ProfilePage() {
     return () => {
       cancelled = true;
       clearProfileRuns();
+      resetFilters();
     };
-  }, [screenName, setProfileRuns, clearProfileRuns]);
+  }, [screenName, setProfileRuns, clearProfileRuns, applyDefaults, resetFilters]);
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {

@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { useRunsStore } from '../../store/runs';
 import { useAuthStore } from '../../store/auth';
 import { useRunUploader, type UploadStatus } from '../../hooks/useRunUploader';
+import { detectProfiles, filterFilesByProfile } from '../../lib/profile-detect';
+import { ProfileChooser } from './ProfileChooser';
 
 export function UploadMoreButton() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -10,14 +12,33 @@ export function UploadMoreButton() {
   const { uploadFiles } = useRunUploader();
   const [status, setStatus] = useState<UploadStatus | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+  const [detectedProfiles, setDetectedProfiles] = useState<string[]>([]);
 
   if (!user) return null;
 
-  async function handleFiles(fileList: FileList) {
-    const files = Array.from(fileList).filter((f) => f.name.endsWith('.run'));
-    if (files.length === 0) return;
-    setStatus({ uploaded: 0, skipped: 0, failed: 0, total: files.length });
-    await uploadFiles(fileList, setStatus);
+  function handleFolderSelected(fileList: FileList) {
+    const { profiles, rootIsProfile } = detectProfiles(fileList);
+
+    if (profiles.length > 1 && !rootIsProfile) {
+      setPendingFiles(Array.from(fileList));
+      setDetectedProfiles(profiles);
+      return;
+    }
+
+    processFiles(Array.from(fileList), null);
+  }
+
+  async function processFiles(files: File[], selectedProfile: string | null) {
+    setPendingFiles(null);
+    setDetectedProfiles([]);
+
+    const filtered = filterFilesByProfile(files, selectedProfile);
+    const runFiles = filtered.filter((f) => f.name.endsWith('.run'));
+    if (runFiles.length === 0) return;
+
+    setStatus({ uploaded: 0, skipped: 0, failed: 0, total: runFiles.length });
+    await uploadFiles(filtered, setStatus);
   }
 
   return (
@@ -48,7 +69,7 @@ export function UploadMoreButton() {
             webkitdirectory="true"
             multiple
             onChange={(e) => {
-              if (e.target.files) handleFiles(e.target.files);
+              if (e.target.files) handleFolderSelected(e.target.files);
               e.target.value = '';
             }}
             className="hidden"
@@ -85,6 +106,15 @@ export function UploadMoreButton() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Profile chooser modal */}
+      {pendingFiles && detectedProfiles.length > 1 && (
+        <ProfileChooser
+          profiles={detectedProfiles}
+          onSelect={(profile) => processFiles(pendingFiles, profile)}
+          onCancel={() => { setPendingFiles(null); setDetectedProfiles([]); }}
+        />
       )}
     </div>
   );

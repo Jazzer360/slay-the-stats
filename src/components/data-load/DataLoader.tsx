@@ -3,6 +3,8 @@ import { useFileLoader } from '../../hooks/useFileLoader';
 import { useRunsStore } from '../../store/runs';
 import { useAuthStore } from '../../store/auth';
 import { useRunUploader, type UploadStatus } from '../../hooks/useRunUploader';
+import { detectProfiles, filterFilesByProfile } from '../../lib/profile-detect';
+import { ProfileChooser } from './ProfileChooser';
 
 export function DataLoader() {
   const { loadFromFileInput, expectedPath } = useFileLoader();
@@ -12,16 +14,38 @@ export function DataLoader() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+  const [detectedProfiles, setDetectedProfiles] = useState<string[]>([]);
 
-  async function handleCloudUpload(fileList: FileList) {
-    const files = Array.from(fileList).filter((f) => f.name.endsWith('.run'));
-    if (files.length === 0) {
-      setUploadError('No .run files found in the selected folder.');
+  function handleFolderSelected(fileList: FileList) {
+    const { profiles, rootIsProfile } = detectProfiles(fileList);
+
+    if (profiles.length > 1 && !rootIsProfile) {
+      setPendingFiles(Array.from(fileList));
+      setDetectedProfiles(profiles);
       return;
     }
-    setUploadError(null);
-    setUploadStatus({ uploaded: 0, skipped: 0, failed: 0, total: files.length });
-    await uploadFiles(fileList, setUploadStatus);
+
+    processFiles(Array.from(fileList), null);
+  }
+
+  async function processFiles(files: File[], selectedProfile: string | null) {
+    setPendingFiles(null);
+    setDetectedProfiles([]);
+
+    const filtered = filterFilesByProfile(files, selectedProfile);
+
+    if (isCloudMode) {
+      if (filtered.filter((f) => f.name.endsWith('.run')).length === 0) {
+        setUploadError('No .run files found in the selected folder.');
+        return;
+      }
+      setUploadError(null);
+      setUploadStatus({ uploaded: 0, skipped: 0, failed: 0, total: filtered.length });
+      await uploadFiles(filtered, setUploadStatus);
+    } else {
+      await loadFromFileInput(filtered);
+    }
   }
 
   const isCloudMode = !!user;
@@ -67,11 +91,7 @@ export function DataLoader() {
             multiple
             onChange={(e) => {
               if (!e.target.files) return;
-              if (isCloudMode) {
-                handleCloudUpload(e.target.files);
-              } else {
-                loadFromFileInput(e.target.files);
-              }
+              handleFolderSelected(e.target.files);
               // Reset input so the same folder can be re-selected
               e.target.value = '';
             }}
@@ -135,6 +155,15 @@ export function DataLoader() {
         <p className="text-xs text-gray-600 max-w-md text-center">
           All processing happens locally in your browser. Sign in to store and sync runs to the cloud.
         </p>
+      )}
+
+      {/* Profile chooser modal */}
+      {pendingFiles && detectedProfiles.length > 1 && (
+        <ProfileChooser
+          profiles={detectedProfiles}
+          onSelect={(profile) => processFiles(pendingFiles, profile)}
+          onCancel={() => { setPendingFiles(null); setDetectedProfiles([]); }}
+        />
       )}
     </div>
   );

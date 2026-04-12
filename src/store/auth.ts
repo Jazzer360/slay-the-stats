@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { getUserProfile, createUserProfile } from '../lib/firestore';
 import type { UserProfile } from '../types/user';
+import { EMPTY_DEFAULT_FILTERS } from '../types/user';
 
 interface AuthState {
   user: User | null;
@@ -23,6 +24,7 @@ export const useAuthStore = create<AuthState>((set) => {
         await createUserProfile(user.uid, {
           screenName: null,
           profileVisibility: 'private',
+          defaultFilters: { ...EMPTY_DEFAULT_FILTERS },
           createdAt: Date.now(),
         });
         profile = await getUserProfile(user.uid);

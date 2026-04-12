@@ -4,6 +4,8 @@ import { useRunsStore } from '../store/runs';
 import { useAuthStore } from '../store/auth';
 import { useRunUploader, type UploadStatus } from '../hooks/useRunUploader';
 import { useFileLoader } from '../hooks/useFileLoader';
+import { detectProfiles, filterFilesByProfile } from '../lib/profile-detect';
+import { ProfileChooser } from '../components/data-load/ProfileChooser';
 
 export function ImportPage() {
   const user = useAuthStore((s) => s.user);
@@ -15,17 +17,34 @@ export function ImportPage() {
   const [wipeFirst, setWipeFirst] = useState(false);
   const [status, setStatus] = useState<UploadStatus | null>(null);
   const [localLoaded, setLocalLoaded] = useState<number | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+  const [detectedProfiles, setDetectedProfiles] = useState<string[]>([]);
 
-  async function handleFiles(fileList: FileList) {
-    const files = Array.from(fileList).filter((f) => f.name.endsWith('.run'));
-    if (files.length === 0) return;
+  function handleFolderSelected(fileList: FileList) {
+    const { profiles, rootIsProfile } = detectProfiles(fileList);
+
+    if (profiles.length > 1 && !rootIsProfile) {
+      setPendingFiles(Array.from(fileList));
+      setDetectedProfiles(profiles);
+      return;
+    }
+
+    processFiles(Array.from(fileList), null);
+  }
+
+  async function processFiles(files: File[], selectedProfile: string | null) {
+    setPendingFiles(null);
+    setDetectedProfiles([]);
+
+    const filtered = filterFilesByProfile(files, selectedProfile);
+    if (filtered.length === 0) return;
 
     if (user) {
       setStatus(null);
-      await uploadFiles(fileList, setStatus, wipeFirst ? { wipeFirst: true } : undefined);
+      await uploadFiles(filtered, setStatus, wipeFirst ? { wipeFirst: true } : undefined);
     } else {
       const before = useRunsStore.getState().runs.length;
-      await loadFromFileInput(fileList);
+      await loadFromFileInput(filtered);
       const after = useRunsStore.getState().runs.length;
       setLocalLoaded(after - before);
     }
@@ -102,7 +121,7 @@ export function ImportPage() {
           webkitdirectory="true"
           multiple
           onChange={(e) => {
-            if (e.target.files) handleFiles(e.target.files);
+            if (e.target.files) handleFolderSelected(e.target.files);
             e.target.value = '';
           }}
           className="hidden"
@@ -206,9 +225,9 @@ export function ImportPage() {
           </ul>
           {user && (
             <p className="text-gray-500 border-t border-gray-800 pt-3 mt-1">
-              <span className="font-medium text-gray-400">Tip:</span> Slay the Stats currently
-              doesn't filter by profile, but you can achieve the same result with "Replace all runs"
-              — wipe your account and re-upload only the profile folder you want to analyze.
+              <span className="font-medium text-gray-400">Tip:</span> If you select the root
+              SlayTheSpire2 folder and multiple profiles are found, you'll be prompted to choose
+              which profile to import.
             </p>
           )}
         </div>
@@ -232,6 +251,15 @@ export function ImportPage() {
             </p>
           </div>
         </div>
+      )}
+
+      {/* Profile chooser modal */}
+      {pendingFiles && detectedProfiles.length > 1 && (
+        <ProfileChooser
+          profiles={detectedProfiles}
+          onSelect={(profile) => processFiles(pendingFiles, profile)}
+          onCancel={() => { setPendingFiles(null); setDetectedProfiles([]); }}
+        />
       )}
     </div>
   );

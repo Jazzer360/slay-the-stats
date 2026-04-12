@@ -9,9 +9,22 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { UserProfile } from '../types/user';
+import type { UserProfile, DefaultProfileFilters } from '../types/user';
+import { EMPTY_DEFAULT_FILTERS } from '../types/user';
 
 // ─── User Profile ────────────────────────────────────────────────
+
+function parseDefaultFilters(raw: unknown): DefaultProfileFilters {
+  if (!raw || typeof raw !== 'object') return { ...EMPTY_DEFAULT_FILTERS };
+  const r = raw as Record<string, unknown>;
+  return {
+    character: typeof r.character === 'string' ? r.character : null,
+    playerMode: r.playerMode === 'solo' || r.playerMode === 'multi' ? r.playerMode : 'all',
+    ascensionMin: typeof r.ascensionMin === 'number' ? r.ascensionMin : null,
+    ascensionMax: typeof r.ascensionMax === 'number' ? r.ascensionMax : null,
+    result: r.result === 'win' || r.result === 'loss' ? r.result : 'all',
+  };
+}
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const snap = await getDoc(doc(db, 'users', uid));
@@ -21,6 +34,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
     uid,
     screenName: d.screenName ?? null,
     profileVisibility: d.profileVisibility ?? 'private',
+    defaultFilters: parseDefaultFilters(d.defaultFilters),
     createdAt: (d.createdAt as Timestamp)?.toMillis() ?? Date.now(),
   };
 }
@@ -33,7 +47,7 @@ export async function createUserProfile(uid: string, data: Omit<UserProfile, 'ui
   });
 }
 
-export async function updateUserProfile(uid: string, partial: Partial<Pick<UserProfile, 'screenName' | 'profileVisibility'>>): Promise<void> {
+export async function updateUserProfile(uid: string, partial: Partial<Pick<UserProfile, 'screenName' | 'profileVisibility' | 'defaultFilters'>>): Promise<void> {
   await updateDoc(doc(db, 'users', uid), partial);
 }
 
@@ -83,6 +97,7 @@ export async function getUserByScreenName(screenName: string): Promise<UserProfi
     uid,
     screenName: data.screenName ?? null,
     profileVisibility: data.profileVisibility ?? 'private',
+    defaultFilters: parseDefaultFilters(data.defaultFilters),
     createdAt: (data.createdAt as Timestamp)?.toMillis() ?? Date.now(),
   };
 }
