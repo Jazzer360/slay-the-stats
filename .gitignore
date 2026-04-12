@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 /.firebase
+
+# Test fixture run files (downloaded from Firebase Storage)
+test/fixtures/*.run
+.env
