@@ -1,8 +1,11 @@
 /**
  * Download .run fixtures from Firebase Storage for use in tests.
  *
+ * Downloads only the curated set of fixtures defined below.
+ * Each file is chosen because it exercises specific edge cases.
+ *
  * Usage:
- *   node scripts/download-fixtures.js                   # download all runs
+ *   node scripts/download-fixtures.js                   # download curated set
  *   node scripts/download-fixtures.js run1.run run2.run  # download specific runs
  *
  * Requires FIREBASE_UID env var (your Firebase user ID).
@@ -14,10 +17,29 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { initializeApp } from 'firebase/app';
-import { getStorage, ref, listAll, getBytes } from 'firebase/storage';
+import { getStorage, ref, getBytes } from 'firebase/storage';
 
 const PROJECT_ROOT = resolve(import.meta.dirname, '..');
 const FIXTURES_DIR = join(PROJECT_ROOT, 'test', 'fixtures');
+
+/**
+ * Curated fixture list — must stay in sync with TEST_FIXTURES in test/helpers.ts.
+ */
+const TEST_FIXTURES = [
+  '1772739653.run', // Floor 1 card choices, shop with card_choices
+  '1772745257.run', // Short loss (8 floors), killed by encounter
+  '1772746469.run', // 3-act win (primary happy-path fixture)
+  '1772754056.run', // 3-act win, Sea Glass ancient choices
+  '1772759964.run', // 3-act win
+  '1772763220.run', // Multiplayer run
+  '1772827962.run', // Lasting Candy (card choices in groups of 4), multiplayer
+  '1772838127.run', // Sea Glass ancient choices
+  '1773771099.run', // Abandoned mid-combat (killed_by_encounter still set)
+  '1774125604.run', // Abandoned, very short (2 floors)
+  '1774144997.run', // Abandoned
+  '1774314181.run', // Pael's Wing relic (SACRIFICE option in card ELO)
+  '1774380897.run', // Pael's Wing relic
+];
 
 // Load .env file if present
 function loadEnv() {
@@ -50,17 +72,9 @@ mkdirSync(FIXTURES_DIR, { recursive: true });
 
 async function main() {
   const requestedFiles = process.argv.slice(2);
-  let fileNames;
+  const fileNames = requestedFiles.length > 0 ? requestedFiles : TEST_FIXTURES;
 
-  if (requestedFiles.length > 0) {
-    fileNames = requestedFiles;
-  } else {
-    console.log('Listing all run files...');
-    const dirRef = ref(storage, `users/${uid}/runs`);
-    const result = await listAll(dirRef);
-    fileNames = result.items.map((item) => item.name);
-    console.log(`Found ${fileNames.length} run files.`);
-  }
+  console.log(`Downloading ${fileNames.length} fixture(s)...`);
 
   let downloaded = 0;
   let skipped = 0;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseRunFile } from '../src/lib/parser';
-import { loadFixture, loadFixtureRaw, loadAllFixtures } from './helpers';
+import { loadFixture, loadFixtureRaw, loadAllFixtures, TEST_FIXTURES } from './helpers';
 
 describe('parseRunFile', () => {
   it('parses a valid run file', () => {
@@ -41,9 +41,9 @@ describe('parseRunFile', () => {
 });
 
 describe('parseRunFile — fixture integrity', () => {
-  it('all 207 fixtures parse without error', () => {
+  it('all curated fixtures parse without error', () => {
     const runs = loadAllFixtures();
-    expect(runs.length).toBe(207);
+    expect(runs.length).toBe(TEST_FIXTURES.length);
     for (const run of runs) {
       expect(run.data.players.length).toBeGreaterThan(0);
       expect(run.data.map_point_history.length).toBeGreaterThan(0);

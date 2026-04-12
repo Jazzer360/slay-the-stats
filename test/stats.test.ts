@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { summarizeRun, computeAggregateStats } from '../src/lib/stats';
-import { loadFixture, loadFixtures, loadAllFixtures } from './helpers';
+import { loadFixture, loadFixtures, loadAllFixtures, TEST_FIXTURES } from './helpers';
 
 // ─── summarizeRun ────────────────────────────────────────────────
 
@@ -94,18 +94,18 @@ describe('computeAggregateStats', () => {
     const runs = loadAllFixtures();
     const agg = computeAggregateStats(runs);
 
-    expect(agg.totalRuns).toBe(207);
-    expect(agg.wins).toBe(60);
-    expect(agg.losses + agg.wins + agg.abandoned).toBe(207);
+    expect(agg.totalRuns).toBe(TEST_FIXTURES.length);
+    expect(agg.wins).toBe(4);
+    expect(agg.losses + agg.wins + agg.abandoned).toBe(TEST_FIXTURES.length);
     expect(agg.abandoned).toBe(3);
-    expect(agg.losses).toBe(144);
+    expect(agg.losses).toBe(6);
   });
 
   it('win rate is wins / total', () => {
     const runs = loadAllFixtures();
     const agg = computeAggregateStats(runs);
 
-    expect(agg.winRate).toBeCloseTo(60 / 207, 6);
+    expect(agg.winRate).toBeCloseTo(4 / TEST_FIXTURES.length, 6);
   });
 
   it('character breakdown sums to total runs', () => {
@@ -113,7 +113,7 @@ describe('computeAggregateStats', () => {
     const agg = computeAggregateStats(runs);
 
     const charTotal = agg.characterBreakdown.reduce((s, c) => s + c.count, 0);
-    expect(charTotal).toBe(207);
+    expect(charTotal).toBe(TEST_FIXTURES.length);
   });
 
   it('character win rates are between 0 and 1', () => {
@@ -131,7 +131,7 @@ describe('computeAggregateStats', () => {
     const agg = computeAggregateStats(runs);
 
     const ascTotal = agg.ascensionBreakdown.reduce((s, a) => s + a.count, 0);
-    expect(ascTotal).toBe(207);
+    expect(ascTotal).toBe(TEST_FIXTURES.length);
   });
 
   it('ascension breakdown is sorted ascending', () => {

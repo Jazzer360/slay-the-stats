@@ -27,7 +27,8 @@ describe('applyFilters', () => {
     const runs = loadAllFixtures();
     const filtered = applyFilters(runs, { ...DEFAULT_FILTERS, result: 'win' });
 
-    expect(filtered.length).toBe(60);
+    const expectedWins = runs.filter((r) => r.data.win).length;
+    expect(filtered.length).toBe(expectedWins);
     for (const run of filtered) {
       expect(run.data.win).toBe(true);
     }
@@ -41,7 +42,7 @@ describe('applyFilters', () => {
     for (const run of filtered) {
       expect(run.data.win).toBe(false);
     }
-    expect(filtered.length).toBe(207 - 60);
+    expect(filtered.length).toBe(runs.length - runs.filter((r) => r.data.win).length);
   });
 
   it('filters by ascension range', () => {
@@ -66,15 +67,15 @@ describe('applyFilters', () => {
     for (const run of filtered) {
       expect(run.data.players.length).toBe(1);
     }
-    // 5 multiplayer runs, so solo = 207 - 5
-    expect(filtered.length).toBe(207 - 5);
+    const multiCount = runs.filter((r) => r.data.players.length > 1).length;
+    expect(filtered.length).toBe(runs.length - multiCount);
   });
 
   it('filters by player mode=multi', () => {
     const runs = loadAllFixtures();
     const filtered = applyFilters(runs, { ...DEFAULT_FILTERS, playerMode: 'multi' });
 
-    expect(filtered.length).toBe(5);
+    expect(filtered.length).toBe(runs.filter((r) => r.data.players.length > 1).length);
     for (const run of filtered) {
       expect(run.data.players.length).toBeGreaterThan(1);
     }
@@ -84,7 +85,7 @@ describe('applyFilters', () => {
     const runs = loadAllFixtures();
     // All fixtures have profile='test-profile'
     const filtered = applyFilters(runs, { ...DEFAULT_FILTERS, profile: 'test-profile' });
-    expect(filtered.length).toBe(207);
+    expect(filtered.length).toBe(runs.length);
 
     const noMatch = applyFilters(runs, { ...DEFAULT_FILTERS, profile: 'nonexistent' });
     expect(noMatch.length).toBe(0);

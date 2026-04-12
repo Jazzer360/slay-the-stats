@@ -9,6 +9,27 @@ import type { ParsedRun, RunData } from '../src/types/run';
 const FIXTURES_DIR = resolve(import.meta.dirname, 'fixtures');
 
 /**
+ * The curated set of fixture runs used by tests.
+ * Each file is chosen because it exercises specific edge cases.
+ * Update this list (and the download script) when adding new test scenarios.
+ */
+export const TEST_FIXTURES = [
+  '1772739653.run', // Floor 1 card choices, shop with card_choices
+  '1772745257.run', // Short loss (8 floors), killed by encounter
+  '1772746469.run', // 3-act win (primary happy-path fixture)
+  '1772754056.run', // 3-act win, Sea Glass ancient choices
+  '1772759964.run', // 3-act win
+  '1772763220.run', // Multiplayer run
+  '1772827962.run', // Lasting Candy (card choices in groups of 4), multiplayer
+  '1772838127.run', // Sea Glass ancient choices
+  '1773771099.run', // Abandoned mid-combat (killed_by_encounter still set)
+  '1774125604.run', // Abandoned, very short (2 floors)
+  '1774144997.run', // Abandoned
+  '1774314181.run', // Pael's Wing relic (SACRIFICE option in card ELO)
+  '1774380897.run', // Pael's Wing relic
+] as const;
+
+/**
  * Load a single .run fixture by filename.
  * Throws if the file doesn't exist.
  */
@@ -34,19 +55,11 @@ export function loadFixtureRaw(fileName: string): RunData {
 }
 
 /**
- * Load all .run fixtures in the fixtures directory.
+ * Load all curated test fixtures defined in TEST_FIXTURES.
  * Returns them sorted by start_time (chronological).
  */
 export function loadAllFixtures(): ParsedRun[] {
-  if (!existsSync(FIXTURES_DIR)) return [];
-  const files = readdirSync(FIXTURES_DIR).filter((f) => f.endsWith('.run'));
-  if (files.length === 0) {
-    throw new Error(
-      `No .run fixtures found in ${FIXTURES_DIR}.\n` +
-        'Run `npm run test:fixtures` to download fixtures from Firebase Storage.',
-    );
-  }
-  const runs = files.map((f) => loadFixture(f));
+  const runs = TEST_FIXTURES.map((f) => loadFixture(f));
   runs.sort((a, b) => a.data.start_time - b.data.start_time);
   return runs;
 }
