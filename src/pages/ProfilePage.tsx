@@ -4,6 +4,7 @@ import { getUserByScreenName } from '../lib/firestore';
 import { downloadAllUserRuns } from '../lib/cloudStorage';
 import { useProfileRunsStore } from '../store/profileRuns';
 import { useFilterStore } from '../store/filters';
+import { useAuthStore } from '../store/auth';
 import type { UserProfile } from '../types/user';
 
 type PageState = 'loading' | 'not-found' | 'private' | 'loaded' | 'error';
@@ -64,7 +65,12 @@ export function ProfilePage() {
     return () => {
       cancelled = true;
       clearProfileRuns();
-      resetFilters();
+      const ownDefaults = useAuthStore.getState().userProfile?.defaultFilters;
+      if (ownDefaults) {
+        applyDefaults(ownDefaults);
+      } else {
+        resetFilters();
+      }
     };
   }, [screenName, setProfileRuns, clearProfileRuns, applyDefaults, resetFilters]);
 

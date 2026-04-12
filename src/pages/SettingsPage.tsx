@@ -273,7 +273,7 @@ export function SettingsPage() {
               className="bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 px-3 py-2"
             >
               <option value="">Min</option>
-              {Array.from({ length: 21 }, (_, i) => (
+              {Array.from({ length: 11 }, (_, i) => (
                 <option key={i} value={i}>{i}</option>
               ))}
             </select>
@@ -284,7 +284,7 @@ export function SettingsPage() {
               className="bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 px-3 py-2"
             >
               <option value="">Max</option>
-              {Array.from({ length: 21 }, (_, i) => (
+              {Array.from({ length: 11 }, (_, i) => (
                 <option key={i} value={i}>{i}</option>
               ))}
             </select>

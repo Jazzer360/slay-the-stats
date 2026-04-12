@@ -1,4 +1,5 @@
 import { useFilterStore } from '../../store/filters';
+import { useAuthStore } from '../../store/auth';
 import { useFilterOptions } from '../../hooks/useFilteredRuns';
 import { formatId } from '../../lib/format';
 
@@ -16,16 +17,19 @@ export function FilterBar() {
     setAscensionRange,
     setResult,
     resetFilters,
+    applyDefaults,
   } = useFilterStore();
   const options = useFilterOptions();
+  const userProfile = useAuthStore((s) => s.userProfile);
+  const defaults = userProfile?.defaultFilters;
 
   const hasActiveFilters =
     profile !== null ||
-    character !== null ||
-    playerMode !== 'all' ||
-    ascensionMin !== null ||
-    ascensionMax !== null ||
-    result !== 'all';
+    character !== (defaults?.character ?? null) ||
+    playerMode !== (defaults?.playerMode ?? 'all') ||
+    ascensionMin !== (defaults?.ascensionMin ?? null) ||
+    ascensionMax !== (defaults?.ascensionMax ?? null) ||
+    result !== (defaults?.result ?? 'all');
 
   return (
     <div className="bg-gray-900/50 border-b border-gray-800 px-4 py-2">
@@ -172,7 +176,7 @@ export function FilterBar() {
         {/* Reset */}
         {hasActiveFilters && (
           <button
-            onClick={resetFilters}
+            onClick={() => defaults ? applyDefaults(defaults) : resetFilters()}
             className="text-xs text-gray-500 hover:text-gray-300 underline"
           >
             Reset
