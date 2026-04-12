@@ -432,62 +432,90 @@ function FloorRow({ point, floorNum, hasBingBong }: { point: MapPoint; floorNum:
     ? 'Rest Site'
     : formatId(point.map_point_type);
 
-  return (
-    <div className="flex gap-3 items-start py-1.5 px-3 hover:bg-gray-800/30 rounded text-sm">
-      <span className="text-gray-600 w-6 text-right shrink-0 font-mono text-xs pt-0.5">
-        {floorNum}
+  const statsContent = stats && (
+    <>
+      <span className="text-gray-500">{stats.current_gold}g</span>
+      <span className="mx-1.5 text-gray-700">|</span>
+      <span
+        className={
+          stats.current_hp < stats.max_hp * 0.3
+            ? 'text-red-400'
+            : stats.damage_taken > 0
+            ? 'text-red-400/70'
+            : 'text-gray-500'
+        }
+      >
+        {stats.current_hp}/{stats.max_hp} HP
       </span>
-
-      <RoomBadge type={point.map_point_type} />
-
-      <div className="flex-1 min-w-0">
-        <span className="text-gray-300">
-          {floorTitle}
+      {stats.damage_taken > 0 && (
+        <span className="text-red-500/50 ml-1">
+          (-{stats.damage_taken})
         </span>
-        {isWeak && (
-          <span className="text-gray-600 text-xs ml-1">(weak)</span>
-        )}
-        {room?.monster_ids && room.monster_ids.length > 0 && (
-          <span className="text-gray-600 text-xs ml-2">
-            vs {room.monster_ids.map(formatId).join(', ')}
-          </span>
-        )}
-        {room?.turns_taken ? (
-          <span className="text-gray-600 text-xs ml-2">
-            ({room.turns_taken} turns)
-          </span>
-        ) : null}
+      )}
+      {stats.hp_healed > 0 && (
+        <span className="text-green-500/50 ml-1">
+          (+{stats.hp_healed})
+        </span>
+      )}
+    </>
+  );
 
-        {stats && <FloorDetails stats={stats} isShop={!!isShop} hasBingBong={hasBingBong} />}
-      </div>
+  const titleContent = (
+    <>
+      <span className="text-gray-300">
+        {floorTitle}
+      </span>
+      {isWeak && (
+        <span className="text-gray-600 text-xs ml-1">(weak)</span>
+      )}
+      {room?.monster_ids && room.monster_ids.length > 0 && (
+        <span className="text-gray-600 text-xs ml-2">
+          vs {room.monster_ids.map(formatId).join(', ')}
+        </span>
+      )}
+      {room?.turns_taken ? (
+        <span className="text-gray-600 text-xs ml-2">
+          ({room.turns_taken} turns)
+        </span>
+      ) : null}
+    </>
+  );
 
-      {stats && (
-        <div className="shrink-0 text-xs text-right whitespace-nowrap">
-          <span className="text-gray-500">{stats.current_gold}g</span>
-          <span className="mx-1.5 text-gray-700">|</span>
-          <span
-            className={
-              stats.current_hp < stats.max_hp * 0.3
-                ? 'text-red-400'
-                : stats.damage_taken > 0
-                ? 'text-red-400/70'
-                : 'text-gray-500'
-            }
-          >
-            {stats.current_hp}/{stats.max_hp} HP
-          </span>
-          {stats.damage_taken > 0 && (
-            <span className="text-red-500/50 ml-1">
-              (-{stats.damage_taken})
-            </span>
-          )}
-          {stats.hp_healed > 0 && (
-            <span className="text-green-500/50 ml-1">
-              (+{stats.hp_healed})
-            </span>
+  return (
+    <div className="py-1.5 px-3 hover:bg-gray-800/30 rounded text-sm">
+      <div className="flex gap-3 items-start">
+        <span className="text-gray-600 w-6 text-right shrink-0 font-mono text-xs pt-0.5">
+          {floorNum}
+        </span>
+
+        <RoomBadge type={point.map_point_type} />
+
+        {/* Desktop: title + details + stats inline */}
+        <div className="hidden md:flex flex-1 min-w-0 items-start gap-3">
+          <div className="flex-1 min-w-0">
+            {titleContent}
+            {stats && <FloorDetails stats={stats} isShop={!!isShop} hasBingBong={hasBingBong} />}
+          </div>
+          {stats && (
+            <div className="shrink-0 text-xs text-right whitespace-nowrap">
+              {statsContent}
+            </div>
           )}
         </div>
-      )}
+
+        {/* Mobile: stats summary on the first row */}
+        {stats && (
+          <div className="md:hidden ml-auto shrink-0 text-xs text-right whitespace-nowrap">
+            {statsContent}
+          </div>
+        )}
+      </div>
+
+      {/* Mobile: floor name and details below */}
+      <div className="md:hidden pl-9 mt-0.5">
+        <div>{titleContent}</div>
+        {stats && <FloorDetails stats={stats} isShop={!!isShop} hasBingBong={hasBingBong} />}
+      </div>
     </div>
   );
 }
