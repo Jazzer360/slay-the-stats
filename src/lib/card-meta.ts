@@ -594,7 +594,10 @@ const CARD_META: Record<string, CardMeta> = {
 };
 
 export function getCardMeta(cardId: string): CardMeta | undefined {
-  const baseId = cardId.endsWith('+') ? cardId.slice(0, -1) : cardId;
+  // Strip enchantment suffix like " [ENCHANTMENT.SWIFT]"
+  const bracketIdx = cardId.indexOf(' [');
+  const withoutEnchantment = bracketIdx !== -1 ? cardId.slice(0, bracketIdx) : cardId;
+  const baseId = withoutEnchantment.endsWith('+') ? withoutEnchantment.slice(0, -1) : withoutEnchantment;
   return CARD_META[baseId];
 }
 

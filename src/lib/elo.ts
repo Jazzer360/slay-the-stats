@@ -78,11 +78,16 @@ function getLastingCandyFloor(run: ParsedRun): number {
   return relic ? relic.floor_added_to_deck : -1;
 }
 
+export interface CardEloOptions {
+  upgradeAware: boolean;
+  enchantmentAware: boolean;
+}
+
 /**
  * Compute ELO ratings for card choices across all provided runs.
  * Runs should already be filtered and sorted chronologically.
  */
-export function computeCardElo(runs: ParsedRun[]): EloMap {
+export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { upgradeAware: true, enchantmentAware: true }): EloMap {
   const elo: EloMap = new Map();
 
   for (const run of runs) {
@@ -138,7 +143,7 @@ export function computeCardElo(runs: ParsedRun[]): EloMap {
             ` | skipping floor`,
           );
         }
-        const pickedIds = processCardChoices(elo, choices, actIdx, isBoss, hasPaelsWing, cardGroupSize);
+        const pickedIds = processCardChoices(elo, choices, actIdx, isBoss, hasPaelsWing, cardGroupSize, options);
         for (const id of pickedIds) pickedInRun.add(id);
       }
     }
@@ -165,13 +170,17 @@ export function computeCardElo(runs: ParsedRun[]): EloMap {
 }
 
 /**
- * Get the upgrade-aware card ID: append "+" if upgraded.
+ * Get the card ID, optionally including upgrade and enchantment info.
  */
-function getCardId(choice: CardChoice): string {
+function getCardId(choice: CardChoice, options: CardEloOptions): string {
   const base = choice.card.id;
-  return choice.card.current_upgrade_level && choice.card.current_upgrade_level > 0
+  let id = options.upgradeAware && choice.card.current_upgrade_level && choice.card.current_upgrade_level > 0
     ? `${base}+`
     : base;
+  if (options.enchantmentAware && choice.card.enchantment) {
+    id += ` [${choice.card.enchantment.id}]`;
+  }
+  return id;
 }
 
 /**
@@ -224,6 +233,7 @@ function processCardChoices(
   isBoss: boolean,
   hasPaelsWing: boolean,
   cardGroupSize: number,
+  options: CardEloOptions,
 ): string[] {
   const total = choices.length;
   const groupSize = getGroupSize(total, cardGroupSize);
@@ -235,10 +245,10 @@ function processCardChoices(
 
   for (let g = 0; g < numGroups; g++) {
     const groupChoices = choices.slice(g * groupSize, (g + 1) * groupSize);
-    const groupCardIds = groupChoices.map((c) => getCardId(c));
+    const groupCardIds = groupChoices.map((c) => getCardId(c, options));
     const picked = groupChoices.filter((c) => c.was_picked);
-    const pickedIds = picked.map((c) => getCardId(c));
-    const unpickedIds = groupChoices.filter((c) => !c.was_picked).map((c) => getCardId(c));
+    const pickedIds = picked.map((c) => getCardId(c, options));
+    const unpickedIds = groupChoices.filter((c) => !c.was_picked).map((c) => getCardId(c, options));
 
     // Every group has a skip option (and sacrifice if Pael's Wing is active)
     const allOptions = [...groupCardIds];

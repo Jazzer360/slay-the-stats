@@ -7,14 +7,24 @@
  */
 export function formatId(id: string): string {
   if (!id) return '';
+
+  // Extract optional bracket suffix like " [ENCHANTMENT.SWIFT]"
+  let suffix = '';
+  const bracketIdx = id.indexOf(' [');
+  if (bracketIdx !== -1 && id.endsWith(']')) {
+    const inner = id.slice(bracketIdx + 2, -1);
+    suffix = ` [${formatId(inner)}]`;
+    id = id.slice(0, bracketIdx);
+  }
+
   // Skip entities
   if (id.startsWith('SKIP_BOSS_ACT_')) {
     const act = id.replace('SKIP_BOSS_ACT_', '');
-    return `Skip Boss (Act ${act})`;
+    return `Skip Boss (Act ${act})${suffix}`;
   }
   if (id.startsWith('SKIP_ACT_')) {
     const act = id.replace('SKIP_ACT_', '');
-    return `Skip (Act ${act})`;
+    return `Skip (Act ${act})${suffix}`;
   }
 
   // Strip prefix (CARD., CHARACTER., ENCOUNTER., RELIC., etc.)
@@ -30,7 +40,7 @@ export function formatId(id: string): string {
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-  return upgraded ? `${name}+` : name;
+  return (upgraded ? `${name}+` : name) + suffix;
 }
 
 /**

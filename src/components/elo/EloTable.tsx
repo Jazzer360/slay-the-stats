@@ -45,6 +45,7 @@ interface EloTableProps {
   entityLabel?: string; // "Card" or "Ancient Reward"
   showCardMeta?: boolean; // Show rarity/color columns for cards
   onEntityClick?: (id: string) => void; // Navigate when a name is clicked
+  titleExtra?: React.ReactNode; // Extra content rendered to the right of the title
 }
 
 const columnHelper = createColumnHelper<EloEntry & { rank: number }>();
@@ -52,6 +53,7 @@ const columnHelper = createColumnHelper<EloEntry & { rank: number }>();
 export function EloTable({
   eloMap,
   title,
+  titleExtra,
   entityLabel = 'Option',
   showCardMeta = false,
   onEntityClick,
@@ -218,7 +220,10 @@ export function EloTable({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-100">{title}</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-bold text-gray-100">{title}</h2>
+          {titleExtra}
+        </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-500">
             {data.length} entries
