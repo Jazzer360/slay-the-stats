@@ -66,11 +66,11 @@ export function SharedRunPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <Link to="/" className="text-sm text-gray-500 hover:text-gray-300">
           ← Home
         </Link>
-        <span className="text-xs text-gray-600 bg-gray-800 px-2 py-1 rounded">Shared Run</span>
+        <span className="text-xs text-gray-600 bg-gray-800 px-2 py-1 rounded-lg">Shared Run</span>
       </div>
 
       {isAnonymous && (

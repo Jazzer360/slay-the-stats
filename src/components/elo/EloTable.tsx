@@ -219,9 +219,9 @@ export function EloTable({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-bold text-gray-100">{title}</h2>
+          <h2 className="text-lg font-semibold text-gray-100">{title}</h2>
           {titleExtra}
         </div>
         <div className="flex items-center gap-3">
@@ -238,7 +238,7 @@ export function EloTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-800">
+      <div className="overflow-x-auto rounded-xl border border-gray-800">
         <table className="w-full text-sm">
           <thead className="bg-gray-900">
             {table.getHeaderGroups().map((headerGroup) => (

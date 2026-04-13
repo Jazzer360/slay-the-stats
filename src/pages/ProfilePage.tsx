@@ -143,16 +143,16 @@ export function ProfilePage() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Profile header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-100">{profile?.screenName}</h2>
+          <h2 className="text-lg font-semibold text-gray-100">{profile?.screenName}</h2>
           <p className="text-sm text-gray-500 mt-1">Public Profile</p>
         </div>
         <button
           onClick={copyLink}
-          className="px-3 py-1.5 rounded text-sm text-gray-400 hover:text-gray-200 bg-gray-800 hover:bg-gray-700 transition-colors"
+          className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 bg-gray-800 hover:bg-gray-700 transition-colors"
         >
           {copied ? '✓ Copied!' : 'Copy Profile Link'}
         </button>

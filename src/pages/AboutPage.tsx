@@ -1,15 +1,15 @@
 export function AboutPage() {
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
-      <h2 className="text-2xl font-bold text-gray-100 mb-2">About Slay the Stats</h2>
-      <p className="text-gray-400 text-sm mb-8">
+      <h2 className="text-lg font-semibold text-gray-100 mb-2">About Slay the Stats</h2>
+      <p className="text-gray-400 text-sm mb-10">
         Slay the Stats is a personal analytics tool for Slay the Spire 2. Load your run history
         and explore win rates, card pick tendencies, deck composition, and more — all calculated
         locally from the .run files the game saves to your computer.
       </p>
 
-      <section className="mb-8">
-        <h3 className="text-lg font-semibold text-purple-400 mb-3">ELO Card Rating System</h3>
+      <section className="mb-10">
+        <h3 className="text-base font-semibold text-gray-200 mb-3">ELO Card Rating System</h3>
         <p className="text-gray-300 leading-relaxed mb-3">
           The ELO-based card rating system used in this app was inspired by{' '}
           <a
@@ -36,8 +36,8 @@ export function AboutPage() {
         </p>
       </section>
 
-      <section className="mb-8">
-        <h3 className="text-lg font-semibold text-purple-400 mb-3">How Filtering Works</h3>
+      <section className="mb-10">
+        <h3 className="text-base font-semibold text-gray-200 mb-3">How Filtering Works</h3>
         <p className="text-gray-400 leading-relaxed mb-3">
           Filters (character, ascension range, date range, etc.) don't just slice the run list —
           they recalculate <em>all</em> stats and ELO ratings from scratch using only the
@@ -61,8 +61,8 @@ export function AboutPage() {
         </p>
       </section>
 
-      <section className="mb-8">
-        <h3 className="text-lg font-semibold text-purple-400 mb-3">How It Works</h3>
+      <section className="mb-10">
+        <h3 className="text-base font-semibold text-gray-200 mb-3">How It Works</h3>
         <ul className="list-disc list-inside text-gray-400 space-y-2 text-sm">
           <li>All cards start at an ELO rating of 1500</li>
           <li>Each card reward screen is a pairwise matchup between the picked card and each skipped option</li>
@@ -72,8 +72,8 @@ export function AboutPage() {
         </ul>
       </section>
 
-      <section className="mb-8">
-        <h3 className="text-lg font-semibold text-purple-400 mb-3">Cloud vs. Local Mode</h3>
+      <section className="mb-10">
+        <h3 className="text-base font-semibold text-gray-200 mb-3">Cloud vs. Local Mode</h3>
         <div className="space-y-3 text-sm text-gray-400">
           <p>
             <span className="text-gray-300 font-medium">Without an account</span> — Run files are
@@ -92,8 +92,8 @@ export function AboutPage() {
         </div>
       </section>
 
-      <section className="mb-8">
-        <h3 className="text-lg font-semibold text-purple-400 mb-3">Profiles &amp; Sharing</h3>
+      <section className="mb-10">
+        <h3 className="text-base font-semibold text-gray-200 mb-3">Profiles &amp; Sharing</h3>
         <div className="space-y-3 text-sm text-gray-400">
           <p>
             Signed-in users can choose a screen name in Settings to get a public profile page at{' '}
@@ -113,7 +113,7 @@ export function AboutPage() {
       </section>
 
       <section>
-        <h3 className="text-lg font-semibold text-purple-400 mb-3">Importing Runs by Profile</h3>
+        <h3 className="text-base font-semibold text-gray-200 mb-3">Importing Runs by Profile</h3>
         <p className="text-gray-400 text-sm leading-relaxed">
           Slay the Spire 2 saves run files separately per in-game profile (profile0, profile1, etc.).
           Slay the Stats does not currently filter by profile within a single account, but you can

@@ -87,10 +87,10 @@ export function DashboardPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-100 mb-6">Dashboard</h2>
+      <h2 className="text-lg font-semibold text-gray-100 mb-8">Dashboard</h2>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-10">
         <StatCard label="Runs" value={stats.totalRuns.toString()} />
         <StatCard label="Win Rate" value={formatPercent(stats.winRate)} />
         <StatCard label="Wins" value={stats.wins.toString()} />
@@ -102,10 +102,10 @@ export function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
         {/* Character distribution */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+          <h3 className="text-base font-semibold text-gray-200 mb-4">
             Character Distribution
           </h3>
           <ResponsiveContainer width="100%" height={256}>
@@ -144,8 +144,8 @@ export function DashboardPage() {
         </div>
 
         {/* Win rate by character */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+          <h3 className="text-base font-semibold text-gray-200 mb-4">
             Win Rate by Character
           </h3>
           <ResponsiveContainer width="100%" height={256}>
@@ -195,9 +195,9 @@ export function DashboardPage() {
       </div>
 
       {/* Win rate moving average */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-8">
+      <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+          <h3 className="text-base font-semibold text-gray-200">
             Win Rate (Moving Average)
           </h3>
           <div className="flex items-center gap-2">
@@ -298,8 +298,8 @@ export function DashboardPage() {
 
       {/* Common deaths */}
       {stats.commonDeaths.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+          <h3 className="text-base font-semibold text-gray-200 mb-4">
             Most Common Deaths
           </h3>
           <ResponsiveContainer width="100%" height={256}>
@@ -341,9 +341,9 @@ export function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-3">
-      <p className="text-xs text-gray-500 uppercase tracking-wider">{label}</p>
-      <p className="text-xl font-bold text-gray-100 mt-0.5">{value}</p>
+    <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-3">
+      <p className="text-xs text-gray-500 mb-0.5">{label}</p>
+      <p className="text-xl font-bold text-gray-100">{value}</p>
     </div>
   );
 }

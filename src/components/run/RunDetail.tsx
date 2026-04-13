@@ -106,10 +106,10 @@ export function RunDetail({ run }: { run: ParsedRun }) {
   return (
     <div>
       {/* Run header */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
+      <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-8">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-gray-100">
+            <h2 className="text-lg font-semibold text-gray-100">
               {formatId(player.character)}
             </h2>
             <span className="text-sm text-gray-500">
@@ -169,8 +169,8 @@ export function RunDetail({ run }: { run: ParsedRun }) {
 
       {/* HP Chart */}
       {hpData.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-8">
+          <h3 className="text-base font-semibold text-gray-200 mb-3">
             Health Over Time
           </h3>
           <div className="h-64">
@@ -274,17 +274,17 @@ export function RunDetail({ run }: { run: ParsedRun }) {
       )}
 
       {/* Final deck, relics, potions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+          <h3 className="text-base font-semibold text-gray-200 mb-3">
             Final Deck ({player.deck.length})
           </h3>
           <DeckDisplay deck={player.deck} />
         </div>
 
         <div className="space-y-6">
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+          <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+            <h3 className="text-base font-semibold text-gray-200 mb-3">
               Relics ({player.relics.length})
             </h3>
             <div className="flex flex-wrap gap-1.5">
@@ -300,8 +300,8 @@ export function RunDetail({ run }: { run: ParsedRun }) {
           </div>
 
           {player.potions.length > 0 && (
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+            <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+              <h3 className="text-base font-semibold text-gray-200 mb-3">
                 Final Potions ({player.potions.length}/{player.max_potion_slot_count})
               </h3>
               <div className="flex flex-wrap gap-1.5">
@@ -318,8 +318,8 @@ export function RunDetail({ run }: { run: ParsedRun }) {
           )}
 
           {player.badges && player.badges.length > 0 && (
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+            <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+              <h3 className="text-base font-semibold text-gray-200 mb-3">
                 Badges ({player.badges.length})
               </h3>
               <div className="flex flex-wrap gap-1.5">
@@ -339,8 +339,8 @@ export function RunDetail({ run }: { run: ParsedRun }) {
       </div>
 
       {/* Floor-by-floor timeline */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+      <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+        <h3 className="text-base font-semibold text-gray-200 mb-3">
           Floor-by-Floor Timeline
         </h3>
         <div className="space-y-1">

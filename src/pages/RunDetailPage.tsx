@@ -70,7 +70,7 @@ export function RunDetailPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <Link
           to={runsPath}
           className="text-sm text-gray-500 hover:text-gray-300"
@@ -81,7 +81,7 @@ export function RunDetailPage() {
           <button
             onClick={() => prevRun && toRunDetail(prevRun.fileName)}
             disabled={!prevRun}
-            className="px-3 py-1 rounded text-xs bg-gray-800 text-gray-400 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-3 py-1 rounded-lg text-xs bg-gray-800 text-gray-400 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             ← Previous
           </button>
@@ -91,7 +91,7 @@ export function RunDetailPage() {
           <button
             onClick={() => nextRun && toRunDetail(nextRun.fileName)}
             disabled={!nextRun}
-            className="px-3 py-1 rounded text-xs bg-gray-800 text-gray-400 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-3 py-1 rounded-lg text-xs bg-gray-800 text-gray-400 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Next →
           </button>
@@ -100,7 +100,7 @@ export function RunDetailPage() {
               onClick={handleShare}
               disabled={shareState === 'sharing'}
               title={user ? 'Share this run' : 'Share this run (link is permanent)'}
-              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                 shareState === 'copied'
                   ? 'bg-green-800 text-green-300'
                   : shareState === 'error'

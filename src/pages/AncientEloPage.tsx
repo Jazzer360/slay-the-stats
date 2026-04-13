@@ -41,12 +41,12 @@ export function AncientEloPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
         {ancientNames.map((name) => (
           <button
             key={name}
             onClick={() => setSelectedAncient(name)}
-            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               selectedAncient === name
                 ? 'bg-purple-600 text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300'

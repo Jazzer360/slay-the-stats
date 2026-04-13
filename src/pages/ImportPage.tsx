@@ -57,8 +57,8 @@ export function ImportPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
-      <h2 className="text-2xl font-bold text-gray-100 mb-2">Import Runs</h2>
-      <p className="text-gray-400 text-sm mb-8">
+      <h2 className="text-lg font-semibold text-gray-100 mb-2">Import Runs</h2>
+      <p className="text-gray-400 text-sm mb-10">
         {user
           ? 'Upload your Slay the Spire 2 run files to your cloud account so they load automatically on every visit.'
           : 'Load your run files locally to analyze your stats. No account required — all processing happens in your browser.'}
@@ -73,8 +73,8 @@ export function ImportPage() {
       )}
 
       {/* Upload card */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
-        <h3 className="text-sm font-medium text-gray-300">
+      <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-6 space-y-4">
+        <h3 className="text-base font-semibold text-gray-200">
           {user ? 'Select Your SlayTheSpire2 Folder' : 'Load Run Files'}
         </h3>
 
@@ -198,11 +198,11 @@ export function ImportPage() {
       </div>
 
       {/* How to find your files */}
-      <div className="mt-8 space-y-3">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+      <div className="mt-10 space-y-3">
+        <h3 className="text-base font-semibold text-gray-200">
           Where are my run files?
         </h3>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-3 text-sm text-gray-400">
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 space-y-3 text-sm text-gray-400">
           <p>Run files are stored in your AppData folder on Windows:</p>
           <code className="block bg-gray-800/60 text-purple-300 px-3 py-2 rounded text-xs font-mono">
             %APPDATA%\SlayTheSpire2
@@ -235,11 +235,11 @@ export function ImportPage() {
 
       {/* What happens to my data */}
       {!user && (
-        <div className="mt-6 space-y-3">
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+        <div className="mt-8 space-y-3">
+          <h3 className="text-base font-semibold text-gray-200">
             Privacy &amp; data
           </h3>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 text-sm text-gray-400 space-y-2">
+          <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
             <p>
               Without an account, your run files never leave your browser. All parsing, ELO
               calculation, and stats happen locally. Nothing is sent to any server.

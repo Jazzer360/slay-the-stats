@@ -210,8 +210,8 @@ export function RunListPage() {
           </button>
         </div>
       )}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-100">Run History</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-gray-100">Run History</h2>
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-500">
             {data.length} runs
@@ -226,7 +226,7 @@ export function RunListPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-800">
+      <div className="overflow-x-auto rounded-xl border border-gray-800">
         <table className="w-full text-sm">
           <thead className="bg-gray-900">
             {table.getHeaderGroups().map((headerGroup) => (

@@ -86,9 +86,9 @@ export function CombatStatsPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-100 mb-6">Combat Stats</h2>
+      <h2 className="text-lg font-semibold text-gray-100 mb-8">Combat Stats</h2>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {groups.map((actRow) => (
           <div
             key={actRow.actNum}
@@ -106,9 +106,9 @@ export function CombatStatsPage() {
 
 function ActSection({ group }: { group: ActGroup }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+    <div className="bg-gray-900/60 border border-gray-800 rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-800">
-        <h3 className="text-sm font-semibold text-purple-400 uppercase tracking-wider">
+        <h3 className="text-sm font-semibold text-purple-400">
           {group.heading}
         </h3>
       </div>

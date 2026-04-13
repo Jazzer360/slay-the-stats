@@ -1,12 +1,12 @@
 export function PrivacyPage() {
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
-      <h2 className="text-2xl font-bold text-gray-100 mb-2">Privacy Policy</h2>
-      <p className="text-gray-500 text-sm mb-8">Last updated: April 13, 2026</p>
+      <h2 className="text-lg font-semibold text-gray-100 mb-2">Privacy Policy</h2>
+      <p className="text-gray-500 text-sm mb-10">Last updated: April 13, 2026</p>
 
-      <div className="space-y-6 text-gray-400 text-sm leading-relaxed">
+      <div className="space-y-8 text-gray-400 text-sm leading-relaxed">
         <section>
-          <h3 className="text-lg font-semibold text-gray-200 mb-2">Overview</h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-2">Overview</h3>
           <p>
             Slay the Stats is a personal analytics tool for Slay the Spire 2. We respect your
             privacy and collect only the minimum data needed to provide our service. We do not
@@ -15,7 +15,7 @@ export function PrivacyPage() {
         </section>
 
         <section>
-          <h3 className="text-lg font-semibold text-gray-200 mb-2">Data We Collect</h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-2">Data We Collect</h3>
           <ul className="list-disc list-inside space-y-1">
             <li>
               <strong className="text-gray-300">Run data:</strong> When you upload .run files,
@@ -37,7 +37,7 @@ export function PrivacyPage() {
         </section>
 
         <section>
-          <h3 className="text-lg font-semibold text-gray-200 mb-2">Cookies &amp; Local Storage</h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-2">Cookies &amp; Local Storage</h3>
           <p>We use the following storage mechanisms:</p>
           <ul className="list-disc list-inside space-y-1 mt-2">
             <li>
@@ -57,7 +57,7 @@ export function PrivacyPage() {
         </section>
 
         <section>
-          <h3 className="text-lg font-semibold text-gray-200 mb-2">Your Choices</h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-2">Your Choices</h3>
           <p>
             When you first visit the site, you will be asked whether to accept analytics cookies.
             You can change this choice at any time — a link is available in the site footer.
@@ -66,7 +66,7 @@ export function PrivacyPage() {
         </section>
 
         <section>
-          <h3 className="text-lg font-semibold text-gray-200 mb-2">Third-Party Services</h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-2">Third-Party Services</h3>
           <ul className="list-disc list-inside space-y-1">
             <li>
               <strong className="text-gray-300">Firebase (Google):</strong> Authentication,
@@ -97,7 +97,7 @@ export function PrivacyPage() {
         </section>
 
         <section>
-          <h3 className="text-lg font-semibold text-gray-200 mb-2">Data Retention &amp; Deletion</h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-2">Data Retention &amp; Deletion</h3>
           <p>
             Run data stored in the cloud is retained until you delete it or delete your account.
             You can delete individual runs or all your data from the Settings page. Analytics data
@@ -106,7 +106,7 @@ export function PrivacyPage() {
         </section>
 
         <section>
-          <h3 className="text-lg font-semibold text-gray-200 mb-2">Contact</h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-2">Contact</h3>
           <p>
             If you have questions about this privacy policy, please open an issue on the{' '}
             <a

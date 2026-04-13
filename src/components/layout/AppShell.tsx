@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Outlet, Link } from 'react-router';
+import { NavLink, Outlet, Link, useLocation } from 'react-router';
 import { useActiveRuns } from '../../hooks/useActiveRuns';
 import { useProfileRunsStore } from '../../store/profileRuns';
 import { useAuthStore } from '../../store/auth';
@@ -24,9 +24,12 @@ export function AppShell() {
   const runCount = activeRuns.length;
   const isProfileView = useProfileRunsStore((s) => s.profileRuns !== null);
   const { user, userProfile, authLoading } = useAuthStore();
+  const location = useLocation();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const hideFilterBar = ['/', '/import', '/about', '/privacy', '/settings'].includes(location.pathname);
 
   const displayName =
     userProfile?.screenName ??
@@ -172,8 +175,8 @@ export function AppShell() {
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
 
-      {/* Filter Bar (only show when runs loaded) */}
-      {runCount > 0 && <FilterBar />}
+      {/* Filter Bar (only show when runs loaded, not on Home/Import/About) */}
+      {runCount > 0 && !hideFilterBar && <FilterBar />}
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">

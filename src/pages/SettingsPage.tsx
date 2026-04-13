@@ -158,12 +158,12 @@ export function SettingsPage() {
     : null;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      <h2 className="text-xl font-bold text-gray-100">Settings</h2>
+    <div className="max-w-2xl mx-auto space-y-10">
+      <h2 className="text-lg font-semibold text-gray-100">Settings</h2>
 
       {/* ── Profile ───────────────────────────────────────────── */}
-      <section className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
-        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Profile</h3>
+      <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-6 space-y-5">
+        <h3 className="text-base font-semibold text-gray-200">Profile</h3>
 
         {/* Screen name */}
         <div>
@@ -239,9 +239,9 @@ export function SettingsPage() {
       </section>
 
       {/* ── Default Profile Filters ───────────────────────────── */}
-      <section className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
+      <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-6 space-y-5">
         <div>
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Default Profile Filters</h3>
+          <h3 className="text-base font-semibold text-gray-200">Default Profile Filters</h3>
           <p className="text-xs text-gray-500 mt-1.5">
             When visitors view your public profile, these filters will be applied by default. They can still change the filters themselves.
           </p>
@@ -335,9 +335,9 @@ export function SettingsPage() {
       </section>
 
       {/* ── Uploaded Runs ─────────────────────────────────────── */}
-      <section className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+      <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Uploaded Runs</h3>
+          <h3 className="text-base font-semibold text-gray-200">Uploaded Runs</h3>
           <span className="text-xs text-gray-500">{runFileNames.length} total</span>
         </div>
 
@@ -378,8 +378,8 @@ export function SettingsPage() {
       </section>
 
       {/* ── Account ───────────────────────────────────────────── */}
-      <section className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-3">
-        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Account</h3>
+      <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-6 space-y-3">
+        <h3 className="text-base font-semibold text-gray-200">Account</h3>
         <p className="text-xs text-gray-500">{user?.email}</p>
         <button
           onClick={() => doSignOut()}
