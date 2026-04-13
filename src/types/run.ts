@@ -190,3 +190,62 @@ export interface ParsedRun {
   profile: string | null;
   data: RunData;
 }
+
+// ─── Floor timeline types ─────────────────────────────────────────────────────
+
+export interface RunTimeline {
+  acts: ActSummary[];
+}
+
+export interface ActSummary {
+  actIndex: number;
+  label: string;
+  floors: FloorSummary[];
+}
+
+export interface FloorSummary {
+  floorNumber: number;
+  globalFloor: number;
+  roomType: string;
+  title: string;
+  isWeak: boolean;
+  isShop: boolean;
+  hasStats: boolean;
+  monsters: string[];
+  turnsTaken: number | null;
+
+  currentHp: number;
+  maxHp: number;
+  damageTaken: number;
+  hpHealed: number;
+  maxHpGained: number;
+  maxHpLost: number;
+
+  currentGold: number;
+  goldGained: number;
+  goldSpent: number;
+  goldStolen: number;
+
+  events: FloorEvent[];
+}
+
+export type FloorEvent =
+  | { type: 'card-reward'; offered: { id: string; upgraded: boolean }[]; picked: { id: string; upgraded: boolean } | null }
+  | { type: 'cards-offered'; offered: string[] }
+  | { type: 'cards-obtained'; cards: { name: string; upgraded: boolean }[]; verb: string }
+  | { type: 'cards-removed'; cards: string[] }
+  | { type: 'card-transformed'; original: string; result: string }
+  | { type: 'card-enchanted'; card: string; enchantment: string }
+  | { type: 'cards-upgraded'; cards: string[] }
+  | { type: 'relics-offered'; offered: string[] }
+  | { type: 'relic-obtained'; relics: string[]; verb: string }
+  | { type: 'ancient-picked'; chosen: string; offered: string[] }
+  | { type: 'ancient-skipped'; offered: string[] }
+  | { type: 'event-choice'; optionName: string }
+  | { type: 'potions-offered'; offered: string[] }
+  | { type: 'potion-obtained'; potions: string[]; verb: string }
+  | { type: 'potion-used'; potions: string[] }
+  | { type: 'rest-site'; choices: string[] }
+  | { type: 'gold-change'; gained: number; spent: number; stolen: number }
+  | { type: 'max-hp-gained'; amount: number }
+  | { type: 'max-hp-lost'; amount: number };

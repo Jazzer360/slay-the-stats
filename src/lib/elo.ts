@@ -68,6 +68,17 @@ function getPaelsWingFloor(run: ParsedRun): number {
 }
 
 /**
+ * Find the floor at which Lasting Candy was acquired in a run.
+ * Returns -1 if the relic is not present.
+ */
+function getLastingCandyFloor(run: ParsedRun): number {
+  const relics = run.data.players[0]?.relics;
+  if (!relics) return -1;
+  const relic = relics.find((r) => r.id === 'RELIC.LASTING_CANDY');
+  return relic ? relic.floor_added_to_deck : -1;
+}
+
+/**
  * Compute ELO ratings for card choices across all provided runs.
  * Runs should already be filtered and sorted chronologically.
  */
@@ -78,6 +89,8 @@ export function computeCardElo(runs: ParsedRun[]): EloMap {
     if (!run.data.players[0]?.character) continue;
 
     const paelsWingFloor = getPaelsWingFloor(run);
+    const lastingCandyFloor = getLastingCandyFloor(run);
+    let lastingCandyCounter = 0;
     const history = run.data.map_point_history;
     let currentFloor = 0;
     const pickedInRun = new Set<string>();
@@ -88,17 +101,44 @@ export function computeCardElo(runs: ParsedRun[]): EloMap {
       for (const mapPoint of act) {
         currentFloor++;
         const stats = mapPoint.player_stats?.[0];
+        const room = mapPoint.rooms?.[0];
+        const isCombat = (room?.turns_taken ?? 0) > 0;
+
+        // Track Lasting Candy counter: increments after each combat once obtained
+        let lastingCandyActive = false;
+        if (isCombat && lastingCandyFloor >= 0 && currentFloor > lastingCandyFloor) {
+          lastingCandyCounter++;
+          if (lastingCandyCounter >= 2) {
+            lastingCandyActive = true;
+            lastingCandyCounter = 0;
+          }
+        }
+
         if (!stats?.card_choices || stats.card_choices.length === 0) continue;
 
         // Exclude floor 1 bonus picks (e.g. Leaded Paperweight) from ELO
         if (currentFloor === 1) continue;
 
         // Skip shop floors — buying cards is not a competitive choice like card rewards
-        if (mapPoint.rooms?.[0]?.room_type === 'shop') continue;
+        if (room?.room_type === 'shop') continue;
 
         const isBoss = mapPoint.map_point_type === 'boss';
         const hasPaelsWing = paelsWingFloor >= 0 && currentFloor > paelsWingFloor;
-        const pickedIds = processCardChoices(elo, stats.card_choices, actIdx, isBoss, hasPaelsWing);
+        const cardGroupSize = lastingCandyActive ? 4 : 3;
+        const isThievingHopper = room?.monster_ids?.includes('MONSTER.THIEVING_HOPPER') ?? false;
+        const choices = isThievingHopper
+          ? filterThievingHopperCards(stats.card_choices, stats.cards_removed)
+          : stats.card_choices;
+        const total = choices.length;
+        if (total % cardGroupSize !== 0) {
+          console.warn(
+            `[ELO] Ungroupable card choices: ${run.fileName} floor ${currentFloor} — ` +
+            `${total} choices, expected groups of ${cardGroupSize}` +
+            (lastingCandyActive ? ' (Lasting Candy active)' : '') +
+            ` | skipping floor`,
+          );
+        }
+        const pickedIds = processCardChoices(elo, choices, actIdx, isBoss, hasPaelsWing, cardGroupSize);
         for (const id of pickedIds) pickedInRun.add(id);
       }
     }
@@ -135,13 +175,39 @@ function getCardId(choice: CardChoice): string {
 }
 
 /**
+ * Filter out the stolen card from Thieving Hopper encounters.
+ * Thieving Hopper steals a card during combat and places it in cards_removed,
+ * but also adds it to card_choices as a recovery option. We remove one instance
+ * of each stolen card from the choices so grouping and ELO work on the real rewards.
+ */
+function filterThievingHopperCards(
+  choices: CardChoice[],
+  cardsRemoved?: { id: string }[],
+): CardChoice[] {
+  if (!cardsRemoved || cardsRemoved.length === 0) return choices;
+
+  const stolenCounts = new Map<string, number>();
+  for (const c of cardsRemoved) {
+    stolenCounts.set(c.id, (stolenCounts.get(c.id) ?? 0) + 1);
+  }
+
+  return choices.filter((choice) => {
+    const remaining = stolenCounts.get(choice.card.id) ?? 0;
+    if (remaining > 0) {
+      stolenCounts.set(choice.card.id, remaining - 1);
+      return false;
+    }
+    return true;
+  });
+}
+
+/**
  * Determine the reward group size from the total number of card choices.
  * Cards are offered in groups of 3, or groups of 4 when Lasting Candy is active.
- * Returns 0 if the total doesn't fit either grouping (skip this floor).
+ * Returns 0 if the total doesn't fit the expected grouping (skip this floor).
  */
-function getGroupSize(total: number): number {
-  if (total > 0 && total % 4 === 0) return 4;
-  if (total > 0 && total % 3 === 0) return 3;
+function getGroupSize(total: number, expectedSize: number): number {
+  if (total > 0 && total % expectedSize === 0) return expectedSize;
   return 0;
 }
 
@@ -149,8 +215,7 @@ function getGroupSize(total: number): number {
  * Process card choices for a single floor, splitting them into reward groups.
  * Each group of cards was presented as an independent reward with its own skip.
  *
- * Group size is inferred from the total: divisible by 4 → groups of 4 (Lasting
- * Candy active), otherwise divisible by 3 → groups of 3.
+ * Group size is determined by Lasting Candy relic tracking.
  */
 function processCardChoices(
   elo: EloMap,
@@ -158,9 +223,10 @@ function processCardChoices(
   actIndex: number,
   isBoss: boolean,
   hasPaelsWing: boolean,
+  cardGroupSize: number,
 ): string[] {
   const total = choices.length;
-  const groupSize = getGroupSize(total);
+  const groupSize = getGroupSize(total, cardGroupSize);
   if (groupSize === 0) return []; // Can't determine grouping, skip floor
 
   const skipId = getSkipId(actIndex, isBoss);

@@ -11,7 +11,8 @@ import {
 } from 'recharts';
 import { formatId, formatDate, formatDuration } from '../../lib/format';
 import { getCardMeta } from '../../lib/card-meta';
-import type { ParsedRun, DeckCard, MapPoint, PlayerStats } from '../../types/run';
+import { parseRunTimeline } from '../../lib/floor-parser';
+import type { ParsedRun, DeckCard, FloorSummary, FloorEvent } from '../../types/run';
 
 interface ConsolidatedCard {
   id: string;
@@ -60,49 +61,37 @@ export function RunDetail({ run }: { run: ParsedRun }) {
   const d = run.data;
   const player = d.players[0];
 
+  const timeline = useMemo(() => parseRunTimeline(d), [d]);
+
   const hpData = useMemo((): HpDataPoint[] => {
     const points: HpDataPoint[] = [];
-    let floor = 0;
-    for (const act of d.map_point_history) {
-      for (const mp of act) {
-        floor++;
-        const stats = mp.player_stats?.[0];
-        if (!stats) continue;
-        const room = mp.rooms?.[0];
+    for (const act of timeline.acts) {
+      for (const floor of act.floors) {
+        if (!floor.hasStats) continue;
         points.push({
-          floor,
-          currentHp: stats.current_hp,
-          maxHp: stats.max_hp,
-          type: mp.map_point_type,
-          label: room?.model_id
-            ? formatId(room.model_id.replace(/_(WEAK|NORMAL|ELITE|BOSS)$/i, ''))
-            : formatId(mp.map_point_type),
+          floor: floor.globalFloor,
+          currentHp: floor.currentHp,
+          maxHp: floor.maxHp,
+          type: floor.roomType,
+          label: floor.title,
         });
       }
     }
     return points;
-  }, [d]);
+  }, [timeline]);
 
   const actBoundaries = useMemo(() => {
-    const boundaries: { floor: number; label: string }[] = [];
-    let floor = 0;
-    for (let i = 0; i < d.map_point_history.length; i++) {
-      if (i > 0) {
-        boundaries.push({
-          floor: floor + 1,
-          label: d.acts[i] ? formatId(d.acts[i]) : `Act ${i + 1}`,
-        });
-      }
-      floor += d.map_point_history[i].length;
-    }
-    return boundaries;
-  }, [d]);
+    return timeline.acts
+      .filter((a) => a.actIndex > 0)
+      .map((a) => ({
+        floor: a.floors[0]?.globalFloor ?? 0,
+        label: a.label,
+      }));
+  }, [timeline]);
 
   if (!player) return null;
 
-  const bingBongRelic = player.relics.find((r) => r.id === 'RELIC.BING_BONG');
-  const bingBongFloor = bingBongRelic ? bingBongRelic.floor_added_to_deck : -1;
-  const totalFloors = d.map_point_history.reduce((sum, act) => sum + act.length, 0);
+  const totalFloors = timeline.acts.reduce((sum, act) => sum + act.floors.length, 0);
 
   return (
     <div>
@@ -312,33 +301,18 @@ export function RunDetail({ run }: { run: ParsedRun }) {
           Floor-by-Floor Timeline
         </h3>
         <div className="space-y-1">
-          {d.map_point_history.reduce<{ elements: React.ReactNode[]; globalFloor: number }>(
-            (acc, act, actIdx) => {
-              acc.elements.push(
-                <div key={actIdx}>
-                  <div className="bg-purple-900/20 border border-purple-800/30 rounded px-3 py-1.5 mb-1 mt-2">
-                    <span className="text-purple-400 text-sm font-medium">
-                      {d.acts[actIdx] ? formatId(d.acts[actIdx]) : `Act ${actIdx + 1}`}
-                    </span>
-                  </div>
-                  {act.map((point, roomIdx) => {
-                    const globalFloor = acc.globalFloor + roomIdx + 1;
-                    return (
-                      <FloorRow
-                        key={roomIdx}
-                        point={point}
-                        floorNum={roomIdx + 1}
-                        hasBingBong={bingBongFloor >= 0 && globalFloor >= bingBongFloor}
-                      />
-                    );
-                  })}
-                </div>
-              );
-              acc.globalFloor += act.length;
-              return acc;
-            },
-            { elements: [], globalFloor: 0 }
-          ).elements}
+          {timeline.acts.map((act) => (
+            <div key={act.actIndex}>
+              <div className="bg-purple-900/20 border border-purple-800/30 rounded px-3 py-1.5 mb-1 mt-2">
+                <span className="text-purple-400 text-sm font-medium">
+                  {act.label}
+                </span>
+              </div>
+              {act.floors.map((floor) => (
+                <FloorRow key={floor.floorNumber} floor={floor} />
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -413,48 +387,30 @@ function DeckDisplay({ deck }: { deck: DeckCard[] }) {
   );
 }
 
-function FloorRow({ point, floorNum, hasBingBong }: { point: MapPoint; floorNum: number; hasBingBong: boolean }) {
-  const room = point.rooms?.[0];
-  const stats = point.player_stats?.[0];
-
-  const modelId = room?.model_id ?? '';
-  const roomType = room?.room_type ?? point.map_point_type;
-  const isShop = roomType === 'shop' || modelId === 'EVENT.FAKE_MERCHANT';
-  const isWeak = /_WEAK$/i.test(modelId);
-
-  const floorTitle = modelId
-    ? formatId(modelId.replace(/_(WEAK|NORMAL|ELITE|BOSS)$/i, ''))
-    : roomType === 'shop'
-    ? 'Shop'
-    : roomType === 'treasure'
-    ? 'Chest'
-    : roomType === 'rest_site'
-    ? 'Rest Site'
-    : formatId(point.map_point_type);
-
-  const statsContent = stats && (
+function FloorRow({ floor }: { floor: FloorSummary }) {
+  const statsContent = floor.hasStats && (
     <>
-      <span className="text-gray-500">{stats.current_gold}g</span>
+      <span className="text-gray-500">{floor.currentGold}g</span>
       <span className="mx-1.5 text-gray-700">|</span>
       <span
         className={
-          stats.current_hp < stats.max_hp * 0.3
+          floor.currentHp < floor.maxHp * 0.3
             ? 'text-red-400'
-            : stats.damage_taken > 0
+            : floor.damageTaken > 0
             ? 'text-red-400/70'
             : 'text-gray-500'
         }
       >
-        {stats.current_hp}/{stats.max_hp} HP
+        {floor.currentHp}/{floor.maxHp} HP
       </span>
-      {stats.damage_taken > 0 && (
+      {floor.damageTaken > 0 && (
         <span className="text-red-500/50 ml-1">
-          (-{stats.damage_taken})
+          (-{floor.damageTaken})
         </span>
       )}
-      {stats.hp_healed > 0 && (
+      {floor.hpHealed > 0 && (
         <span className="text-green-500/50 ml-1">
-          (+{stats.hp_healed})
+          (+{floor.hpHealed})
         </span>
       )}
     </>
@@ -463,19 +419,19 @@ function FloorRow({ point, floorNum, hasBingBong }: { point: MapPoint; floorNum:
   const titleContent = (
     <>
       <span className="text-gray-300">
-        {floorTitle}
+        {floor.title}
       </span>
-      {isWeak && (
+      {floor.isWeak && (
         <span className="text-gray-600 text-xs ml-1">(weak)</span>
       )}
-      {room?.monster_ids && room.monster_ids.length > 0 && (
+      {floor.monsters.length > 0 && (
         <span className="text-gray-600 text-xs ml-2">
-          vs {room.monster_ids.map(formatId).join(', ')}
+          vs {floor.monsters.map(formatId).join(', ')}
         </span>
       )}
-      {room?.turns_taken ? (
+      {floor.turnsTaken ? (
         <span className="text-gray-600 text-xs ml-2">
-          ({room.turns_taken} turns)
+          ({floor.turnsTaken} turns)
         </span>
       ) : null}
     </>
@@ -485,18 +441,18 @@ function FloorRow({ point, floorNum, hasBingBong }: { point: MapPoint; floorNum:
     <div className="py-1.5 px-3 hover:bg-gray-800/30 rounded text-sm">
       <div className="flex gap-3 items-start">
         <span className="text-gray-600 w-6 text-right shrink-0 font-mono text-xs pt-0.5">
-          {floorNum}
+          {floor.globalFloor}
         </span>
 
-        <RoomBadge type={point.map_point_type} />
+        <RoomBadge type={floor.roomType} />
 
         {/* Desktop: title + details + stats inline */}
         <div className="hidden md:flex flex-1 min-w-0 items-start gap-3">
           <div className="flex-1 min-w-0">
             {titleContent}
-            {stats && <FloorDetails stats={stats} isShop={!!isShop} hasBingBong={hasBingBong} />}
+            {floor.events.length > 0 && <FloorDetails events={floor.events} />}
           </div>
-          {stats && (
+          {floor.hasStats && (
             <div className="shrink-0 text-xs text-right whitespace-nowrap">
               {statsContent}
             </div>
@@ -504,7 +460,7 @@ function FloorRow({ point, floorNum, hasBingBong }: { point: MapPoint; floorNum:
         </div>
 
         {/* Mobile: stats summary on the first row */}
-        {stats && (
+        {floor.hasStats && (
           <div className="md:hidden ml-auto shrink-0 text-xs text-right whitespace-nowrap">
             {statsContent}
           </div>
@@ -514,7 +470,7 @@ function FloorRow({ point, floorNum, hasBingBong }: { point: MapPoint; floorNum:
       {/* Mobile: floor name and details below */}
       <div className="md:hidden pl-9 mt-0.5">
         <div>{titleContent}</div>
-        {stats && <FloorDetails stats={stats} isShop={!!isShop} hasBingBong={hasBingBong} />}
+        {floor.events.length > 0 && <FloorDetails events={floor.events} />}
       </div>
     </div>
   );
@@ -555,287 +511,170 @@ function RoomBadge({ type }: { type: string }) {
   );
 }
 
-function FloorDetails({ stats, isShop, hasBingBong }: { stats: PlayerStats; isShop: boolean; hasBingBong: boolean }) {
+function FloorDetails({ events }: { events: FloorEvent[] }) {
   const items: React.ReactNode[] = [];
 
-  if (stats.card_choices && stats.card_choices.length > 0) {
-    const pickedCards = stats.card_choices.filter((c) => c.was_picked);
-    const offered = stats.card_choices.map((c) => formatId(c.card.id)).join(', ');
-    if (isShop) {
-      items.push(
-        <span key="card-offered" className="text-gray-600">
-          Cards [{offered}]
-        </span>
-      );
-      if (pickedCards.length > 0) {
-        items.push(
-          <span key="card" className="text-green-400/70">
-            Bought {pickedCards.map((c) => formatId(c.card.id) + (c.card.current_upgrade_level ? '+' : '')).join(', ')}
-          </span>
-        );
-      }
-    } else {
-      const firstPicked = pickedCards[0];
-      if (firstPicked) {
-        items.push(
-          <span key="card" className="text-green-400/70">
-            Picked {formatId(firstPicked.card.id)}
-            {firstPicked.card.current_upgrade_level ? '+' : ''}
-          </span>
-        );
-        items.push(
-          <span key="card-offered" className="text-gray-600">
-            from [{offered}]
-          </span>
-        );
-      } else {
-        items.push(
-          <span key="card-skip" className="text-yellow-500/70">
-            Skipped [{offered}]
-          </span>
-        );
-      }
-    }
-  }
-
-  if (stats.cards_gained && stats.cards_gained.length > 0) {
-    const pickedCounts = new Map<string, number>();
-    for (const c of (stats.card_choices ?? []).filter((c) => c.was_picked)) {
-      pickedCounts.set(c.card.id, (pickedCounts.get(c.card.id) ?? 0) + 1);
-    }
-    const extraGained: { id: string; current_upgrade_level?: number }[] = [];
-    for (const c of stats.cards_gained) {
-      const remaining = pickedCounts.get(c.id) ?? 0;
-      if (remaining > 0) {
-        pickedCounts.set(c.id, remaining - 1);
-      } else {
-        extraGained.push(c);
-      }
-    }
-    if (isShop && hasBingBong && extraGained.length > 0) {
-      const boughtCards: typeof extraGained = [];
-      const dupeCards: typeof extraGained = [];
-      const seenCount = new Map<string, number>();
-      for (const c of extraGained) {
-        const count = seenCount.get(c.id) ?? 0;
-        if (count === 0) {
-          boughtCards.push(c);
+  for (const event of events) {
+    switch (event.type) {
+      case 'card-reward': {
+        const offeredStr = event.offered.map((c) => formatId(c.id) + (c.upgraded ? '+' : '')).join(', ');
+        if (event.picked) {
+          items.push(
+            <span key={`card-pick-${items.length}`} className="text-green-400/70">
+              Picked {formatId(event.picked.id)}{event.picked.upgraded ? '+' : ''}
+            </span>
+          );
+          items.push(
+            <span key={`card-offer-${items.length}`} className="text-gray-600">
+              from [{offeredStr}]
+            </span>
+          );
         } else {
-          dupeCards.push(c);
+          items.push(
+            <span key={`card-skip-${items.length}`} className="text-yellow-500/70">
+              Skipped [{offeredStr}]
+            </span>
+          );
         }
-        seenCount.set(c.id, count + 1);
+        break;
       }
-      if (boughtCards.length > 0) {
+      case 'cards-offered':
         items.push(
-          <span key="gained-bought" className="text-green-400/70">
-            Bought {boughtCards.map((c) => formatId(c.id) + (c.current_upgrade_level ? '+' : '')).join(', ')}
+          <span key={`cards-off-${items.length}`} className="text-gray-600">
+            Cards [{event.offered.map(formatId).join(', ')}]
           </span>
         );
-      }
-      if (dupeCards.length > 0) {
+        break;
+      case 'cards-obtained':
         items.push(
-          <span key="gained-dupe" className="text-green-500/70">
-            Gained {dupeCards.map((c) => formatId(c.id) + (c.current_upgrade_level ? '+' : '')).join(', ')}
+          <span key={`cards-obt-${items.length}`} className={event.verb === 'Gained' ? 'text-green-500/70' : 'text-green-400/70'}>
+            {event.verb} {event.cards.map((c) => formatId(c.name) + (c.upgraded ? '+' : '')).join(', ')}
           </span>
         );
-      }
-    } else if (extraGained.length > 0) {
-      items.push(
-        <span key="gained" className={isShop ? 'text-green-400/70' : 'text-green-500/70'}>
-          {isShop ? 'Bought' : 'Gained'} {extraGained.map((c) => formatId(c.id) + (c.current_upgrade_level ? '+' : '')).join(', ')}
-        </span>
-      );
-    }
-  }
-
-  if (stats.cards_removed && stats.cards_removed.length > 0) {
-    items.push(
-      <span key="removed" className="text-red-500/70">
-        Removed {stats.cards_removed.map((c) => formatId(c.id)).join(', ')}
-      </span>
-    );
-  }
-
-  if (stats.cards_transformed && stats.cards_transformed.length > 0) {
-    for (const t of stats.cards_transformed) {
-      items.push(
-        <span key={`xform-${t.original_card.id}`} className="text-blue-400/70">
-          {formatId(t.original_card.id)} → {formatId(t.final_card.id)}
-        </span>
-      );
-    }
-  }
-
-  if (stats.cards_enchanted && stats.cards_enchanted.length > 0) {
-    for (const e of stats.cards_enchanted) {
-      items.push(
-        <span key={`ench-${e.card.id}`} className="text-purple-400/70">
-          Enchanted {formatId(e.card.id)} with {formatId(e.enchantment)}
-        </span>
-      );
-    }
-  }
-
-  if (stats.upgraded_cards && stats.upgraded_cards.length > 0) {
-    items.push(
-      <span key="upgraded" className="text-blue-300/70">
-        Upgraded {stats.upgraded_cards.map(formatId).join(', ')}
-      </span>
-    );
-  }
-
-  if (stats.relic_choices && stats.relic_choices.length > 0) {
-    const picked = stats.relic_choices.filter((c) => c.was_picked);
-    const offered = stats.relic_choices.map((r) => formatId(r.choice)).join(', ');
-    if (isShop) {
-      items.push(
-        <span key="relic-offered" className="text-gray-600">
-          Relics [{offered}]
-        </span>
-      );
-      if (picked.length > 0) {
+        break;
+      case 'cards-removed':
         items.push(
-          <span key="relic" className="text-yellow-400/70">
-            Bought {picked.map((r) => formatId(r.choice)).join(', ')}
+          <span key={`cards-rem-${items.length}`} className="text-red-500/70">
+            Removed {event.cards.map(formatId).join(', ')}
           </span>
         );
-      }
-    } else if (picked.length > 0) {
-      items.push(
-        <span key="relic" className="text-yellow-400/70">
-          Relic: {picked.map((r) => formatId(r.choice)).join(', ')}
-        </span>
-      );
-    }
-  }
-
-  if (stats.ancient_choice && stats.ancient_choice.length > 0) {
-    const chosen = stats.ancient_choice.find((a) => a.was_chosen);
-    const offered = stats.ancient_choice.map((a) => formatId(a.TextKey)).join(', ');
-    if (chosen) {
-      items.push(
-        <span key="ancient" className="text-purple-400/70">
-          Picked {formatId(chosen.TextKey)}
-        </span>
-      );
-      items.push(
-        <span key="ancient-offered" className="text-gray-600">
-          from [{offered}]
-        </span>
-      );
-    } else {
-      items.push(
-        <span key="ancient-skip" className="text-yellow-500/70">
-          Skipped [{offered}]
-        </span>
-      );
-    }
-  }
-
-  if (
-    stats.bought_relics &&
-    stats.bought_relics.length > 0 &&
-    !(stats.relic_choices && stats.relic_choices.length > 0)
-  ) {
-    items.push(
-      <span key="bought-relic" className="text-yellow-400/70">
-        Bought {stats.bought_relics.map(formatId).join(', ')}
-      </span>
-    );
-  }
-
-  if (stats.event_choices && stats.event_choices.length > 0) {
-    for (const ev of stats.event_choices) {
-      if (ev.title.table === 'relics') continue;
-      const parts = ev.title.key.split('.');
-      const titleIdx = parts.lastIndexOf('title');
-      const optionName = titleIdx > 0 ? parts[titleIdx - 1] : parts[0];
-      items.push(
-        <span key={`event-${ev.title.key}`} className="text-teal-400/70">
-          Choice: {formatId(optionName)}
-        </span>
-      );
-    }
-  }
-
-  if (stats.potion_choices && stats.potion_choices.length > 0) {
-    const pickedPotions = stats.potion_choices.filter((p) => p.was_picked);
-    const offeredPotions = stats.potion_choices.map((p) => formatId(p.choice)).join(', ');
-    if (isShop) {
-      items.push(
-        <span key="potion-offered" className="text-gray-600">
-          Potions [{offeredPotions}]
-        </span>
-      );
-      if (pickedPotions.length > 0) {
+        break;
+      case 'card-transformed':
         items.push(
-          <span key="potion-pick" className="text-cyan-400/70">
-            Bought {pickedPotions.map((p) => formatId(p.choice)).join(', ')}
+          <span key={`card-xform-${items.length}`} className="text-blue-400/70">
+            {formatId(event.original)} → {formatId(event.result)}
           </span>
         );
+        break;
+      case 'card-enchanted':
+        items.push(
+          <span key={`card-ench-${items.length}`} className="text-purple-400/70">
+            Enchanted {formatId(event.card)} with {formatId(event.enchantment)}
+          </span>
+        );
+        break;
+      case 'cards-upgraded':
+        items.push(
+          <span key={`cards-upg-${items.length}`} className="text-blue-300/70">
+            Upgraded {event.cards.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      case 'relics-offered':
+        items.push(
+          <span key={`rel-off-${items.length}`} className="text-gray-600">
+            Relics [{event.offered.map(formatId).join(', ')}]
+          </span>
+        );
+        break;
+      case 'relic-obtained':
+        items.push(
+          <span key={`rel-obt-${items.length}`} className="text-yellow-400/70">
+            {event.verb} {event.relics.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      case 'ancient-picked':
+        items.push(
+          <span key={`anc-pick-${items.length}`} className="text-purple-400/70">
+            Picked {formatId(event.chosen)}
+          </span>
+        );
+        items.push(
+          <span key={`anc-off-${items.length}`} className="text-gray-600">
+            from [{event.offered.map(formatId).join(', ')}]
+          </span>
+        );
+        break;
+      case 'ancient-skipped':
+        items.push(
+          <span key={`anc-skip-${items.length}`} className="text-yellow-500/70">
+            Skipped [{event.offered.map(formatId).join(', ')}]
+          </span>
+        );
+        break;
+      case 'event-choice':
+        items.push(
+          <span key={`ev-${items.length}`} className="text-teal-400/70">
+            Choice: {formatId(event.optionName)}
+          </span>
+        );
+        break;
+      case 'potions-offered':
+        items.push(
+          <span key={`pot-off-${items.length}`} className="text-gray-600">
+            Potions [{event.offered.map(formatId).join(', ')}]
+          </span>
+        );
+        break;
+      case 'potion-obtained':
+        items.push(
+          <span key={`pot-obt-${items.length}`} className="text-cyan-400/70">
+            {event.verb} {event.potions.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      case 'potion-used':
+        items.push(
+          <span key={`pot-use-${items.length}`} className="text-cyan-500/70">
+            Used {event.potions.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      case 'rest-site':
+        items.push(
+          <span key={`rest-${items.length}`} className="text-green-400/70">
+            {event.choices.join(', ')}
+          </span>
+        );
+        break;
+      case 'gold-change': {
+        const goldParts: string[] = [];
+        if (event.gained > 0) goldParts.push(`+${event.gained}g`);
+        if (event.spent > 0) goldParts.push(`-${event.spent}g`);
+        if (event.stolen > 0) goldParts.push(`stolen ${event.stolen}g`);
+        items.push(
+          <span key={`gold-${items.length}`} className="text-yellow-600/70">
+            {goldParts.join(', ')}
+          </span>
+        );
+        break;
       }
-    } else if (pickedPotions.length > 0) {
-      items.push(
-        <span key="potion-pick" className="text-cyan-400/70">
-          Grabbed {pickedPotions.map((p) => formatId(p.choice)).join(', ')}
-        </span>
-      );
+      case 'max-hp-gained':
+        items.push(
+          <span key={`maxhp-up-${items.length}`} className="text-green-500/50">
+            +{event.amount} max HP
+          </span>
+        );
+        break;
+      case 'max-hp-lost':
+        items.push(
+          <span key={`maxhp-dn-${items.length}`} className="text-red-500/50">
+            -{event.amount} max HP
+          </span>
+        );
+        break;
     }
-  }
-
-  if (stats.potion_used && stats.potion_used.length > 0) {
-    items.push(
-      <span key="potion-use" className="text-cyan-500/70">
-        Used {stats.potion_used.map(formatId).join(', ')}
-      </span>
-    );
-  }
-
-  if (
-    stats.bought_potions &&
-    stats.bought_potions.length > 0 &&
-    !(stats.potion_choices && stats.potion_choices.length > 0)
-  ) {
-    items.push(
-      <span key="bought-pot" className="text-cyan-400/70">
-        Bought {stats.bought_potions.map(formatId).join(', ')}
-      </span>
-    );
-  }
-
-  if (stats.rest_site_choices && stats.rest_site_choices.length > 0) {
-    items.push(
-      <span key="rest" className="text-green-400/70">
-        {stats.rest_site_choices.join(', ')}
-      </span>
-    );
-  }
-
-  const goldParts: string[] = [];
-  if (stats.gold_gained > 0) goldParts.push(`+${stats.gold_gained}g`);
-  if (stats.gold_spent > 0) goldParts.push(`-${stats.gold_spent}g`);
-  if (stats.gold_stolen > 0) goldParts.push(`stolen ${stats.gold_stolen}g`);
-  if (goldParts.length > 0) {
-    items.push(
-      <span key="gold" className="text-yellow-600/70">
-        {goldParts.join(', ')}
-      </span>
-    );
-  }
-
-  if (stats.max_hp_gained > 0) {
-    items.push(
-      <span key="maxhp-up" className="text-green-500/50">
-        +{stats.max_hp_gained} max HP
-      </span>
-    );
-  }
-  if (stats.max_hp_lost > 0) {
-    items.push(
-      <span key="maxhp-down" className="text-red-500/50">
-        -{stats.max_hp_lost} max HP
-      </span>
-    );
   }
 
   if (items.length === 0) return null;
