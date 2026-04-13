@@ -3,7 +3,7 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-ch
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { getAnalytics } from 'firebase/analytics';
+import { getAnalytics, type Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFRT9eSAWdDGP74mB8Zb4tXiFoUwlEOlc",
@@ -24,4 +24,9 @@ export const appCheck = initializeAppCheck(app, {
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const analytics = getAnalytics(app);
+
+let _analytics: Analytics | null = null;
+export function getAnalyticsInstance(): Analytics {
+  if (!_analytics) _analytics = getAnalytics(app);
+  return _analytics;
+}

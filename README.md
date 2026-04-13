@@ -1,73 +1,45 @@
-# React + TypeScript + Vite
+# Slay the Stats
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A personal analytics dashboard for [Slay the Spire 2](https://store.steampowered.com/app/2868840/Slay_the_Spire_2/) that turns your `.run` files into actionable insights. All processing happens in your browser — no data is sent to any server unless you opt into cloud sync.
 
-Currently, two official plugins are available:
+**Live site:** [slay-the-stats.web.app](https://slay-the-stats.web.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Card ELO Ratings** — Every card reward screen is treated as a head-to-head matchup. ELO ratings surface the cards you pick most often, with optional upgrade-aware and enchantment-aware modes.
+- **Ancient Reward ELO** — The same ranking system applied to ancient reward choices, grouped by family.
+- **Combat Stats** — Win rates broken down by encounter, act, elites, and bosses.
+- **Run Timeline** — HP progression chart with act boundaries, elite encounters, and boss markers. Floor-by-floor event breakdown showing card rewards, relics, gold changes, potions, and more.
+- **Dashboard** — Win rate moving average, character distribution, floor depth tracking, and run duration metrics.
+- **Filtering** — Filter runs by character, ascension, date range, or individual card/ancient picks. All stats recalculate dynamically.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Data Loading
 
-## Expanding the ESLint configuration
+- **Guest mode** — Upload `.run` files directly. Everything stays in-browser and disappears when you close the tab.
+- **Cloud mode** — Sign in, upload your run folder, and your data persists across sessions and devices via Firebase.
+- **Multi-profile support** — Detects separate Slay the Spire 2 profile folders automatically.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Sharing
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Public profiles** — Set a screen name in Settings and share your stats at `/u/your-name`.
+- **Run sharing** — Generate a permanent link for any individual run, with or without an account.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- React 19, TypeScript, Vite
+- Tailwind CSS, Recharts
+- Firebase (Auth, Firestore, Cloud Storage)
+- Zustand for state management
+
+## Development
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Run tests:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm test
 ```

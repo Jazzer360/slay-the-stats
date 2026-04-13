@@ -3,6 +3,7 @@ import { NavLink, Outlet, Link } from 'react-router';
 import { useActiveRuns } from '../../hooks/useActiveRuns';
 import { useProfileRunsStore } from '../../store/profileRuns';
 import { useAuthStore } from '../../store/auth';
+import { useConsentStore } from '../../store/consent';
 import { doSignOut } from '../../lib/auth';
 import { FilterBar } from './FilterBar';
 import { AuthModal } from '../auth/AuthModal';
@@ -178,6 +179,31 @@ export function AppShell() {
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
         <Outlet />
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-800 px-4 py-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-600">
+          <Link to="/privacy" className="hover:text-gray-400 transition-colors">
+            Privacy Policy
+          </Link>
+          <span>·</span>
+          <CookieSettingsButton />
+        </div>
+      </footer>
     </div>
+  );
+}
+
+function CookieSettingsButton() {
+  const consent = useConsentStore((s) => s.consent);
+  const reset = useConsentStore((s) => s.reset);
+
+  return (
+    <button
+      onClick={reset}
+      className="hover:text-gray-400 transition-colors"
+    >
+      Cookie Settings{consent !== 'undecided' && `: ${consent}`}
+    </button>
   );
 }

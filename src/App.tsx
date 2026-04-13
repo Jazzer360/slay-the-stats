@@ -7,6 +7,7 @@ import { RunListPage } from './pages/RunListPage';
 import { RunDetailPage } from './pages/RunDetailPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AboutPage } from './pages/AboutPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 import { ImportPage } from './pages/ImportPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -15,6 +16,7 @@ import { CombatStatsPage } from './pages/CombatStatsPage';
 import { RequireAuth } from './components/auth/RequireAuth';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { CookieBanner } from './components/layout/CookieBanner';
 import { useCloudLoader } from './hooks/useCloudLoader';
 import { usePageTracking } from './hooks/usePageTracking';
 
@@ -33,6 +35,7 @@ function AppRoutes() {
         <Route path="/runs" element={<RunListPage />} />
         <Route path="/runs/:fileName" element={<RunDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/import" element={<ImportPage />} />
         <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
         <Route path="/u/:screenName" element={<ProfilePage />}>
@@ -55,6 +58,7 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AppRoutes />
+        <CookieBanner />
       </BrowserRouter>
     </ErrorBoundary>
   );
