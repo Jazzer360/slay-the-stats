@@ -9,37 +9,62 @@ export function HomePage() {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Hero */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-100 mb-3">
-          ⚔ Slay the Stats
+      <div className="text-center pt-4 mb-6">
+        <h2 className="text-4xl font-bold mb-4">
+          <span className="text-purple-400">⚔</span>{' '}
+          <span className="text-gray-100">Slay the Stats</span>
         </h2>
-        <p className="text-gray-400 text-lg leading-relaxed max-w-2xl mx-auto">
-          A personal analytics dashboard for{' '}
-          <span className="text-gray-300">Slay the Spire 2</span>.
+        <p className="text-gray-300 text-lg leading-relaxed max-w-xl mx-auto mb-6">
+          Personal analytics for{' '}
+          <span className="text-gray-100 font-medium">Slay the Spire 2</span>.
+          <br />
+          <span className="text-gray-400">
+            See your tendencies. Spot your patterns. Enjoy the data.
+          </span>
         </p>
+        <div className="flex items-center justify-center gap-4">
+          {runs.length > 0 ? (
+            <Link
+              to="/dashboard"
+              className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition-colors"
+            >
+              Go to Dashboard →
+            </Link>
+          ) : (
+            <Link
+              to="/import"
+              className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition-colors"
+            >
+              Import Runs
+            </Link>
+          )}
+          {!user && (
+            <span className="text-gray-500 text-sm">
+              or sign in to sync across devices
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Philosophy — up front */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 mb-6">
-        <p className="text-gray-400 text-sm leading-relaxed">
-          In my experience, every player approaches the Spire a bit differently —
-          even at higher ascensions. Aggregating data across different skill levels
-          and playstyles doesn't seem to tell you much. But looking at your own
-          trends can be genuinely useful: which cards you tend to pick, where your
-          runs usually fall apart, how your decisions shift over time. That's the
-          idea behind this site.
-        </p>
-        <p className="text-gray-400 text-sm leading-relaxed mt-3">
-          The design follows the same philosophy — clean, minimal, and focused on
-          the data. No ads, no clutter, no flashy distractions. Just useful
-          information presented in a way that's easy to read and get what you need
-          from.
-        </p>
-      </div>
+      {/* Divider */}
+      <div className="border-t border-gray-800/60 my-10" />
+
+      {/* Philosophy — flowing text, not boxed */}
+      <p className="text-gray-400 text-sm leading-relaxed text-center max-w-2xl mx-auto mb-4">
+        In my experience, every player approaches the Spire a bit differently —
+        even at higher ascensions. Aggregating data across skill levels and
+        playstyles doesn't seem to tell you much. But looking at your own trends
+        can be genuinely useful: which cards you tend to pick, where your runs
+        fall apart, how your decisions shift over time.
+      </p>
+      <p className="text-gray-500 text-sm leading-relaxed text-center max-w-2xl mx-auto mb-10">
+        The design follows the same idea — clean, minimal, focused on the data.
+        No ads, no clutter. Just useful information that's easy to read.
+      </p>
 
       {/* What this is / isn't */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-14">
+        <div className="border-l-2 border-purple-500/40 pl-5 py-1">
           <h3 className="text-base font-semibold text-gray-200 mb-3">What this is.</h3>
           <ul className="text-gray-400 text-sm leading-relaxed space-y-2">
             <li>A personal mirror for your own play — see your tendencies, track how they change, and enjoy digging into the data.</li>
@@ -47,7 +72,7 @@ export function HomePage() {
             <li>A way to share individual runs and profiles with friends if you want to.</li>
           </ul>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+        <div className="border-l-2 border-gray-700/60 pl-5 py-1">
           <h3 className="text-base font-semibold text-gray-200 mb-3">What this isn't.</h3>
           <ul className="text-gray-400 text-sm leading-relaxed space-y-2">
             <li>A leaderboard or ranking system. There are no plans to compare players against each other.</li>
@@ -57,119 +82,88 @@ export function HomePage() {
         </div>
       </div>
 
-      {/* Get started + What's inside — two column on large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-10">
-        {/* Left column: get started */}
-        <section className="lg:col-span-2">
-          <h3 className="text-base font-semibold text-gray-200 mb-4">
-            Get Started
-          </h3>
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-3">
-            <p className="text-gray-300 text-sm leading-relaxed">
-              Slay the Spire 2 saves a{' '}
-              <code className="text-purple-400">.run</code> file after every run.
-              Select your save folder and your stats are ready instantly — everything
-              is calculated locally in your browser.
-            </p>
-            <p className="text-gray-500 text-xs leading-relaxed">
-              Default save location:{' '}
-              <code className="text-gray-400">%APPDATA%\SlayTheSpire2</code>
-              <br />
-              If you have multiple profiles, select the base folder and you'll be
-              able to choose which one to load.
-            </p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              {runs.length > 0 ? (
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  Go to Dashboard →
-                </Link>
-              ) : (
-                <Link
-                  to="/import"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  Import Runs
-                </Link>
-              )}
-              {!user && (
-                <span className="text-gray-500 text-sm self-center">
-                  or sign in to sync across devices
-                </span>
-              )}
-            </div>
-          </div>
-        </section>
+      {/* What's inside */}
+      <section className="mb-14">
+        <h3 className="text-lg font-semibold text-gray-100 mb-5">What's Inside</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <FeatureCard icon="📊" title="Dashboard" description="Win rate and floor depth trends over time, character breakdown, and aggregate stats at a glance." />
+          <FeatureCard icon="🃏" title="Card ELO" description="Card rewards as head-to-head matchups. Over many runs, ratings surface your preferences. Upgrade and enchantment-aware modes available." />
+          <FeatureCard icon="🏛️" title="Ancient ELO" description="Same pairwise rating system for ancient reward choices, grouped by family." />
+          <FeatureCard icon="⚔️" title="Combat Stats" description="Win rates by encounter, act, elites, and bosses. Spot which fights tend to end your runs." />
+          <FeatureCard icon="🗺️" title="Run Details" description="HP chart with act boundaries and elite markers, plus floor-by-floor breakdown of every card, relic, and event." />
+          <FeatureCard icon="🔗" title="Sharing" description="Share a link to any run for others to explore. Public profiles available for signed-in users." />
+        </div>
+      </section>
 
-        {/* Right column: features grid */}
-        <section className="lg:col-span-3">
-          <h3 className="text-base font-semibold text-gray-200 mb-4">
-            What's Inside
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <FeatureCard
-              title="Dashboard"
-              description="Graphs tracking your win rate and floor depth over time, character breakdown, and aggregate stats at a glance."
-            />
-            <FeatureCard
-              title="Card ELO Ratings"
-              description="Card rewards treated as head-to-head matchups. Over many runs, ratings should surface which cards you reach for most. Upgrade and enchantment-aware modes available."
-            />
-            <FeatureCard
-              title="Ancient Reward ELO"
-              description="Same pairwise rating system for ancient reward choices, grouped by family."
-            />
-            <FeatureCard
-              title="Combat Stats"
-              description="Win rates by encounter, act, elites, and bosses. Helps spot which fights tend to end your runs."
-            />
-            <FeatureCard
-              title="Run Details"
-              description="HP chart with act boundaries and elite markers, plus a floor-by-floor breakdown of every card reward, relic, and event."
-            />
-            <FeatureCard
-              title="Sharing"
-              description="Share a link to any run for others to explore — more detail than a screenshot. Public profiles available for signed-in users."
-            />
-          </div>
-        </section>
-      </div>
-
-      {/* Filter slicing callout */}
-      <section className="mb-10">
-        <h3 className="text-base font-semibold text-gray-200 mb-4">
-          Slice &amp; Dice
-        </h3>
-        <div className="bg-gray-900 border border-purple-500/20 rounded-lg p-5 space-y-3">
-          <p className="text-gray-300 text-sm leading-relaxed">
-            A big part of what makes this useful is filtering. Every page on the
-            site responds to the same set of filters — character, ascension, date
-            range, or even a specific card or ancient pick. All stats, ratings, and
-            charts recalculate on the fly from whatever subset you've selected.
+      {/* Slice & Dice — accent treatment */}
+      <section className="mb-14">
+        <div className="bg-gray-900/50 border border-purple-500/15 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-purple-300 mb-3">Slice &amp; Dice</h3>
+          <p className="text-gray-300 text-sm leading-relaxed mb-3">
+            Every page responds to the same set of filters — character, ascension,
+            date range, or even a specific card or ancient pick. All stats, ratings,
+            and charts recalculate on the fly from whatever subset you've selected.
           </p>
           <p className="text-gray-400 text-sm leading-relaxed">
-            Want to see your card ratings for wins only? Filter to victories.
-            Curious how your combat stats differ between characters? Pick one.
-            Wondering what you draft differently at high ascension? Narrow the
-            range. The data is always yours to slice however you like.
+            Card ratings for wins only? Filter to victories. Combat stats per
+            character? Pick one. Drafting differently at high ascension? Narrow
+            the range. The data is always yours to slice however you like.
           </p>
         </div>
       </section>
 
-      {/* Feedback */}
-      <section className="mb-10">
-        <h3 className="text-base font-semibold text-gray-200 mb-4">
-          Feedback &amp; Bug Reports
-        </h3>
+      {/* Get started details — for people who scroll */}
+      <section className="mb-14">
+        <h3 className="text-lg font-semibold text-gray-100 mb-5">How It Works</h3>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-3">
           <p className="text-gray-300 text-sm leading-relaxed">
+            Slay the Spire 2 saves a{' '}
+            <code className="text-purple-400">.run</code> file after every run.
+            Select your save folder and your stats are ready instantly — everything
+            is calculated locally in your browser. Nothing leaves your machine
+            unless you sign in for cloud sync.
+          </p>
+          <p className="text-gray-500 text-xs leading-relaxed">
+            Default save location:{' '}
+            <code className="text-gray-400">%APPDATA%\SlayTheSpire2</code>
+            <br />
+            If you have multiple profiles, select the base folder and you'll be
+            able to choose which one to load.
+          </p>
+        </div>
+      </section>
+
+      {/* Planned features + Known issues */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-14">
+        <div>
+          <h3 className="text-base font-semibold text-gray-200 mb-3">Planned Features</h3>
+          <ul className="text-gray-400 text-sm leading-relaxed space-y-2 pl-4">
+            <li className="list-disc">Richer event details in the run timeline</li>
+            <li className="list-disc">Relic tracking and statistics</li>
+            <li className="list-disc">Continued improvements to run detail pages</li>
+            <li className="list-disc">Follow other players' profiles</li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="text-base font-semibold text-gray-200 mb-3">Known Issues</h3>
+          <ul className="text-gray-400 text-sm leading-relaxed space-y-2 pl-4">
+            <li className="list-disc">Multiplayer runs only display details for the host player</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Feedback */}
+      <section className="mb-10">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
+          <h3 className="text-base font-semibold text-gray-200 mb-3">
+            Feedback &amp; Bug Reports
+          </h3>
+          <p className="text-gray-400 text-sm leading-relaxed mb-4">
             Found a bug or have a suggestion? I'd love to hear it. No promises
             on timelines, but feedback is always welcome and helps guide where
             things go next.
           </p>
-          <div className="flex flex-wrap gap-4 pt-1">
+          <div className="flex flex-wrap gap-5">
             <a
               href="mailto:feedback@slaythestats.com"
               className="inline-flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
@@ -191,33 +185,36 @@ export function HomePage() {
       </section>
 
       {/* Source */}
-      <section className="mb-6">
-        <div className="text-center text-sm text-gray-500">
-          Open source on{' '}
-          <a
-            href="https://github.com/Jazzer360/slay-the-stats"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-400 hover:text-purple-300 transition-colors"
-          >
-            GitHub
-          </a>
-        </div>
-      </section>
+      <div className="text-center text-sm text-gray-500 mb-6">
+        Open source on{' '}
+        <a
+          href="https://github.com/Jazzer360/slay-the-stats"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-purple-400 hover:text-purple-300 transition-colors"
+        >
+          GitHub
+        </a>
+      </div>
     </div>
   );
 }
 
 function FeatureCard({
+  icon,
   title,
   description,
 }: {
+  icon: string;
   title: string;
   description: string;
 }) {
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 h-full">
-      <p className="text-purple-300 font-semibold text-sm mb-1.5">{title}</p>
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="text-base leading-none">{icon}</span>
+        <p className="text-purple-300 font-semibold text-sm">{title}</p>
+      </div>
       <p className="text-gray-400 text-xs leading-relaxed">{description}</p>
     </div>
   );
