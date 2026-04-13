@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import {
   useReactTable,
   getCoreRowModel,
@@ -183,7 +184,7 @@ export function RunListPage() {
   if (filteredRuns.length === 0) {
     return (
       <div className="text-center text-gray-500 py-20">
-        <p>No runs loaded. Go to Home to load your run history.</p>
+        <p>No runs loaded. <Link to="/import" className="text-purple-400 hover:text-purple-300">Import your runs</Link> to get started.</p>
       </div>
     );
   }

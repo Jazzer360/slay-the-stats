@@ -24,6 +24,13 @@ A personal analytics dashboard for [Slay the Spire 2](https://store.steampowered
 - **Public profiles** — Set a screen name in Settings and share your stats at `/u/your-name`.
 - **Run sharing** — Generate a permanent link for any individual run, with or without an account.
 
+## Feedback & Bug Reports
+
+Found a bug or have a feature request? There are two ways to get in touch:
+
+- **Email:** [feedback@slaythestats.com](mailto:feedback@slaythestats.com)
+- **GitHub Issues:** [github.com/Jazzer360/slay-the-stats/issues](https://github.com/Jazzer360/slay-the-stats/issues)
+
 ## Tech Stack
 
 - React 19, TypeScript, Vite
