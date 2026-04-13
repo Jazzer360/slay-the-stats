@@ -89,6 +89,16 @@ export function RunDetail({ run }: { run: ParsedRun }) {
       }));
   }, [timeline]);
 
+  const eliteFloors = useMemo(() => {
+    const floors: number[] = [];
+    for (const act of timeline.acts) {
+      for (const floor of act.floors) {
+        if (floor.roomType === 'elite') floors.push(floor.globalFloor);
+      }
+    }
+    return floors;
+  }, [timeline]);
+
   if (!player) return null;
 
   const totalFloors = timeline.acts.reduce((sum, act) => sum + act.floors.length, 0);
@@ -165,8 +175,8 @@ export function RunDetail({ run }: { run: ParsedRun }) {
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height={256}>
-              <AreaChart data={hpData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <AreaChart data={hpData} margin={{ top: 16, right: 20, bottom: 5, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
                 <XAxis
                   dataKey="floor"
                   stroke="#6b7280"
@@ -203,7 +213,40 @@ export function RunDetail({ run }: { run: ParsedRun }) {
                     stroke="#7c3aed"
                     strokeDasharray="4 4"
                     strokeOpacity={0.5}
-                    label={{ value: b.label, fill: '#a78bfa', fontSize: 10, position: 'top' }}
+                    ifOverflow="discard"
+                    label={({ viewBox }) => (
+                      <text
+                        x={(viewBox as { x?: number }).x ?? 0}
+                        y={(viewBox as { y?: number }).y ? (viewBox as { y: number }).y - 4 : 0}
+                        fill="#a78bfa"
+                        fontSize={10}
+                        textAnchor="middle"
+                      >
+                        {b.label}
+                      </text>
+                    )}
+                  />
+                ))}
+                {eliteFloors.map((f) => (
+                  <ReferenceLine
+                    key={`elite-${f}`}
+                    x={f}
+                    stroke="#f97316"
+                    strokeDasharray="3 3"
+                    strokeOpacity={0.3}
+                    ifOverflow="discard"
+                    label={({ viewBox }) => (
+                      <text
+                        x={(viewBox as { x?: number }).x ?? 0}
+                        y={(viewBox as { y?: number }).y ? (viewBox as { y: number }).y - 4 : 0}
+                        fill="#fb923c"
+                        fontSize={10}
+                        textAnchor="middle"
+                        opacity={0.6}
+                      >
+                        elite
+                      </text>
+                    )}
                   />
                 ))}
                 <Area
@@ -308,8 +351,11 @@ export function RunDetail({ run }: { run: ParsedRun }) {
                   {act.label}
                 </span>
               </div>
-              {act.floors.map((floor) => (
-                <FloorRow key={floor.floorNumber} floor={floor} />
+              {act.floors.map((floor, i) => (
+                <div key={floor.floorNumber}>
+                  {i > 0 && <div className="border-t border-gray-800/50 mx-3" />}
+                  <FloorRow floor={floor} />
+                </div>
               ))}
             </div>
           ))}
@@ -388,32 +434,78 @@ function DeckDisplay({ deck }: { deck: DeckCard[] }) {
 }
 
 function FloorRow({ floor }: { floor: FloorSummary }) {
+  // Split events: some go in the right-aligned stats column, rest stay in details
+  const goldChange = floor.events.find((e): e is Extract<FloorEvent, { type: 'gold-change' }> => e.type === 'gold-change');
+  const maxHpGained = floor.events.find((e): e is Extract<FloorEvent, { type: 'max-hp-gained' }> => e.type === 'max-hp-gained');
+  const maxHpLost = floor.events.find((e): e is Extract<FloorEvent, { type: 'max-hp-lost' }> => e.type === 'max-hp-lost');
+  const potionsUsed = floor.events.filter((e): e is Extract<FloorEvent, { type: 'potion-used' }> => e.type === 'potion-used');
+  const detailEvents = floor.events.filter(
+    (e) => e.type !== 'gold-change' && e.type !== 'max-hp-gained' && e.type !== 'max-hp-lost' && e.type !== 'potion-used',
+  );
+
+  // Build gold adjustment string
+  const goldParts: string[] = [];
+  if (goldChange) {
+    if (goldChange.gained > 0) goldParts.push(`+${goldChange.gained}`);
+    if (goldChange.spent > 0) goldParts.push(`-${goldChange.spent}`);
+    if (goldChange.stolen > 0) goldParts.push(`-${goldChange.stolen}`);
+  }
+
   const statsContent = floor.hasStats && (
-    <>
-      <span className="text-gray-500">{floor.currentGold}g</span>
-      <span className="mx-1.5 text-gray-700">|</span>
-      <span
-        className={
-          floor.currentHp < floor.maxHp * 0.3
-            ? 'text-red-400'
-            : floor.damageTaken > 0
-            ? 'text-red-400/70'
-            : 'text-gray-500'
-        }
-      >
-        {floor.currentHp}/{floor.maxHp} HP
-      </span>
-      {floor.damageTaken > 0 && (
-        <span className="text-red-500/50 ml-1">
-          (-{floor.damageTaken})
+    <div className="flex flex-col items-end gap-0.5">
+      <div className="whitespace-nowrap">
+        <span className="text-gray-500">
+          {floor.currentGold}g
         </span>
-      )}
-      {floor.hpHealed > 0 && (
-        <span className="text-green-500/50 ml-1">
-          (+{floor.hpHealed})
+        {goldParts.length > 0 && (
+          <span className="text-yellow-600/70 ml-1">
+            ({goldParts.join(', ')})
+          </span>
+        )}
+        <span className="mx-1.5 text-gray-700">|</span>
+        <span
+          className={
+            floor.currentHp < floor.maxHp * 0.3
+              ? 'text-red-400'
+              : floor.hpHealed > floor.damageTaken
+              ? 'text-green-400/70'
+              : floor.damageTaken > floor.hpHealed
+              ? 'text-red-400/70'
+              : 'text-gray-500'
+          }
+        >
+          {floor.currentHp}/{floor.maxHp} HP
         </span>
+        {floor.damageTaken > 0 && (
+          <span className="text-red-500/50 ml-1">
+            (-{floor.damageTaken})
+          </span>
+        )}
+        {floor.hpHealed > 0 && (
+          <span className="text-green-500/50 ml-1">
+            (+{floor.hpHealed})
+          </span>
+        )}
+      </div>
+      {(maxHpGained || maxHpLost) && (
+        <div className="whitespace-nowrap text-xs">
+          {maxHpGained && (
+            <span className="text-green-500/50">+{maxHpGained.amount} max HP</span>
+          )}
+          {maxHpGained && maxHpLost && <span className="text-gray-700 mx-1">·</span>}
+          {maxHpLost && (
+            <span className="text-red-500/50">-{maxHpLost.amount} max HP</span>
+          )}
+        </div>
       )}
-    </>
+      {potionsUsed.length > 0 && (
+        <div className="whitespace-nowrap text-xs">
+          <span className="text-cyan-500/70">
+            Used {potionsUsed.flatMap((e) => e.potions).map(formatId).join(', ')}
+          </span>
+        </div>
+      )}
+    </div>
   );
 
   const titleContent = (
@@ -450,10 +542,10 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
         <div className="hidden md:flex flex-1 min-w-0 items-start gap-3">
           <div className="flex-1 min-w-0">
             {titleContent}
-            {floor.events.length > 0 && <FloorDetails events={floor.events} />}
+            {detailEvents.length > 0 && <FloorDetails events={detailEvents} />}
           </div>
           {floor.hasStats && (
-            <div className="shrink-0 text-xs text-right whitespace-nowrap">
+            <div className="shrink-0 text-xs">
               {statsContent}
             </div>
           )}
@@ -461,7 +553,7 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
 
         {/* Mobile: stats summary on the first row */}
         {floor.hasStats && (
-          <div className="md:hidden ml-auto shrink-0 text-xs text-right whitespace-nowrap">
+          <div className="md:hidden ml-auto shrink-0 text-xs">
             {statsContent}
           </div>
         )}
@@ -470,7 +562,7 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
       {/* Mobile: floor name and details below */}
       <div className="md:hidden pl-9 mt-0.5">
         <div>{titleContent}</div>
-        {floor.events.length > 0 && <FloorDetails events={floor.events} />}
+        {detailEvents.length > 0 && <FloorDetails events={detailEvents} />}
       </div>
     </div>
   );
@@ -512,181 +604,163 @@ function RoomBadge({ type }: { type: string }) {
 }
 
 function FloorDetails({ events }: { events: FloorEvent[] }) {
-  const items: React.ReactNode[] = [];
+  const cardRewards: React.ReactNode[] = [];
+  const otherItems: React.ReactNode[] = [];
 
   for (const event of events) {
     switch (event.type) {
       case 'card-reward': {
         const offeredStr = event.offered.map((c) => formatId(c.id) + (c.upgraded ? '+' : '')).join(', ');
         if (event.picked) {
-          items.push(
-            <span key={`card-pick-${items.length}`} className="text-green-400/70">
-              Picked {formatId(event.picked.id)}{event.picked.upgraded ? '+' : ''}
-            </span>
-          );
-          items.push(
-            <span key={`card-offer-${items.length}`} className="text-gray-600">
-              from [{offeredStr}]
-            </span>
+          cardRewards.push(
+            <div key={`card-${cardRewards.length}`} className="flex flex-wrap gap-x-2 gap-y-0.5">
+              <span className="text-green-400/70">
+                Picked {formatId(event.picked.id)}{event.picked.upgraded ? '+' : ''}
+              </span>
+              <span className="text-gray-600">
+                from [{offeredStr}]
+              </span>
+            </div>
           );
         } else {
-          items.push(
-            <span key={`card-skip-${items.length}`} className="text-yellow-500/70">
-              Skipped [{offeredStr}]
-            </span>
+          cardRewards.push(
+            <div key={`card-${cardRewards.length}`}>
+              <span className="text-yellow-500/70">
+                Skipped [{offeredStr}]
+              </span>
+            </div>
           );
         }
         break;
       }
       case 'cards-offered':
-        items.push(
-          <span key={`cards-off-${items.length}`} className="text-gray-600">
+        otherItems.push(
+          <span key={`cards-off-${otherItems.length}`} className="text-gray-600">
             Cards [{event.offered.map(formatId).join(', ')}]
           </span>
         );
         break;
       case 'cards-obtained':
-        items.push(
-          <span key={`cards-obt-${items.length}`} className={event.verb === 'Gained' ? 'text-green-500/70' : 'text-green-400/70'}>
+        otherItems.push(
+          <span key={`cards-obt-${otherItems.length}`} className={event.verb === 'Gained' ? 'text-green-500/70' : 'text-green-400/70'}>
             {event.verb} {event.cards.map((c) => formatId(c.name) + (c.upgraded ? '+' : '')).join(', ')}
           </span>
         );
         break;
       case 'cards-removed':
-        items.push(
-          <span key={`cards-rem-${items.length}`} className="text-red-500/70">
+        otherItems.push(
+          <span key={`cards-rem-${otherItems.length}`} className="text-red-500/70">
             Removed {event.cards.map(formatId).join(', ')}
           </span>
         );
         break;
       case 'card-transformed':
-        items.push(
-          <span key={`card-xform-${items.length}`} className="text-blue-400/70">
+        otherItems.push(
+          <span key={`card-xform-${otherItems.length}`} className="text-blue-400/70">
             {formatId(event.original)} → {formatId(event.result)}
           </span>
         );
         break;
       case 'card-enchanted':
-        items.push(
-          <span key={`card-ench-${items.length}`} className="text-purple-400/70">
+        otherItems.push(
+          <span key={`card-ench-${otherItems.length}`} className="text-purple-400/70">
             Enchanted {formatId(event.card)} with {formatId(event.enchantment)}
           </span>
         );
         break;
       case 'cards-upgraded':
-        items.push(
-          <span key={`cards-upg-${items.length}`} className="text-blue-300/70">
+        otherItems.push(
+          <span key={`cards-upg-${otherItems.length}`} className="text-blue-300/70">
             Upgraded {event.cards.map(formatId).join(', ')}
           </span>
         );
         break;
       case 'relics-offered':
-        items.push(
-          <span key={`rel-off-${items.length}`} className="text-gray-600">
+        otherItems.push(
+          <span key={`rel-off-${otherItems.length}`} className="text-gray-600">
             Relics [{event.offered.map(formatId).join(', ')}]
           </span>
         );
         break;
       case 'relic-obtained':
-        items.push(
-          <span key={`rel-obt-${items.length}`} className="text-yellow-400/70">
+        otherItems.push(
+          <span key={`rel-obt-${otherItems.length}`} className="text-yellow-400/70">
             {event.verb} {event.relics.map(formatId).join(', ')}
           </span>
         );
         break;
+      case 'relic-skipped':
+        otherItems.push(
+          <span key={`rel-skip-${otherItems.length}`} className="text-yellow-500/70">
+            Skipped relic {event.skipped.map(formatId).join(', ')}
+          </span>
+        );
+        break;
       case 'ancient-picked':
-        items.push(
-          <span key={`anc-pick-${items.length}`} className="text-purple-400/70">
+        otherItems.push(
+          <span key={`anc-pick-${otherItems.length}`} className="text-purple-400/70">
             Picked {formatId(event.chosen)}
           </span>
         );
-        items.push(
-          <span key={`anc-off-${items.length}`} className="text-gray-600">
+        otherItems.push(
+          <span key={`anc-off-${otherItems.length}`} className="text-gray-600">
             from [{event.offered.map(formatId).join(', ')}]
           </span>
         );
         break;
       case 'ancient-skipped':
-        items.push(
-          <span key={`anc-skip-${items.length}`} className="text-yellow-500/70">
+        otherItems.push(
+          <span key={`anc-skip-${otherItems.length}`} className="text-yellow-500/70">
             Skipped [{event.offered.map(formatId).join(', ')}]
           </span>
         );
         break;
       case 'event-choice':
-        items.push(
-          <span key={`ev-${items.length}`} className="text-teal-400/70">
+        otherItems.push(
+          <span key={`ev-${otherItems.length}`} className="text-teal-400/70">
             Choice: {formatId(event.optionName)}
           </span>
         );
         break;
       case 'potions-offered':
-        items.push(
-          <span key={`pot-off-${items.length}`} className="text-gray-600">
+        otherItems.push(
+          <span key={`pot-off-${otherItems.length}`} className="text-gray-600">
             Potions [{event.offered.map(formatId).join(', ')}]
           </span>
         );
         break;
       case 'potion-obtained':
-        items.push(
-          <span key={`pot-obt-${items.length}`} className="text-cyan-400/70">
+        otherItems.push(
+          <span key={`pot-obt-${otherItems.length}`} className="text-cyan-400/70">
             {event.verb} {event.potions.map(formatId).join(', ')}
           </span>
         );
         break;
-      case 'potion-used':
-        items.push(
-          <span key={`pot-use-${items.length}`} className="text-cyan-500/70">
-            Used {event.potions.map(formatId).join(', ')}
-          </span>
-        );
-        break;
       case 'rest-site':
-        items.push(
-          <span key={`rest-${items.length}`} className="text-green-400/70">
+        otherItems.push(
+          <span key={`rest-${otherItems.length}`} className="text-green-400/70">
             {event.choices.join(', ')}
-          </span>
-        );
-        break;
-      case 'gold-change': {
-        const goldParts: string[] = [];
-        if (event.gained > 0) goldParts.push(`+${event.gained}g`);
-        if (event.spent > 0) goldParts.push(`-${event.spent}g`);
-        if (event.stolen > 0) goldParts.push(`stolen ${event.stolen}g`);
-        items.push(
-          <span key={`gold-${items.length}`} className="text-yellow-600/70">
-            {goldParts.join(', ')}
-          </span>
-        );
-        break;
-      }
-      case 'max-hp-gained':
-        items.push(
-          <span key={`maxhp-up-${items.length}`} className="text-green-500/50">
-            +{event.amount} max HP
-          </span>
-        );
-        break;
-      case 'max-hp-lost':
-        items.push(
-          <span key={`maxhp-dn-${items.length}`} className="text-red-500/50">
-            -{event.amount} max HP
           </span>
         );
         break;
     }
   }
 
-  if (items.length === 0) return null;
+  if (cardRewards.length === 0 && otherItems.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs mt-0.5">
-      {items.map((item, i) => (
-        <span key={i} className="flex items-center gap-1">
-          {i > 0 && <span className="text-gray-700">·</span>}
-          {item}
-        </span>
-      ))}
+    <div className="text-xs mt-0.5 space-y-0.5">
+      {cardRewards}
+      {otherItems.length > 0 && (
+        <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+          {otherItems.map((item, i) => (
+            <span key={i} className="flex items-center gap-1">
+              {i > 0 && <span className="text-gray-700">·</span>}
+              {item}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

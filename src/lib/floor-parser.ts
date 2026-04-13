@@ -262,6 +262,12 @@ function parseFloorEvents(
         relics: picked.map((r) => r.choice),
         verb: 'Relic:',
       });
+    } else {
+      const skipped = stats.relic_choices.filter((c) => !c.was_picked);
+      events.push({
+        type: 'relic-skipped',
+        skipped: skipped.map((r) => r.choice),
+      });
     }
   }
 

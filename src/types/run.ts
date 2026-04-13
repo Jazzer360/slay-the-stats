@@ -239,6 +239,7 @@ export type FloorEvent =
   | { type: 'cards-upgraded'; cards: string[] }
   | { type: 'relics-offered'; offered: string[] }
   | { type: 'relic-obtained'; relics: string[]; verb: string }
+  | { type: 'relic-skipped'; skipped: string[] }
   | { type: 'ancient-picked'; chosen: string; offered: string[] }
   | { type: 'ancient-skipped'; offered: string[] }
   | { type: 'event-choice'; optionName: string }
