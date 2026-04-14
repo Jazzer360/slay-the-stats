@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeCardElo, computeAncientElo } from '../src/lib/elo';
+import { computeCardElo, computeAncientElo, INITIAL_RATING } from '../src/lib/elo';
 import { loadFixture, loadFixtures, loadAllFixtures } from './helpers';
 
 // ─── computeCardElo ─────────────────────────────────────────────
@@ -163,11 +163,11 @@ describe('computeCardElo', () => {
     const runs = loadAllFixtures();
     const elo = computeCardElo(runs);
 
-    // Sum of all rating deviations from initial 1500 should be near zero
+    // Sum of all rating deviations from initial rating should be near zero
     // (every match moves ratings symmetrically)
     let totalDeviation = 0;
     for (const entry of elo.values()) {
-      totalDeviation += entry.rating - 1500;
+      totalDeviation += entry.rating - INITIAL_RATING;
     }
     // Allow small floating point drift
     expect(Math.abs(totalDeviation)).toBeLessThan(1);
@@ -253,7 +253,7 @@ describe('computeAncientElo', () => {
 
     let totalDeviation = 0;
     for (const entry of elo.values()) {
-      totalDeviation += entry.rating - 1500;
+      totalDeviation += entry.rating - INITIAL_RATING;
     }
     expect(Math.abs(totalDeviation)).toBeLessThan(1);
   });

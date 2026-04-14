@@ -1,3 +1,5 @@
+import { INITIAL_RATING, K_FACTOR } from '../lib/elo';
+
 export function AboutPage() {
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
@@ -64,9 +66,9 @@ export function AboutPage() {
       <section className="mb-10">
         <h3 className="text-base font-semibold text-gray-200 mb-3">How It Works</h3>
         <ul className="list-disc list-inside text-gray-400 space-y-2 text-sm">
-          <li>All cards start at an ELO rating of 1500</li>
+          <li>All cards start at an ELO rating of {INITIAL_RATING}</li>
           <li>Each card reward screen is a pairwise matchup between the picked card and each skipped option</li>
-          <li>Ratings adjust using K-factor 32, the same system used in chess rankings</li>
+          <li>Ratings adjust using K-factor {K_FACTOR}, the same system used in chess rankings</li>
           <li>Upgraded cards are tracked separately (e.g., Acrobatics vs Acrobatics+)</li>
           <li>Skipping all cards counts as a "pick" for the skip option, which has its own rating</li>
         </ul>

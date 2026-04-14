@@ -1,8 +1,8 @@
 import type { ParsedRun, AncientChoice, CardChoice } from '../types/run';
 import type { EloEntry, EloMap, OfferInstance } from '../types/elo';
 
-const INITIAL_RATING = 1500;
-const K_FACTOR = 32;
+export const INITIAL_RATING = 1500;
+export const K_FACTOR = 32;
 
 function expectedScore(ratingA: number, ratingB: number): number {
   return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));

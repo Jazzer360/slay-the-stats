@@ -9,6 +9,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import type { EloEntry } from '../../types/elo';
+import { INITIAL_RATING } from '../../lib/elo';
 import { formatDate } from '../../lib/format';
 
 interface EloHistoryChartProps {
@@ -30,11 +31,11 @@ export function EloHistoryChart({ entry }: EloHistoryChartProps) {
     const points: DataPoint[] = [];
     // Appearances are sorted most-recent-first; we need chronological order
     const sorted = [...entry.appearances].reverse();
-    // Start with the initial 1500 ELO baseline
+    // Start with the initial ELO baseline
     if (sorted.length > 0) {
       points.push({
         index: 0,
-        rating: 1500,
+        rating: INITIAL_RATING,
         date: formatDate(sorted[0].startTime),
         floor: 0,
         picked: false,
@@ -64,11 +65,11 @@ export function EloHistoryChart({ entry }: EloHistoryChartProps) {
   const minR = Math.min(...ratings);
   const maxR = Math.max(...ratings);
 
-  const ticks: number[] = [1500];
+  const ticks: number[] = [INITIAL_RATING];
   const tickMin = Math.ceil(minR / 100) * 100;
   const tickMax = Math.floor(maxR / 100) * 100;
   for (let t = tickMin; t <= tickMax; t += 100) {
-    if (t !== 1500) ticks.push(t);
+    if (t !== INITIAL_RATING) ticks.push(t);
   }
   ticks.sort((a, b) => a - b);
 
