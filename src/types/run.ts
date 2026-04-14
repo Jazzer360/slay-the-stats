@@ -245,7 +245,9 @@ export type FloorEvent =
   | { type: 'event-choice'; optionName: string }
   | { type: 'potions-offered'; offered: string[] }
   | { type: 'potion-obtained'; potions: string[]; verb: string }
+  | { type: 'potion-skipped'; potions: string[] }
   | { type: 'potion-used'; potions: string[] }
+  | { type: 'potion-discarded'; potions: string[] }
   | { type: 'rest-site'; choices: string[] }
   | { type: 'gold-change'; gained: number; spent: number; stolen: number }
   | { type: 'max-hp-gained'; amount: number }

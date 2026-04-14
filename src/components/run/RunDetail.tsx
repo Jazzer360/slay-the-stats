@@ -439,8 +439,9 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
   const maxHpGained = floor.events.find((e): e is Extract<FloorEvent, { type: 'max-hp-gained' }> => e.type === 'max-hp-gained');
   const maxHpLost = floor.events.find((e): e is Extract<FloorEvent, { type: 'max-hp-lost' }> => e.type === 'max-hp-lost');
   const potionsUsed = floor.events.filter((e): e is Extract<FloorEvent, { type: 'potion-used' }> => e.type === 'potion-used');
+  const potionsDiscarded = floor.events.filter((e): e is Extract<FloorEvent, { type: 'potion-discarded' }> => e.type === 'potion-discarded');
   const detailEvents = floor.events.filter(
-    (e) => e.type !== 'gold-change' && e.type !== 'max-hp-gained' && e.type !== 'max-hp-lost' && e.type !== 'potion-used',
+    (e) => e.type !== 'gold-change' && e.type !== 'max-hp-gained' && e.type !== 'max-hp-lost' && e.type !== 'potion-used' && e.type !== 'potion-discarded',
   );
 
   // Build gold adjustment string
@@ -465,16 +466,18 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
         <span className="mx-1.5 text-gray-700">|</span>
         <span
           className={
-            floor.currentHp < floor.maxHp * 0.3
-              ? 'text-red-400'
-              : floor.hpHealed > floor.damageTaken
+            floor.hpHealed > floor.damageTaken
               ? 'text-green-400/70'
               : floor.damageTaken > floor.hpHealed
               ? 'text-red-400/70'
               : 'text-gray-500'
           }
         >
-          {floor.currentHp}/{floor.maxHp} HP
+          {floor.currentHp < floor.maxHp * 0.3 && (
+            <span className="text-red-400 font-semibold">{floor.currentHp}</span>
+          )}
+          {floor.currentHp >= floor.maxHp * 0.3 && floor.currentHp}
+          /{floor.maxHp} HP
         </span>
         {floor.damageTaken > 0 && (
           <span className="text-red-500/50 ml-1">
@@ -502,6 +505,13 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
         <div className="whitespace-nowrap text-xs">
           <span className="text-cyan-500/70">
             Used {potionsUsed.flatMap((e) => e.potions).map(formatId).join(', ')}
+          </span>
+        </div>
+      )}
+      {potionsDiscarded.length > 0 && (
+        <div className="whitespace-nowrap text-xs">
+          <span className="text-orange-400/60">
+            Discarded {potionsDiscarded.flatMap((e) => e.potions).map(formatId).join(', ')}
           </span>
         </div>
       )}
@@ -542,7 +552,7 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
         <div className="hidden md:flex flex-1 min-w-0 items-start gap-3">
           <div className="flex-1 min-w-0">
             {titleContent}
-            {detailEvents.length > 0 && <FloorDetails events={detailEvents} />}
+            {detailEvents.length > 0 && <FloorDetails events={detailEvents} isShop={floor.isShop} />}
           </div>
           {floor.hasStats && (
             <div className="shrink-0 text-xs">
@@ -562,7 +572,7 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
       {/* Mobile: floor name and details below */}
       <div className="md:hidden pl-9 mt-0.5">
         <div>{titleContent}</div>
-        {detailEvents.length > 0 && <FloorDetails events={detailEvents} />}
+        {detailEvents.length > 0 && <FloorDetails events={detailEvents} isShop={floor.isShop} />}
       </div>
     </div>
   );
@@ -603,7 +613,110 @@ function RoomBadge({ type }: { type: string }) {
   );
 }
 
-function FloorDetails({ events }: { events: FloorEvent[] }) {
+function ShopDetails({ events }: { events: FloorEvent[] }) {
+  const cardItems: React.ReactNode[] = [];
+  const relicItems: React.ReactNode[] = [];
+  const potionItems: React.ReactNode[] = [];
+  const otherItems: React.ReactNode[] = [];
+
+  for (const event of events) {
+    switch (event.type) {
+      case 'cards-offered':
+        cardItems.push(
+          <span key={`cards-off-${cardItems.length}`} className="text-gray-600">
+            [{event.offered.map(formatId).join(', ')}]
+          </span>
+        );
+        break;
+      case 'cards-obtained':
+        cardItems.push(
+          <span key={`cards-obt-${cardItems.length}`} className="text-green-400/70">
+            {event.verb} {event.cards.map((c) => formatId(c.name) + (c.upgraded ? '+' : '')).join(', ')}
+          </span>
+        );
+        break;
+      case 'cards-removed':
+        cardItems.push(
+          <span key={`cards-rem-${cardItems.length}`} className="text-red-500/70">
+            Removed {event.cards.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      case 'relics-offered':
+        relicItems.push(
+          <span key={`rel-off-${relicItems.length}`} className="text-gray-600">
+            [{event.offered.map(formatId).join(', ')}]
+          </span>
+        );
+        break;
+      case 'relic-obtained':
+        relicItems.push(
+          <span key={`rel-obt-${relicItems.length}`} className="text-yellow-400/70">
+            {event.verb} {event.relics.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      case 'potions-offered':
+        potionItems.push(
+          <span key={`pot-off-${potionItems.length}`} className="text-gray-600">
+            [{event.offered.map(formatId).join(', ')}]
+          </span>
+        );
+        break;
+      case 'potion-obtained':
+        potionItems.push(
+          <span key={`pot-obt-${potionItems.length}`} className="text-cyan-400/70">
+            {event.verb} {event.potions.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      default:
+        otherItems.push(
+          <span key={`other-${otherItems.length}`} className="text-gray-500">
+            {event.type}
+          </span>
+        );
+        break;
+    }
+  }
+
+  const sections: { label: string; labelColor: string; items: React.ReactNode[] }[] = [];
+  if (cardItems.length > 0) sections.push({ label: 'Cards', labelColor: 'text-green-600/70', items: cardItems });
+  if (relicItems.length > 0) sections.push({ label: 'Relics', labelColor: 'text-yellow-600/70', items: relicItems });
+  if (potionItems.length > 0) sections.push({ label: 'Potions', labelColor: 'text-cyan-600/70', items: potionItems });
+
+  if (sections.length === 0 && otherItems.length === 0) return null;
+
+  return (
+    <div className="text-xs mt-0.5 space-y-0.5">
+      {sections.map((section) => (
+        <div key={section.label} className="flex flex-wrap gap-x-2 gap-y-0.5">
+          <span className={section.labelColor}>{section.label}:</span>
+          {section.items.map((item, i) => (
+            <span key={i} className="flex items-center gap-1">
+              {i > 0 && <span className="text-gray-700">·</span>}
+              {item}
+            </span>
+          ))}
+        </div>
+      ))}
+      {otherItems.length > 0 && (
+        <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+          {otherItems.map((item, i) => (
+            <span key={i} className="flex items-center gap-1">
+              {i > 0 && <span className="text-gray-700">·</span>}
+              {item}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FloorDetails({ events, isShop }: { events: FloorEvent[]; isShop?: boolean }) {
+  if (isShop) return <ShopDetails events={events} />;
+
   const cardRewards: React.ReactNode[] = [];
   const otherItems: React.ReactNode[] = [];
 
@@ -733,6 +846,20 @@ function FloorDetails({ events }: { events: FloorEvent[] }) {
         otherItems.push(
           <span key={`pot-obt-${otherItems.length}`} className="text-cyan-400/70">
             {event.verb} {event.potions.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      case 'potion-skipped':
+        otherItems.push(
+          <span key={`pot-skip-${otherItems.length}`} className="text-gray-600">
+            Skipped {event.potions.map(formatId).join(', ')}
+          </span>
+        );
+        break;
+      case 'potion-discarded':
+        otherItems.push(
+          <span key={`pot-disc-${otherItems.length}`} className="text-orange-400/60">
+            Discarded {event.potions.map(formatId).join(', ')}
           </span>
         );
         break;

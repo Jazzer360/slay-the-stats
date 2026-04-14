@@ -311,6 +311,8 @@ function parseFloorEvents(
     const pickedPotions = stats.potion_choices.filter((p) => p.was_picked);
     const offeredPotions = stats.potion_choices.map((p) => p.choice);
 
+    const skippedPotions = stats.potion_choices!.filter((p) => !p.was_picked);
+
     if (isShop) {
       events.push({ type: 'potions-offered', offered: offeredPotions });
       if (pickedPotions.length > 0) {
@@ -320,18 +322,31 @@ function parseFloorEvents(
           verb: 'Bought',
         });
       }
-    } else if (pickedPotions.length > 0) {
-      events.push({
-        type: 'potion-obtained',
-        potions: pickedPotions.map((p) => p.choice),
-        verb: 'Grabbed',
-      });
+    } else {
+      if (pickedPotions.length > 0) {
+        events.push({
+          type: 'potion-obtained',
+          potions: pickedPotions.map((p) => p.choice),
+          verb: 'Grabbed',
+        });
+      }
+      if (skippedPotions.length > 0) {
+        events.push({
+          type: 'potion-skipped',
+          potions: skippedPotions.map((p) => p.choice),
+        });
+      }
     }
   }
 
   // ── Potions used ──────────────────────────────────────────────────────
   if (stats.potion_used && stats.potion_used.length > 0) {
     events.push({ type: 'potion-used', potions: stats.potion_used });
+  }
+
+  // ── Potions discarded ─────────────────────────────────────────────────
+  if (stats.potion_discarded && stats.potion_discarded.length > 0) {
+    events.push({ type: 'potion-discarded', potions: stats.potion_discarded });
   }
 
   // ── Bought potions (fallback when no potion_choices) ──────────────────
