@@ -11,6 +11,8 @@ import {
 } from 'recharts';
 import { formatId, formatDate, formatDuration } from '../../lib/format';
 import { getCardMeta } from '../../lib/card-meta';
+import { getRelicMeta } from '../../lib/relic-meta';
+import { getPotionMeta } from '../../lib/potion-meta';
 import { parseRunTimeline } from '../../lib/floor-parser';
 import type { ParsedRun, DeckCard, FloorSummary, FloorEvent } from '../../types/run';
 
@@ -299,14 +301,17 @@ export function RunDetail({ run }: { run: ParsedRun }) {
               Relics ({player.relics.length})
             </h3>
             <div className="flex flex-wrap gap-1.5">
-              {player.relics.map((relic, i) => (
-                <span
-                  key={i}
-                  className="bg-gray-800 text-yellow-400/80 text-xs px-2 py-1 rounded"
-                >
-                  {formatId(relic.id)}
-                </span>
-              ))}
+              {player.relics.map((relic, i) => {
+                const relicColor = RARITY_COLORS[getRelicMeta(relic.id)?.rarity ?? ''] ?? 'text-yellow-400/80';
+                return (
+                  <span
+                    key={i}
+                    className={`bg-gray-800 ${relicColor} text-xs px-2 py-1 rounded`}
+                  >
+                    {formatId(relic.id)}
+                  </span>
+                );
+              })}
             </div>
           </div>
 
@@ -316,14 +321,17 @@ export function RunDetail({ run }: { run: ParsedRun }) {
                 Final Potions ({player.potions.length}/{player.max_potion_slot_count})
               </h3>
               <div className="flex flex-wrap gap-1.5">
-                {player.potions.map((pot, i) => (
-                  <span
-                    key={i}
-                    className="bg-gray-800 text-cyan-400/80 text-xs px-2 py-1 rounded"
-                  >
-                    {formatId(pot.id)}
-                  </span>
-                ))}
+                {player.potions.map((pot, i) => {
+                  const potionColor = RARITY_COLORS[getPotionMeta(pot.id)?.rarity ?? ''] ?? 'text-cyan-400/80';
+                  return (
+                    <span
+                      key={i}
+                      className={`bg-gray-800 ${potionColor} text-xs px-2 py-1 rounded`}
+                    >
+                      {formatId(pot.id)}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -379,22 +387,19 @@ export function RunDetail({ run }: { run: ParsedRun }) {
 // ─── Helper components ────────────────────────────────────────────────────────
 
 const RARITY_COLORS: Record<string, string> = {
-  Ancient: 'text-orange-400',
-  Rare: 'text-yellow-300',
-  Uncommon: 'text-blue-300',
+  Ancient: 'text-red-400',
+  Rare: 'text-yellow-400',
+  Uncommon: 'text-blue-400',
   Common: 'text-gray-100',
   Basic: 'text-gray-400',
   Curse: 'text-purple-400',
   Deprecated: 'text-gray-600',
-};
-
-const TYPE_LABEL_COLORS: Record<string, string> = {
-  Attack: 'text-red-400',
-  Skill: 'text-green-400',
-  Power: 'text-blue-400',
-  Curse: 'text-purple-400',
+  Event: 'text-green-400',
+  Shop: 'text-red-200',
+  Starter: 'text-gray-400',
+  None: 'text-gray-400',
+  Token: 'text-gray-500',
   Status: 'text-gray-500',
-  Quest: 'text-amber-400',
 };
 
 const CARDPOOL_COLORS: Record<string, string> = {
@@ -431,7 +436,7 @@ function DeckDisplay({ deck, character }: { deck: DeckCard[]; character: string 
     <div className="space-y-3">
       {groups.map((group) => (
         <div key={group.type}>
-          <div className={`text-xs font-medium uppercase tracking-wider mb-1.5 ${TYPE_LABEL_COLORS[group.type] ?? 'text-gray-500'}`}>
+          <div className="text-xs font-medium uppercase tracking-wider mb-1.5 text-gray-500">
             {group.type === '' ? 'Other' : group.type}s ({group.cards.reduce((s, c) => s + c.count, 0)})
           </div>
           <div className="flex flex-wrap gap-1.5">

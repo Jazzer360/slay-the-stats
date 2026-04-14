@@ -1,9 +1,16 @@
+import { getCardMeta } from './card-meta';
+import { getRelicMeta } from './relic-meta';
+import { getPotionMeta } from './potion-meta';
+
 /**
  * Convert IDs like "CARD.HEAVY_BLADE" to "Heavy Blade"
  * or "CHARACTER.IRONCLAD" to "Ironclad"
  * or "SKIP_ACT_1" to "Skip (Act 1)"
  * or "SKIP_BOSS_ACT_2" to "Skip Boss (Act 2)"
  * or "ENCOUNTER.QUEEN_BOSS" to "Queen Boss"
+ *
+ * Uses metadata name lookups for cards, relics, and potions when available,
+ * falling back to string manipulation for unknown IDs.
  */
 export function formatId(id: string): string {
   if (!id) return '';
@@ -27,9 +34,23 @@ export function formatId(id: string): string {
     return `Skip (Act ${act})${suffix}`;
   }
 
-  // Strip prefix (CARD., CHARACTER., ENCOUNTER., RELIC., etc.)
+  // Handle upgrade suffix
   const upgraded = id.endsWith('+');
   const base = upgraded ? id.slice(0, -1) : id;
+
+  // Try metadata lookup for cards, relics, and potions
+  if (base.startsWith('CARD.')) {
+    const meta = getCardMeta(base);
+    if (meta) return (upgraded ? `${meta.name}+` : meta.name) + suffix;
+  } else if (base.startsWith('RELIC.')) {
+    const meta = getRelicMeta(base);
+    if (meta) return meta.name + suffix;
+  } else if (base.startsWith('POTION.')) {
+    const meta = getPotionMeta(base);
+    if (meta) return meta.name + suffix;
+  }
+
+  // Fallback: strip prefix and title-case
   const withoutPrefix = base.includes('.') ? base.split('.').slice(1).join('.') : base;
 
   // Normalize Strike/Defend — drop character suffix (e.g. STRIKE_IRONCLAD → STRIKE)
