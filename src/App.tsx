@@ -13,6 +13,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SharedRunPage } from './pages/SharedRunPage';
 import { CombatStatsPage } from './pages/CombatStatsPage';
+import { CardDetailPage } from './pages/CardDetailPage';
+import { AncientDetailPage } from './pages/AncientDetailPage';
 import { RequireAuth } from './components/auth/RequireAuth';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -30,7 +32,9 @@ function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/card-elo" element={<CardEloPage />} />
+        <Route path="/card-elo/:entityId" element={<CardDetailPage />} />
         <Route path="/ancient-elo" element={<AncientEloPage />} />
+        <Route path="/ancient-elo/:entityId" element={<AncientDetailPage />} />
         <Route path="/combat-stats" element={<CombatStatsPage />} />
         <Route path="/runs" element={<RunListPage />} />
         <Route path="/runs/:fileName" element={<RunDetailPage />} />
@@ -41,7 +45,9 @@ function AppRoutes() {
         <Route path="/u/:screenName" element={<ProfilePage />}>
           <Route index element={<DashboardPage />} />
           <Route path="card-elo" element={<CardEloPage />} />
+          <Route path="card-elo/:entityId" element={<CardDetailPage />} />
           <Route path="ancient-elo" element={<AncientEloPage />} />
+          <Route path="ancient-elo/:entityId" element={<AncientDetailPage />} />
           <Route path="combat-stats" element={<CombatStatsPage />} />
           <Route path="runs" element={<RunListPage />} />
           <Route path="runs/:fileName" element={<RunDetailPage />} />

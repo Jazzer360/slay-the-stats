@@ -1,5 +1,5 @@
 import type { ParsedRun, AncientChoice, CardChoice } from '../types/run';
-import type { EloEntry, EloMap } from '../types/elo';
+import type { EloEntry, EloMap, OfferInstance } from '../types/elo';
 
 const INITIAL_RATING = 1500;
 const K_FACTOR = 32;
@@ -26,6 +26,7 @@ function getOrCreateEntry(
       runWins: 0,
       runLosses: 0,
       runWinRate: 0,
+      appearances: [],
     };
     map.set(id, entry);
   }
@@ -46,6 +47,51 @@ function applyMatch(winner: EloEntry, loser: EloEntry): void {
   winner.wins++;
   loser.matches++;
   loser.losses++;
+}
+
+type OfferLog = Map<string, Map<string, OfferInstance[]>>;
+
+interface RunMeta {
+  fileName: string;
+  win: boolean;
+  deckSize: number;
+  startTime: number;
+  character: string;
+  ascension: number;
+  floorsReached: number;
+}
+
+function recordOffer(
+  offerLog: OfferLog,
+  entityId: string,
+  fileName: string,
+  offer: OfferInstance,
+): void {
+  let runOffers = offerLog.get(entityId);
+  if (!runOffers) { runOffers = new Map(); offerLog.set(entityId, runOffers); }
+  let offers = runOffers.get(fileName);
+  if (!offers) { offers = []; runOffers.set(fileName, offers); }
+  offers.push(offer);
+}
+
+function finalizeAppearances(
+  elo: EloMap,
+  offerLog: OfferLog,
+  runMeta: Map<string, RunMeta>,
+): void {
+  for (const [entityId, runOffers] of offerLog) {
+    const entry = elo.get(entityId);
+    if (!entry) continue;
+    for (const [fileName, offers] of runOffers) {
+      const meta = runMeta.get(fileName);
+      if (!meta) continue;
+      entry.appearances.push({
+        ...meta,
+        offers: offers.sort((a, b) => a.floor - b.floor),
+      });
+    }
+    entry.appearances.sort((a, b) => b.startTime - a.startTime);
+  }
 }
 
 /**
@@ -89,9 +135,24 @@ export interface CardEloOptions {
  */
 export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { upgradeAware: true, enchantmentAware: true }): EloMap {
   const elo: EloMap = new Map();
+  const offerLog: OfferLog = new Map();
+  const runMetaMap = new Map<string, RunMeta>();
 
   for (const run of runs) {
     if (!run.data.players[0]?.character) continue;
+
+    // Compute and store run metadata for appearances
+    let floorsTotal = 0;
+    for (const act of run.data.map_point_history) floorsTotal += act.length;
+    runMetaMap.set(run.fileName, {
+      fileName: run.fileName,
+      win: run.data.win,
+      deckSize: run.data.players[0]?.deck?.length ?? 0,
+      startTime: run.data.start_time,
+      character: run.data.players[0]?.character ?? 'Unknown',
+      ascension: run.data.ascension,
+      floorsReached: floorsTotal,
+    });
 
     const paelsWingFloor = getPaelsWingFloor(run);
     const lastingCandyFloor = getLastingCandyFloor(run);
@@ -143,7 +204,7 @@ export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { up
             ` | skipping floor`,
           );
         }
-        const pickedIds = processCardChoices(elo, choices, actIdx, isBoss, hasPaelsWing, cardGroupSize, options);
+        const pickedIds = processCardChoices(elo, choices, actIdx, isBoss, hasPaelsWing, cardGroupSize, options, currentFloor, run.fileName, offerLog);
         for (const id of pickedIds) pickedInRun.add(id);
       }
     }
@@ -157,6 +218,9 @@ export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { up
       }
     }
   }
+
+  // Build appearance histories from the offer log
+  finalizeAppearances(elo, offerLog, runMetaMap);
 
   // Compute derived rates
   for (const entry of elo.values()) {
@@ -234,6 +298,9 @@ function processCardChoices(
   hasPaelsWing: boolean,
   cardGroupSize: number,
   options: CardEloOptions,
+  currentFloor: number,
+  fileName: string,
+  offerLog: OfferLog,
 ): string[] {
   const total = choices.length;
   const groupSize = getGroupSize(total, cardGroupSize);
@@ -259,11 +326,18 @@ function processCardChoices(
       allOptions.push(skipId);
     }
 
+    // Snapshot ratings before this group's matches
+    const ratingsBefore = new Map<string, number>();
+    for (const id of allOptions) {
+      ratingsBefore.set(id, getOrCreateEntry(elo, id).rating);
+    }
+
     // Update timesSeen for all options in this group
     for (const id of allOptions) {
       getOrCreateEntry(elo, id).timesSeen++;
     }
 
+    let chosenId: string;
     if (picked.length > 0) {
       // Picked card wins against unpicked cards + skip (+ sacrifice)
       const loserIds = hasPaelsWing
@@ -277,18 +351,34 @@ function processCardChoices(
           applyMatch(winnerEntry, getOrCreateEntry(elo, loserId));
         }
       }
+      chosenId = pickedIds[0];
       allPickedIds.push(...pickedIds);
     } else {
       // Skip was chosen for this group
-      const winnerId = hasPaelsWing ? 'SACRIFICE' : skipId;
-      const winnerEntry = getOrCreateEntry(elo, winnerId);
+      chosenId = hasPaelsWing ? 'SACRIFICE' : skipId;
+      const winnerEntry = getOrCreateEntry(elo, chosenId);
       winnerEntry.timesPicked++;
 
-      const losers = allOptions.filter((id) => id !== winnerId);
+      const losers = allOptions.filter((id) => id !== chosenId);
       for (const loserId of losers) {
         applyMatch(winnerEntry, getOrCreateEntry(elo, loserId));
       }
-      allPickedIds.push(winnerId);
+      allPickedIds.push(chosenId);
+    }
+
+    // Record offer instances for all entities in this group
+    for (const id of allOptions) {
+      const ratingBefore = ratingsBefore.get(id)!;
+      const currentRating = getOrCreateEntry(elo, id).rating;
+      recordOffer(offerLog, id, fileName, {
+        floor: currentFloor,
+        actIndex,
+        allOptions: [...allOptions],
+        chosenId,
+        wasPicked: picked.length > 0 ? pickedIds.includes(id) : id === chosenId,
+        eloChange: currentRating - ratingBefore,
+        ratingAfter: currentRating,
+      });
     }
   }
 
@@ -302,15 +392,32 @@ function processCardChoices(
 export function computeAncientElo(runs: ParsedRun[]): { elo: EloMap; ancientMap: Map<string, string> } {
   const elo: EloMap = new Map();
   const ancientMap = new Map<string, string>(); // TextKey -> ancient name (e.g. "EVENT.PAEL")
+  const offerLog: OfferLog = new Map();
+  const runMetaMap = new Map<string, RunMeta>();
 
   for (const run of runs) {
     if (!run.data.players[0]?.character) continue;
 
+    let floorsTotal = 0;
+    for (const act of run.data.map_point_history) floorsTotal += act.length;
+    runMetaMap.set(run.fileName, {
+      fileName: run.fileName,
+      win: run.data.win,
+      deckSize: run.data.players[0]?.deck?.length ?? 0,
+      startTime: run.data.start_time,
+      character: run.data.players[0]?.character ?? 'Unknown',
+      ascension: run.data.ascension,
+      floorsReached: floorsTotal,
+    });
+
     const history = run.data.map_point_history;
     const pickedInRun = new Set<string>();
+    let currentFloor = 0;
 
-    for (const act of history) {
+    for (let actIdx = 0; actIdx < history.length; actIdx++) {
+      const act = history[actIdx];
       for (const mapPoint of act) {
+        currentFloor++;
         const stats = mapPoint.player_stats?.[0];
         if (
           !stats?.ancient_choice ||
@@ -324,7 +431,7 @@ export function computeAncientElo(runs: ParsedRun[]): { elo: EloMap; ancientMap:
           ancientMap.set(normalizeAncientId(choice), ancientName);
         }
 
-        const pickedId = processAncientChoices(elo, stats.ancient_choice);
+        const pickedId = processAncientChoices(elo, stats.ancient_choice, currentFloor, actIdx, run.fileName, offerLog);
         if (pickedId) pickedInRun.add(pickedId);
       }
     }
@@ -338,6 +445,9 @@ export function computeAncientElo(runs: ParsedRun[]): { elo: EloMap; ancientMap:
       }
     }
   }
+
+  // Build appearance histories
+  finalizeAppearances(elo, offerLog, runMetaMap);
 
   // Compute derived rates
   for (const entry of elo.values()) {
@@ -366,29 +476,57 @@ function normalizeAncientId(choice: AncientChoice): string {
 
 function processAncientChoices(
   elo: EloMap,
-  choices: AncientChoice[]
+  choices: AncientChoice[],
+  currentFloor: number,
+  actIndex: number,
+  fileName: string,
+  offerLog: OfferLog,
 ): string | null {
   const picked = choices.find((c) => c.was_chosen);
+  const allOptionIds = choices.map((c) => normalizeAncientId(c));
+
+  // Snapshot ratings before matches
+  const ratingsBefore = new Map<string, number>();
+  for (const choice of choices) {
+    const id = normalizeAncientId(choice);
+    ratingsBefore.set(id, getOrCreateEntry(elo, id).rating);
+  }
 
   // Track all presented options
   for (const choice of choices) {
     const id = normalizeAncientId(choice);
-    const entry = getOrCreateEntry(elo, id);
-    entry.timesSeen++;
+    getOrCreateEntry(elo, id).timesSeen++;
   }
 
+  let chosenId: string | null = null;
+
   if (picked) {
-    const winnerId = normalizeAncientId(picked);
-    const winnerEntry = getOrCreateEntry(elo, winnerId);
+    chosenId = normalizeAncientId(picked);
+    const winnerEntry = getOrCreateEntry(elo, chosenId);
     winnerEntry.timesPicked++;
 
     const losers = choices.filter((c) => !c.was_chosen);
     for (const loser of losers) {
       const loserId = normalizeAncientId(loser);
-      const loserEntry = getOrCreateEntry(elo, loserId);
-      applyMatch(winnerEntry, loserEntry);
+      applyMatch(winnerEntry, getOrCreateEntry(elo, loserId));
     }
-    return winnerId;
   }
-  return null;
+
+  // Record offer instances for all entities
+  for (const choice of choices) {
+    const id = normalizeAncientId(choice);
+    const ratingBefore = ratingsBefore.get(id)!;
+    const currentRating = getOrCreateEntry(elo, id).rating;
+    recordOffer(offerLog, id, fileName, {
+      floor: currentFloor,
+      actIndex,
+      allOptions: allOptionIds,
+      chosenId: chosenId ?? 'NONE',
+      wasPicked: id === chosenId,
+      eloChange: currentRating - ratingBefore,
+      ratingAfter: currentRating,
+    });
+  }
+
+  return chosenId;
 }

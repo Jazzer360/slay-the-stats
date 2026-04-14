@@ -20,5 +20,14 @@ export function useProfileNav() {
     navigate(`${base}/runs?ancient=${encodeURIComponent(ancientKey)}`);
   }
 
-  return { toRunDetail, toRunsWithCard, toRunsWithAncient, runsPath, base };
+  function toCardDetail(entityId: string) {
+    const slug = entityId.replace(/^CARD\./, '').toLowerCase();
+    navigate(`${base}/card-elo/${encodeURIComponent(slug)}`);
+  }
+
+  function toAncientDetail(entityId: string) {
+    navigate(`${base}/ancient-elo/${encodeURIComponent(entityId)}`);
+  }
+
+  return { toRunDetail, toRunsWithCard, toRunsWithAncient, toCardDetail, toAncientDetail, runsPath, base };
 }

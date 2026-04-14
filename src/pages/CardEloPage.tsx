@@ -7,7 +7,7 @@ import { useEloOptionsStore } from '../store/eloOptions';
 
 export function CardEloPage() {
   const filteredRuns = useFilteredRuns();
-  const { toRunsWithCard } = useProfileNav();
+  const { toCardDetail } = useProfileNav();
 
   const upgradeAware = useEloOptionsStore((s) => s.upgradeAware);
   const enchantmentAware = useEloOptionsStore((s) => s.enchantmentAware);
@@ -30,7 +30,7 @@ export function CardEloPage() {
       title="Card ELO Rankings"
       entityLabel="Card"
       showCardMeta
-      onEntityClick={(id) => toRunsWithCard(id)}
+      onEntityClick={(id) => toCardDetail(id)}
       titleExtra={
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-1.5 text-sm text-gray-400 cursor-pointer select-none">

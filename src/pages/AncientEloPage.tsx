@@ -10,7 +10,7 @@ import { formatId } from '../lib/format';
 export function AncientEloPage() {
   const filteredRuns = useFilteredRuns();
   const { elo: ancientElo, ancientMap } = useAncientElo(filteredRuns);
-  const { toRunsWithAncient } = useProfileNav();
+  const { toAncientDetail } = useProfileNav();
   const [selectedAncient, setSelectedAncient] = useState<string>('ALL');
 
   // Build list of unique ancient names from the ancientMap
@@ -60,7 +60,7 @@ export function AncientEloPage() {
         eloMap={filteredElo}
         title="Ancient Reward ELO Rankings"
         entityLabel="Ancient Reward"
-        onEntityClick={(id) => toRunsWithAncient(id)}
+        onEntityClick={(id) => toAncientDetail(id)}
       />
     </div>
   );
