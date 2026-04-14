@@ -723,12 +723,14 @@ function FloorDetails({ events, isShop }: { events: FloorEvent[]; isShop?: boole
   for (const event of events) {
     switch (event.type) {
       case 'card-reward': {
-        const offeredStr = event.offered.map((c) => formatId(c.id) + (c.upgraded ? '+' : '')).join(', ');
+        const fmtCard = (c: { id: string; upgraded: boolean; enchantment?: string }) =>
+          formatId(c.id) + (c.upgraded ? '+' : '') + (c.enchantment ? ` [${formatId(c.enchantment)}]` : '');
+        const offeredStr = event.offered.map(fmtCard).join(', ');
         if (event.picked) {
           cardRewards.push(
             <div key={`card-${cardRewards.length}`} className="flex flex-wrap gap-x-2 gap-y-0.5">
               <span className="text-green-400/70">
-                Picked {formatId(event.picked.id)}{event.picked.upgraded ? '+' : ''}
+                Picked {fmtCard(event.picked)}
               </span>
               <span className="text-gray-600">
                 from [{offeredStr}]

@@ -132,10 +132,15 @@ function parseFloorEvents(
         const offered = group.map((c) => ({
           id: c.card.id,
           upgraded: !!(c.card.current_upgrade_level),
+          ...(c.card.enchantment ? { enchantment: c.card.enchantment.id } : {}),
         }));
         const pickedChoice = group.find((c) => c.was_picked);
         const picked = pickedChoice
-          ? { id: pickedChoice.card.id, upgraded: !!(pickedChoice.card.current_upgrade_level) }
+          ? {
+              id: pickedChoice.card.id,
+              upgraded: !!(pickedChoice.card.current_upgrade_level),
+              ...(pickedChoice.card.enchantment ? { enchantment: pickedChoice.card.enchantment.id } : {}),
+            }
           : null;
         events.push({ type: 'card-reward', offered, picked });
       }

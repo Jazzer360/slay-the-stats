@@ -230,7 +230,7 @@ export interface FloorSummary {
 }
 
 export type FloorEvent =
-  | { type: 'card-reward'; offered: { id: string; upgraded: boolean }[]; picked: { id: string; upgraded: boolean } | null }
+  | { type: 'card-reward'; offered: { id: string; upgraded: boolean; enchantment?: string }[]; picked: { id: string; upgraded: boolean; enchantment?: string } | null }
   | { type: 'cards-offered'; offered: string[] }
   | { type: 'cards-obtained'; cards: { name: string; upgraded: boolean }[]; verb: string }
   | { type: 'cards-removed'; cards: string[] }
