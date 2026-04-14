@@ -8,13 +8,13 @@ import { doSignOut } from '../../lib/auth';
 import { FilterBar } from './FilterBar';
 import { AuthModal } from '../auth/AuthModal';
 
-const NAV_ITEMS = [
-  { to: '/', label: 'Home' },
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/card-elo', label: 'Card ELO' },
-  { to: '/ancient-elo', label: 'Ancient ELO' },
-  { to: '/combat-stats', label: 'Combat Stats' },
-  { to: '/runs', label: 'Run List' },
+const NAV_ITEMS: { to: string; label: string; end?: boolean; profilePath?: string }[] = [
+  { to: '/', label: 'Home', end: true },
+  { to: '/dashboard', label: 'Overview', end: true, profilePath: '' },
+  { to: '/card-elo', label: 'Card ELO', profilePath: '/card-elo' },
+  { to: '/ancient-elo', label: 'Ancient ELO', profilePath: '/ancient-elo' },
+  { to: '/combat-stats', label: 'Combat Stats', profilePath: '/combat-stats' },
+  { to: '/runs', label: 'Run List', profilePath: '/runs' },
   { to: '/import', label: 'Import' },
   { to: '/about', label: 'About' },
 ];
@@ -22,9 +22,20 @@ const NAV_ITEMS = [
 export function AppShell() {
   const activeRuns = useActiveRuns();
   const runCount = activeRuns.length;
-  const isProfileView = useProfileRunsStore((s) => s.profileRuns !== null);
+  const profileScreenName = useProfileRunsStore((s) => s.screenName);
+  const isProfileView = profileScreenName !== null;
+  const profileBase = profileScreenName ? `/u/${profileScreenName}` : '';
   const { user, userProfile, authLoading } = useAuthStore();
   const location = useLocation();
+
+  const navItems = NAV_ITEMS.filter(
+    (item) => !isProfileView || item.to !== '/import'
+  ).map((item) => ({
+    ...item,
+    to: isProfileView && item.profilePath !== undefined
+      ? `${profileBase}${item.profilePath}`
+      : item.to,
+  }));
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -48,11 +59,11 @@ export function AppShell() {
             </h1>
             {/* Desktop nav */}
             <nav className="hidden lg:flex gap-1">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  end={item.to === '/'}
+                  end={item.end}
                   className={({ isActive }) =>
                     `px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                       isActive
@@ -152,11 +163,11 @@ export function AppShell() {
         {/* Mobile nav menu */}
         {mobileMenuOpen && (
           <nav className="lg:hidden mt-3 pt-3 border-t border-gray-800 flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/'}
+                end={item.end}
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   `px-3 py-2 rounded text-sm font-medium transition-colors ${

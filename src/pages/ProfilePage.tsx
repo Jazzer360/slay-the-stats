@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useParams, NavLink, Outlet } from 'react-router';
+import { useParams, Outlet, Link, useLocation } from 'react-router';
 import { getUserByScreenName } from '../lib/firestore';
 import { downloadAllUserRuns } from '../lib/cloudStorage';
 import { useProfileRunsStore } from '../store/profileRuns';
 import { useFilterStore } from '../store/filters';
 import { useAuthStore } from '../store/auth';
 import type { UserProfile } from '../types/user';
+
+/** Map current profile path to its non-profile equivalent, stripping detail segments. */
+function getMyStatsPath(pathname: string): string {
+  const match = pathname.match(/^\/u\/[^/]+\/([^/]+)/);
+  return match ? `/${match[1]}` : '/dashboard';
+}
 
 type PageState = 'loading' | 'not-found' | 'private' | 'loaded' | 'error';
 
@@ -15,6 +21,8 @@ export function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadProgress, setLoadProgress] = useState<{ loaded: number; total: number } | null>(null);
   const [copied, setCopied] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const location = useLocation();
   const { setProfileRuns, clearProfileRuns } = useProfileRunsStore();
   const { applyDefaults, resetFilters } = useFilterStore();
 
@@ -132,16 +140,6 @@ export function ProfilePage() {
     );
   }
 
-  const base = `/u/${screenName}`;
-
-  const NAV_TABS = [
-    { to: base, label: 'Dashboard', end: true },
-    { to: `${base}/card-elo`, label: 'Card ELO' },
-    { to: `${base}/ancient-elo`, label: 'Ancient ELO' },
-    { to: `${base}/combat-stats`, label: 'Combat Stats' },
-    { to: `${base}/runs`, label: 'Run History' },
-  ];
-
   return (
     <div className="space-y-6">
       {/* Profile header */}
@@ -150,32 +148,22 @@ export function ProfilePage() {
           <h2 className="text-lg font-semibold text-gray-100">{profile?.screenName}</h2>
           <p className="text-sm text-gray-500 mt-1">Public Profile</p>
         </div>
-        <button
-          onClick={copyLink}
-          className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 bg-gray-800 hover:bg-gray-700 transition-colors"
-        >
-          {copied ? '✓ Copied!' : 'Copy Profile Link'}
-        </button>
-      </div>
-
-      {/* Sub-navigation */}
-      <div className="flex gap-1 border-b border-gray-800 pb-0">
-        {NAV_TABS.map((tab) => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.end}
-            className={({ isActive }) =>
-              `px-3 py-2 text-sm font-medium rounded-t transition-colors border-b-2 -mb-px ${
-                isActive
-                  ? 'text-purple-300 border-purple-500'
-                  : 'text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-600'
-              }`
-            }
+        <div className="flex items-center gap-2">
+          {user && (
+            <Link
+              to={getMyStatsPath(location.pathname)}
+              className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 bg-gray-800 hover:bg-gray-700 transition-colors"
+            >
+              ← My Stats
+            </Link>
+          )}
+          <button
+            onClick={copyLink}
+            className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 bg-gray-800 hover:bg-gray-700 transition-colors"
           >
-            {tab.label}
-          </NavLink>
-        ))}
+            {copied ? '✓ Copied!' : 'Copy Link'}
+          </button>
+        </div>
       </div>
 
       {/* Sub-page content */}

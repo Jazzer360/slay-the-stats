@@ -28,7 +28,7 @@ export function HomePage() {
               to="/dashboard"
               className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg transition-colors"
             >
-              Go to Dashboard →
+              Go to Overview →
             </Link>
           ) : (
             <Link
@@ -86,7 +86,7 @@ export function HomePage() {
       <section className="mb-14">
         <h3 className="text-lg font-semibold text-gray-100 mb-5">What's Inside</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <FeatureCard icon="📊" title="Dashboard" description="Win rate and floor depth trends over time, character breakdown, and aggregate stats at a glance." />
+          <FeatureCard icon="📊" title="Overview" description="Win rate and floor depth trends over time, character breakdown, and aggregate stats at a glance." />
           <FeatureCard icon="🃏" title="Card ELO" description="Card rewards as head-to-head matchups. Over many runs, ratings surface your preferences. Upgrade and enchantment-aware modes available." />
           <FeatureCard icon="🏛️" title="Ancient ELO" description="Same pairwise rating system for ancient reward choices, grouped by family." />
           <FeatureCard icon="⚔️" title="Combat Stats" description="Win rates by encounter, act, elites, and bosses. Spot which fights tend to end your runs." />
