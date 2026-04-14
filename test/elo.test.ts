@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { computeCardElo, computeAncientElo, INITIAL_RATING } from '../src/lib/elo';
 import { loadFixture, loadFixtures, loadAllFixtures } from './helpers';
 
@@ -123,6 +123,28 @@ describe('computeCardElo', () => {
     const elo = computeCardElo(runs);
 
     // Should still produce valid entries
+    expect(elo.size).toBeGreaterThan(0);
+    for (const entry of elo.values()) {
+      expect(entry.wins + entry.losses).toBe(entry.matches);
+    }
+  });
+
+  it('Lasting Candy counts multi-room event combat (Battleworn Dummy)', () => {
+    // 1773793331.run has Lasting Candy and a Battleworn Dummy event on floor 38
+    // The dummy event has two rooms: rooms[0] is the event (turns_taken=0),
+    // rooms[1] is the combat encounter (turns_taken=3).
+    // Lasting Candy counter should still increment for this combat.
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const runs = loadFixtures('1773793331.run');
+    const elo = computeCardElo(runs);
+
+    // No ungroupable-card-choices warnings should fire for this run
+    const eloWarnings = spy.mock.calls.filter(
+      (args: unknown[]) => typeof args[0] === 'string' && args[0].includes('[ELO] Ungroupable'),
+    );
+    expect(eloWarnings).toHaveLength(0);
+    spy.mockRestore();
+
     expect(elo.size).toBeGreaterThan(0);
     for (const entry of elo.values()) {
       expect(entry.wins + entry.losses).toBe(entry.matches);

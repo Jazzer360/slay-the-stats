@@ -168,7 +168,7 @@ export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { up
         currentFloor++;
         const stats = mapPoint.player_stats?.[0];
         const room = mapPoint.rooms?.[0];
-        const isCombat = (room?.turns_taken ?? 0) > 0;
+        const isCombat = mapPoint.rooms?.some((r) => (r.turns_taken ?? 0) > 0) ?? false;
 
         // Track Lasting Candy counter: increments after each combat once obtained
         let lastingCandyActive = false;

@@ -95,7 +95,7 @@ describe('computeAggregateStats', () => {
     const agg = computeAggregateStats(runs);
 
     expect(agg.totalRuns).toBe(TEST_FIXTURES.length);
-    expect(agg.wins).toBe(4);
+    expect(agg.wins).toBe(5);
     expect(agg.losses + agg.wins + agg.abandoned).toBe(TEST_FIXTURES.length);
     expect(agg.abandoned).toBe(3);
     expect(agg.losses).toBe(6);
@@ -105,7 +105,7 @@ describe('computeAggregateStats', () => {
     const runs = loadAllFixtures();
     const agg = computeAggregateStats(runs);
 
-    expect(agg.winRate).toBeCloseTo(4 / TEST_FIXTURES.length, 6);
+    expect(agg.winRate).toBeCloseTo(5 / TEST_FIXTURES.length, 6);
   });
 
   it('character breakdown sums to total runs', () => {
