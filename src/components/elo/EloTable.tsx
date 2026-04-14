@@ -19,10 +19,8 @@ const RARITY_COLORS: Partial<Record<CardRarity, string>> = {
   Rare: 'bg-yellow-600 text-yellow-100',
   Ancient: 'bg-purple-600 text-purple-100',
   Curse: 'bg-red-800 text-red-200',
-  Special: 'bg-teal-600 text-teal-100',
   Basic: 'bg-gray-700 text-gray-300',
   Status: 'bg-gray-700 text-gray-300',
-  Deprecated: 'bg-gray-800 text-gray-600',
 };
 
 const COLOR_DOTS: Partial<Record<CardColor, string>> = {
@@ -36,7 +34,7 @@ const COLOR_DOTS: Partial<Record<CardColor, string>> = {
   Event: 'bg-orange-400',
   Status: 'bg-gray-600',
   Token: 'bg-gray-600',
-  Deprecated: 'bg-gray-700',
+  Unknown: 'bg-gray-700',
 };
 
 interface EloTableProps {
@@ -265,12 +263,10 @@ export function EloTable({
             ))}
           </thead>
           <tbody className="divide-y divide-gray-800/50">
-            {table.getRowModel().rows.map((row) => {
-              const isDeprecated = showCardMeta && getCardMeta(row.original.id)?.rarity === 'Deprecated';
-              return (
+            {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className={`hover:bg-gray-900/50 transition-colors${isDeprecated ? ' opacity-40' : ''}`}
+                className="hover:bg-gray-900/50 transition-colors"
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-3 py-2">
@@ -278,8 +274,7 @@ export function EloTable({
                   </td>
                 ))}
               </tr>
-            );
-            })}
+            ))}
           </tbody>
         </table>
       </div>
