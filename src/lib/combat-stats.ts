@@ -14,8 +14,9 @@ export interface EncounterStats {
   timesFought: number;
   timesDied: number;
   avgDamageTaken: number;
-  medianDamageTaken: number;
-  iqrDamageTaken: number;
+  p20DamageTaken: number;
+  p50DamageTaken: number;
+  p80DamageTaken: number;
   deathRate: number;
 }
 
@@ -25,8 +26,9 @@ export interface CombatBucketStats {
   timesFought: number;
   timesDied: number;
   avgDamageTaken: number;
-  medianDamageTaken: number;
-  iqrDamageTaken: number;
+  p20DamageTaken: number;
+  p50DamageTaken: number;
+  p80DamageTaken: number;
   deathRate: number;
   encounters: EncounterStats[];
 }
@@ -47,26 +49,17 @@ function getTier(modelId: string): CombatTier | null {
 
 const TIER_ORDER: Record<CombatTier, number> = { weak: 0, normal: 1, elite: 2, boss: 3 };
 
-function median(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-function iqr(values: number[]): number {
-  if (values.length < 2) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const q1 = percentile(sorted, 25);
-  const q3 = percentile(sorted, 75);
-  return q3 - q1;
-}
-
 function percentile(sorted: number[], p: number): number {
   const idx = (p / 100) * (sorted.length - 1);
   const lo = Math.floor(idx);
   const hi = Math.ceil(idx);
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+
+function percentiles(values: number[]): { p20: number; p50: number; p80: number } {
+  if (values.length === 0) return { p20: 0, p50: 0, p80: 0 };
+  const sorted = [...values].sort((a, b) => a - b);
+  return { p20: percentile(sorted, 20), p50: percentile(sorted, 50), p80: percentile(sorted, 80) };
 }
 
 function bucketKey(act: number, actName: string, tier: CombatTier): string {
@@ -151,28 +144,36 @@ export function computeCombatStats(runs: ParsedRun[]): CombatBucketStats[] {
   }
 
   return [...map.values()]
-    .map(({ bucket, totalDamage, damages, fights, deaths, encounterMap }) => ({
-      bucket,
-      totalDamageTaken: totalDamage,
-      timesFought: fights,
-      timesDied: deaths,
-      avgDamageTaken: fights > 0 ? totalDamage / fights : 0,
-      medianDamageTaken: median(damages),
-      iqrDamageTaken: iqr(damages),
-      deathRate: fights > 0 ? deaths / fights : 0,
-      encounters: [...encounterMap.entries()]
-        .map(([encounterId, e]) => ({
-          encounterId,
-          totalDamageTaken: e.totalDamage,
-          timesFought: e.fights,
-          timesDied: e.deaths,
-          avgDamageTaken: e.fights > 0 ? e.totalDamage / e.fights : 0,
-          medianDamageTaken: median(e.damages),
-          iqrDamageTaken: iqr(e.damages),
-          deathRate: e.fights > 0 ? e.deaths / e.fights : 0,
-        }))
-        .sort((a, b) => b.avgDamageTaken - a.avgDamageTaken),
-    }))
+    .map(({ bucket, totalDamage, damages, fights, deaths, encounterMap }) => {
+      const bp = percentiles(damages);
+      return {
+        bucket,
+        totalDamageTaken: totalDamage,
+        timesFought: fights,
+        timesDied: deaths,
+        avgDamageTaken: fights > 0 ? totalDamage / fights : 0,
+        p20DamageTaken: bp.p20,
+        p50DamageTaken: bp.p50,
+        p80DamageTaken: bp.p80,
+        deathRate: fights > 0 ? deaths / fights : 0,
+        encounters: [...encounterMap.entries()]
+          .map(([encounterId, e]) => {
+            const ep = percentiles(e.damages);
+            return {
+              encounterId,
+              totalDamageTaken: e.totalDamage,
+              timesFought: e.fights,
+              timesDied: e.deaths,
+              avgDamageTaken: e.fights > 0 ? e.totalDamage / e.fights : 0,
+              p20DamageTaken: ep.p20,
+              p50DamageTaken: ep.p50,
+              p80DamageTaken: ep.p80,
+              deathRate: e.fights > 0 ? e.deaths / e.fights : 0,
+            };
+          })
+          .sort((a, b) => b.avgDamageTaken - a.avgDamageTaken),
+      };
+    })
     .sort((a, b) => {
       if (a.bucket.act !== b.bucket.act) return a.bucket.act - b.bucket.act;
       if (a.bucket.actName !== b.bucket.actName)

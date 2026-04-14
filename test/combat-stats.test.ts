@@ -122,13 +122,16 @@ describe('computeCombatStats', () => {
     expect(totalDeaths).toBe(0);
   });
 
-  it('median and IQR are computed for each bucket', () => {
+  it('percentiles are computed for each bucket', () => {
     const runs = loadAllFixtures();
     const stats = computeCombatStats(runs);
 
     for (const bucket of stats) {
-      expect(bucket.medianDamageTaken).toBeGreaterThanOrEqual(0);
-      expect(bucket.iqrDamageTaken).toBeGreaterThanOrEqual(0);
+      expect(bucket.p20DamageTaken).toBeGreaterThanOrEqual(0);
+      expect(bucket.p50DamageTaken).toBeGreaterThanOrEqual(0);
+      expect(bucket.p80DamageTaken).toBeGreaterThanOrEqual(0);
+      expect(bucket.p20DamageTaken).toBeLessThanOrEqual(bucket.p50DamageTaken);
+      expect(bucket.p50DamageTaken).toBeLessThanOrEqual(bucket.p80DamageTaken);
     }
   });
 
@@ -165,8 +168,9 @@ describe('computeCombatStats', () => {
 
     const stats = computeCombatStats([run]);
     expect(stats.length).toBe(1);
-    expect(stats[0].medianDamageTaken).toBe(17);
-    expect(stats[0].iqrDamageTaken).toBe(0);
+    expect(stats[0].p50DamageTaken).toBe(17);
+    expect(stats[0].p20DamageTaken).toBe(17);
+    expect(stats[0].p80DamageTaken).toBe(17);
     expect(stats[0].avgDamageTaken).toBe(17);
   });
 

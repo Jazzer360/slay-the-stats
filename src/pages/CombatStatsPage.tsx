@@ -117,7 +117,7 @@ function ActSection({ group }: { group: ActGroup }) {
           <tr className="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wider">
             <th rowSpan={2} className="text-left px-3 py-2 align-bottom">Type</th>
             <th rowSpan={2} className="text-right px-3 py-2 align-bottom">Fights</th>
-            <th colSpan={3} className="text-center px-1 pt-2 pb-0.5 border-b border-gray-800">
+            <th colSpan={4} className="text-center px-1 pt-2 pb-0.5 border-b border-gray-800">
               <span className="inline-flex items-center gap-1">
                 <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14.5 17.5L3 6V3h3l11.5 11.5" />
@@ -133,8 +133,9 @@ function ActSection({ group }: { group: ActGroup }) {
           </tr>
           <tr className="border-b border-gray-800 text-gray-500 text-xs tracking-wider">
             <th className="text-right px-3 py-1">Avg</th>
-            <th className="text-right px-3 py-1">Med</th>
-            <th className="text-right px-3 py-1">IQR</th>
+            <th className="text-right px-3 py-1">P20</th>
+            <th className="text-right px-3 py-1">P50</th>
+            <th className="text-right px-3 py-1">P80</th>
           </tr>
         </thead>
         <tbody>
@@ -149,7 +150,7 @@ function ActSection({ group }: { group: ActGroup }) {
 
 function TierSection({ stats }: { stats: CombatBucketStats }) {
   const [expanded, setExpanded] = useState(false);
-  const { bucket, timesFought, avgDamageTaken, medianDamageTaken, iqrDamageTaken, timesDied, deathRate, encounters } = stats;
+  const { bucket, timesFought, avgDamageTaken, p20DamageTaken, p50DamageTaken, p80DamageTaken, timesDied, deathRate, encounters } = stats;
   const tierLabel = bucket.tier[0].toUpperCase() + bucket.tier.slice(1);
 
   return (
@@ -173,8 +174,9 @@ function TierSection({ stats }: { stats: CombatBucketStats }) {
         </td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{timesFought}</td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{avgDamageTaken.toFixed(1)}</td>
-        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{medianDamageTaken.toFixed(1)}</td>
-        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{iqrDamageTaken.toFixed(1)}</td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{p20DamageTaken.toFixed(1)}</td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{p50DamageTaken.toFixed(1)}</td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{p80DamageTaken.toFixed(1)}</td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{timesDied}</td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{formatPercent(deathRate)}</td>
       </tr>
@@ -199,10 +201,13 @@ function EncounterRow({ enc }: { enc: EncounterStats }) {
         {enc.avgDamageTaken.toFixed(1)}
       </td>
       <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
-        {enc.medianDamageTaken.toFixed(1)}
+        {enc.p20DamageTaken.toFixed(1)}
       </td>
       <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
-        {enc.iqrDamageTaken.toFixed(1)}
+        {enc.p50DamageTaken.toFixed(1)}
+      </td>
+      <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
+        {enc.p80DamageTaken.toFixed(1)}
       </td>
       <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
         {enc.timesDied}
