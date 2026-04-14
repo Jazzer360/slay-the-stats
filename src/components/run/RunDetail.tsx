@@ -22,9 +22,15 @@ interface ConsolidatedCard {
 }
 
 const RARITY_ORDER = ['Ancient', 'Rare', 'Uncommon', 'Common', 'Basic', 'Curse', 'Deprecated'];
+const TYPE_ORDER = ['Attack', 'Skill', 'Power', 'Curse', 'Status', 'Quest', 'Unknown', ''];
 
 function rarityRank(rarity: string | undefined): number {
   const idx = RARITY_ORDER.indexOf(rarity ?? '');
+  return idx === -1 ? 99 : idx;
+}
+
+function typeRank(type: string | undefined): number {
+  const idx = TYPE_ORDER.indexOf(type ?? '');
   return idx === -1 ? 99 : idx;
 }
 
@@ -42,8 +48,13 @@ function consolidateDeck(deck: DeckCard[]): ConsolidatedCard[] {
     }
   }
   return [...map.values()].sort((a, b) => {
-    const ra = rarityRank(getCardMeta(a.id)?.rarity);
-    const rb = rarityRank(getCardMeta(b.id)?.rarity);
+    const ma = getCardMeta(a.id);
+    const mb = getCardMeta(b.id);
+    const ta = typeRank(ma?.type);
+    const tb = typeRank(mb?.type);
+    if (ta !== tb) return ta - tb;
+    const ra = rarityRank(ma?.rarity);
+    const rb = rarityRank(mb?.rarity);
     if (ra !== rb) return ra - rb;
     return formatId(a.id).localeCompare(formatId(b.id));
   });
@@ -279,7 +290,7 @@ export function RunDetail({ run }: { run: ParsedRun }) {
           <h3 className="text-base font-semibold text-gray-200 mb-3">
             Final Deck ({player.deck.length})
           </h3>
-          <DeckDisplay deck={player.deck} />
+          <DeckDisplay deck={player.deck} character={player.character} />
         </div>
 
         <div className="space-y-6">
@@ -377,26 +388,41 @@ const RARITY_COLORS: Record<string, string> = {
   Deprecated: 'text-gray-600',
 };
 
-const RARITY_LABEL_COLORS: Record<string, string> = {
-  Ancient: 'text-orange-500',
-  Rare: 'text-yellow-400',
-  Uncommon: 'text-blue-400',
-  Common: 'text-gray-400',
-  Basic: 'text-gray-500',
-  Curse: 'text-purple-500',
-  Deprecated: 'text-gray-600',
+const TYPE_LABEL_COLORS: Record<string, string> = {
+  Attack: 'text-red-400',
+  Skill: 'text-green-400',
+  Power: 'text-blue-400',
+  Curse: 'text-purple-400',
+  Status: 'text-gray-500',
+  Quest: 'text-amber-400',
 };
 
-function DeckDisplay({ deck }: { deck: DeckCard[] }) {
-  const consolidated = consolidateDeck(deck);
+const CARDPOOL_COLORS: Record<string, string> = {
+  Ironclad: '#ef4444',
+  Silent: '#22c55e',
+  Defect: '#3b82f6',
+  Regent: '#f59e0b',
+  Necrobinder: '#a855f7',
+  Colorless: '#9ca3af',
+  Curse: '#7c3aed',
+  Event: '#9ca3af',
+  Status: '#6b7280',
+  Token: '#6b7280',
+  Quest: '#d97706',
+};
 
-  const groups: { rarity: string; cards: ConsolidatedCard[] }[] = [];
-  let currentRarity = '';
+function DeckDisplay({ deck, character }: { deck: DeckCard[]; character: string }) {
+  const consolidated = consolidateDeck(deck);
+  // Derive cardpool name from e.g. "CHARACTER.IRONCLAD" → "Ironclad"
+  const charPool = character.split('.').pop()?.toLowerCase().replace(/(^|\s)\w/g, (c) => c.toUpperCase()) ?? '';
+
+  const groups: { type: string; cards: ConsolidatedCard[] }[] = [];
+  let currentType = '';
   for (const card of consolidated) {
-    const rarity = getCardMeta(card.id)?.rarity ?? 'Common';
-    if (rarity !== currentRarity) {
-      currentRarity = rarity;
-      groups.push({ rarity, cards: [] });
+    const type = getCardMeta(card.id)?.type || 'Unknown';
+    if (type !== currentType) {
+      currentType = type;
+      groups.push({ type, cards: [] });
     }
     groups[groups.length - 1].cards.push(card);
   }
@@ -404,19 +430,30 @@ function DeckDisplay({ deck }: { deck: DeckCard[] }) {
   return (
     <div className="space-y-3">
       {groups.map((group) => (
-        <div key={group.rarity}>
-          <div className={`text-xs font-medium uppercase tracking-wider mb-1.5 ${RARITY_LABEL_COLORS[group.rarity] ?? 'text-gray-500'}`}>
-            {group.rarity}
+        <div key={group.type}>
+          <div className={`text-xs font-medium uppercase tracking-wider mb-1.5 ${TYPE_LABEL_COLORS[group.type] ?? 'text-gray-500'}`}>
+            {group.type === '' ? 'Other' : group.type}s ({group.cards.reduce((s, c) => s + c.count, 0)})
           </div>
           <div className="flex flex-wrap gap-1.5">
             {group.cards.map((item, i) => {
-              const rarity = getCardMeta(item.id)?.rarity ?? 'Common';
+              const meta = getCardMeta(item.id);
+              const rarity = meta?.rarity ?? 'Common';
               const color = RARITY_COLORS[rarity] ?? 'text-gray-100';
+              const cardColor = meta?.color ?? '';
+              const hidePip = cardColor === charPool || cardColor === 'Curse' || rarity === 'Ancient';
+              const poolColor = CARDPOOL_COLORS[cardColor] ?? '#6b7280';
               return (
                 <span
                   key={i}
-                  className={`bg-gray-800 text-xs px-2 py-1 rounded ${color}`}
+                  className={`bg-gray-800 text-xs px-2 py-1 rounded inline-flex items-center gap-1.5 ${color}`}
                 >
+                  {!hidePip && (
+                    <span
+                      className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{ backgroundColor: poolColor }}
+                      title={meta?.color ?? 'Unknown'}
+                    />
+                  )}
                   {formatId(item.id)}
                   {item.upgraded ? '+' : ''}
                   {item.enchantment ? ` [${formatId(item.enchantment)}]` : ''}
