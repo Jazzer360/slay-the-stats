@@ -6,14 +6,17 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if (request.auth != null && request.auth.uid == uid)
                   || resource.data.profileVisibility == 'public';
-      allow write: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid
+                   && request.resource.data.keys().hasOnly(
+                        ['screenName', 'profileVisibility', 'createdAt', 'defaultFilters']);
     }
 
     // Screen name reservation (unique username index)
     match /screenNames/{name} {
       allow read: if true;
       allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid;
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['uid']);
       allow delete: if request.auth != null
                     && resource.data.uid == request.auth.uid;
     }
@@ -22,7 +25,10 @@ service cloud.firestore {
     match /shares/{token} {
       allow read: if true;
       allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid;
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['uid', 'fileName', 'runContent', 'createdAt'])
+                    && request.resource.data.runContent is string
+                    && request.resource.data.runContent.size() <= 900000;
       allow delete: if request.auth != null
                     && resource.data.uid == request.auth.uid;
     }
@@ -30,7 +36,9 @@ service cloud.firestore {
     // Public / anonymous share tokens (no account required)
     match /public_shares/{token} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasAll(['fileName', 'runContent', 'createdAt'])
+      allow create: if request.resource.data.keys().hasOnly(['fileName', 'runContent', 'createdAt'])
+                    && request.resource.data.fileName is string
+                    && request.resource.data.fileName.size() <= 200
                     && request.resource.data.runContent is string
                     && request.resource.data.runContent.size() <= 900000;
       allow delete: if false;
