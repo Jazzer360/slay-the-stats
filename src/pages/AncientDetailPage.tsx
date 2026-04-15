@@ -5,6 +5,7 @@ import { useProfileNav } from '../hooks/useProfileNav';
 import { formatId, formatElo, formatPercent } from '../lib/format';
 import { RunCard } from '../components/elo/OfferHistory';
 import { EloHistoryChart } from '../components/elo/EloHistoryChart';
+import { useCallback } from 'react';
 
 export function AncientDetailPage() {
   const { entityId } = useParams();
@@ -12,6 +13,10 @@ export function AncientDetailPage() {
   const filteredRuns = useFilteredRuns();
   const { elo: ancientElo } = useAncientElo(filteredRuns);
   const { base } = useProfileNav();
+
+  const getAncientDetailPath = useCallback((id: string) => {
+    return `${base}/ancient-elo/${encodeURIComponent(id)}`;
+  }, [base]);
 
   const entry = ancientElo.get(decodedId);
 
@@ -54,7 +59,7 @@ export function AncientDetailPage() {
       </h3>
       <div className="space-y-3">
         {entry.appearances.map((appearance) => (
-          <RunCard key={appearance.fileName} appearance={appearance} entityId={decodedId} base={base} />
+          <RunCard key={appearance.fileName} appearance={appearance} entityId={decodedId} base={base} getDetailPath={getAncientDetailPath} />
         ))}
       </div>
     </div>

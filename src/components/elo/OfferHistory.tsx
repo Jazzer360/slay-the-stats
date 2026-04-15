@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { formatId, formatDate } from '../../lib/format';
 import type { RunAppearance, OfferInstance } from '../../types/elo';
 
-export function RunCard({ appearance, entityId, base }: { appearance: RunAppearance; entityId: string; base: string }) {
+export function RunCard({ appearance, entityId, base, getDetailPath }: { appearance: RunAppearance; entityId: string; base: string; getDetailPath?: (id: string) => string }) {
   const runPath = `${base}/runs/${encodeURIComponent(appearance.fileName.replace(/\.run$/, ''))}`;
   const totalEloChange = appearance.offers.reduce((sum, o) => sum + o.eloChange, 0);
 
@@ -35,14 +35,14 @@ export function RunCard({ appearance, entityId, base }: { appearance: RunAppeara
       {/* Offer instances */}
       <div className="divide-y divide-gray-800/50 bg-gray-950">
         {appearance.offers.map((offer, i) => (
-          <OfferRow key={i} offer={offer} entityId={entityId} />
+          <OfferRow key={i} offer={offer} entityId={entityId} getDetailPath={getDetailPath} />
         ))}
       </div>
     </div>
   );
 }
 
-function OfferRow({ offer, entityId }: { offer: OfferInstance; entityId: string }) {
+function OfferRow({ offer, entityId, getDetailPath }: { offer: OfferInstance; entityId: string; getDetailPath?: (id: string) => string }) {
   return (
     <div className="flex items-center gap-3 px-4 py-2 text-sm">
       <span className="text-gray-500 w-16 shrink-0">Floor {offer.floor}</span>
@@ -65,6 +65,14 @@ function OfferRow({ offer, entityId }: { offer: OfferInstance; entityId: string 
             className += 'bg-gray-700 text-gray-300 ring-1 ring-purple-500/50';
           } else {
             className += 'bg-gray-800/60 text-gray-500';
+          }
+          const isLinkable = !isTarget && !id.startsWith('SKIP_') && id !== 'SACRIFICE';
+          if (getDetailPath && isLinkable) {
+            return (
+              <Link key={id} to={getDetailPath(id)} className={`${className} hover:brightness-125 transition-all`}>
+                {formatId(id)}
+              </Link>
+            );
           }
           return (
             <span key={id} className={className}>

@@ -7,6 +7,7 @@ import { formatId, formatElo, formatPercent } from '../lib/format';
 import { getCardMeta } from '../lib/card-meta';
 import { RunCard } from '../components/elo/OfferHistory';
 import { EloHistoryChart } from '../components/elo/EloHistoryChart';
+import { useCallback } from 'react';
 
 export function CardDetailPage() {
   const { entityId } = useParams();
@@ -18,6 +19,11 @@ export function CardDetailPage() {
   const enchantmentAware = useEloOptionsStore((s) => s.enchantmentAware);
   const cardElo = useCardElo(filteredRuns, { upgradeAware, enchantmentAware });
   const { base } = useProfileNav();
+
+  const getCardDetailPath = useCallback((id: string) => {
+    const slug = id.replace(/^CARD\./, '').toLowerCase();
+    return `${base}/card-elo/${encodeURIComponent(slug)}`;
+  }, [base]);
 
   const entry = cardElo.get(decodedId);
 
@@ -68,7 +74,7 @@ export function CardDetailPage() {
       </h3>
       <div className="space-y-3">
         {entry.appearances.map((appearance) => (
-          <RunCard key={appearance.fileName} appearance={appearance} entityId={decodedId} base={base} />
+          <RunCard key={appearance.fileName} appearance={appearance} entityId={decodedId} base={base} getDetailPath={getCardDetailPath} />
         ))}
       </div>
     </div>
