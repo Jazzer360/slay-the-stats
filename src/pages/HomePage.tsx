@@ -15,8 +15,8 @@ export function HomePage() {
           <span className="text-gray-100">Slay the Stats</span>
         </h2>
         <p className="text-gray-300 text-lg leading-relaxed max-w-xl mx-auto mb-6">
-          Personal analytics for{' '}
-          <span className="text-gray-100 font-medium">Slay the Spire 2</span>.
+          Personal analytics for <span className="text-gray-100 font-medium">Slay the Spire 2</span>
+          .
           <br />
           <span className="text-gray-400">
             See your tendencies. Spot your patterns. Enjoy the data.
@@ -39,9 +39,7 @@ export function HomePage() {
             </Link>
           )}
           {!user && (
-            <span className="text-gray-500 text-sm">
-              or sign in to sync across devices
-            </span>
+            <span className="text-gray-500 text-sm">or sign in to sync across devices</span>
           )}
         </div>
       </div>
@@ -51,15 +49,14 @@ export function HomePage() {
 
       {/* Philosophy — flowing text, not boxed */}
       <p className="text-gray-400 text-sm leading-relaxed text-center max-w-2xl mx-auto mb-4">
-        In my experience, every player approaches the Spire a bit differently —
-        even at higher ascensions. Aggregating data across skill levels and
-        playstyles doesn't seem to tell you much. But looking at your own trends
-        can be genuinely useful: which cards you tend to pick, where your runs
-        fall apart, how your decisions shift over time.
+        In my experience, every player approaches the Spire a bit differently — even at higher
+        ascensions. Aggregating data across skill levels and playstyles doesn't seem to tell you
+        much. But looking at your own trends can be genuinely useful: which cards you tend to pick,
+        where your runs fall apart, how your decisions shift over time.
       </p>
       <p className="text-gray-500 text-sm leading-relaxed text-center max-w-2xl mx-auto mb-10">
-        The design follows the same idea — clean, minimal, focused on the data.
-        No ads, no clutter. Just useful information that's easy to read.
+        The design follows the same idea — clean, minimal, focused on the data. No ads, no clutter.
+        Just useful information that's easy to read.
       </p>
 
       {/* What this is / isn't */}
@@ -67,7 +64,10 @@ export function HomePage() {
         <div className="border-l-2 border-purple-500/40 pl-5 py-1">
           <h3 className="text-base font-semibold text-gray-200 mb-3">What this is.</h3>
           <ul className="text-gray-400 text-sm leading-relaxed space-y-2">
-            <li>A personal mirror for your own play — see your tendencies, track how they change, and enjoy digging into the data.</li>
+            <li>
+              A personal mirror for your own play — see your tendencies, track how they change, and
+              enjoy digging into the data.
+            </li>
             <li>A tool for curiosity and self-reflection, not optimization pressure.</li>
             <li>A way to share individual runs and profiles with friends if you want to.</li>
           </ul>
@@ -75,9 +75,14 @@ export function HomePage() {
         <div className="border-l-2 border-gray-700/60 pl-5 py-1">
           <h3 className="text-base font-semibold text-gray-200 mb-3">What this isn't.</h3>
           <ul className="text-gray-400 text-sm leading-relaxed space-y-2">
-            <li>A leaderboard or ranking system. There are no plans to compare players against each other.</li>
+            <li>
+              A leaderboard or ranking system. There are no plans to compare players against each
+              other.
+            </li>
             <li>A community-wide aggregation of stats. Your data is yours.</li>
-            <li>A tier list or meta guide. The ratings reflect <em>your</em> picks, not what's "best."</li>
+            <li>
+              A tier list or meta guide. The ratings reflect <em>your</em> picks, not what's "best."
+            </li>
           </ul>
         </div>
       </div>
@@ -86,12 +91,36 @@ export function HomePage() {
       <section className="mb-14">
         <h3 className="text-lg font-semibold text-gray-100 mb-5">What's Inside</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <FeatureCard icon="📊" title="Overview" description="Win rate and floor depth trends over time, character breakdown, and aggregate stats at a glance." />
-          <FeatureCard icon="🃏" title="Card ELO" description="Card rewards as head-to-head matchups. Over many runs, ratings surface your preferences. Upgrade and enchantment-aware modes available." />
-          <FeatureCard icon="🏛️" title="Ancient ELO" description="Same pairwise rating system for ancient reward choices, grouped by family." />
-          <FeatureCard icon="⚔️" title="Combat Stats" description="Win rates by encounter, act, elites, and bosses. Spot which fights tend to end your runs." />
-          <FeatureCard icon="🗺️" title="Run Details" description="HP chart with act boundaries and elite markers, plus floor-by-floor breakdown of every card, relic, and event." />
-          <FeatureCard icon="🔗" title="Sharing" description="Share a link to any run for others to explore. Public profiles available for signed-in users." />
+          <FeatureCard
+            icon="📊"
+            title="Overview"
+            description="Win rate and floor depth trends over time, character breakdown, and aggregate stats at a glance."
+          />
+          <FeatureCard
+            icon="🃏"
+            title="Card ELO"
+            description="Card rewards as head-to-head matchups. Over many runs, ratings surface your preferences. Upgrade and enchantment-aware modes available."
+          />
+          <FeatureCard
+            icon="🏛️"
+            title="Ancient ELO"
+            description="Same pairwise rating system for ancient reward choices, grouped by family."
+          />
+          <FeatureCard
+            icon="⚔️"
+            title="Combat Stats"
+            description="Win rates by encounter, act, elites, and bosses. Spot which fights tend to end your runs."
+          />
+          <FeatureCard
+            icon="🗺️"
+            title="Run Details"
+            description="HP chart with act boundaries and elite markers, plus floor-by-floor breakdown of every card, relic, and event."
+          />
+          <FeatureCard
+            icon="🔗"
+            title="Sharing"
+            description="Share a link to any run for others to explore. Public profiles available for signed-in users."
+          />
         </div>
       </section>
 
@@ -100,14 +129,14 @@ export function HomePage() {
         <div className="bg-gray-900/50 border border-purple-500/15 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-purple-300 mb-3">Slice &amp; Dice</h3>
           <p className="text-gray-300 text-sm leading-relaxed mb-3">
-            Every page responds to the same set of filters — character, ascension,
-            date range, or even a specific card or ancient pick. All stats, ratings,
-            and charts recalculate on the fly from whatever subset you've selected.
+            Every page responds to the same set of filters — character, ascension, date range, or
+            even a specific card or ancient pick. All stats, ratings, and charts recalculate on the
+            fly from whatever subset you've selected.
           </p>
           <p className="text-gray-400 text-sm leading-relaxed">
-            Card ratings for wins only? Filter to victories. Combat stats per
-            character? Pick one. Drafting differently at high ascension? Narrow
-            the range. The data is always yours to slice however you like.
+            Card ratings for wins only? Filter to victories. Combat stats per character? Pick one.
+            Drafting differently at high ascension? Narrow the range. The data is always yours to
+            slice however you like.
           </p>
         </div>
       </section>
@@ -117,18 +146,16 @@ export function HomePage() {
         <h3 className="text-lg font-semibold text-gray-100 mb-5">How It Works</h3>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-3">
           <p className="text-gray-300 text-sm leading-relaxed">
-            Slay the Spire 2 saves a{' '}
-            <code className="text-purple-400">.run</code> file after every run.
-            Select your save folder and your stats are ready instantly — everything
-            is calculated locally in your browser. Nothing leaves your machine
-            unless you sign in for cloud sync.
+            Slay the Spire 2 saves a <code className="text-purple-400">.run</code> file after every
+            run. Select your save folder and your stats are ready instantly — everything is
+            calculated locally in your browser. Nothing leaves your machine unless you sign in for
+            cloud sync.
           </p>
           <p className="text-gray-500 text-xs leading-relaxed">
-            Default save location:{' '}
-            <code className="text-gray-400">%APPDATA%\SlayTheSpire2</code>
+            Default save location: <code className="text-gray-400">%APPDATA%\SlayTheSpire2</code>
             <br />
-            If you have multiple profiles, select the base folder and you'll be
-            able to choose which one to load.
+            If you have multiple profiles, select the base folder and you'll be able to choose which
+            one to load.
           </p>
         </div>
       </section>
@@ -155,13 +182,10 @@ export function HomePage() {
       {/* Feedback */}
       <section className="mb-10">
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-          <h3 className="text-base font-semibold text-gray-200 mb-3">
-            Feedback &amp; Bug Reports
-          </h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-3">Feedback &amp; Bug Reports</h3>
           <p className="text-gray-400 text-sm leading-relaxed mb-4">
-            Found a bug or have a suggestion? I'd love to hear it. No promises
-            on timelines, but feedback is always welcome and helps guide where
-            things go next.
+            Found a bug or have a suggestion? I'd love to hear it. No promises on timelines, but
+            feedback is always welcome and helps guide where things go next.
           </p>
           <div className="flex flex-wrap gap-5">
             <a
@@ -222,8 +246,18 @@ function FeatureCard({
 
 function MailIcon() {
   return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+      />
     </svg>
   );
 }

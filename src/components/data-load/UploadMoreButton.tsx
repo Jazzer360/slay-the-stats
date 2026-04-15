@@ -50,7 +50,9 @@ export function UploadMoreButton() {
         <span className="font-medium">Upload More Runs</span>
         <svg
           className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
@@ -87,7 +89,9 @@ export function UploadMoreButton() {
             <div>
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Uploading…</span>
-                <span>{loadProgress.loaded} / {loadProgress.total}</span>
+                <span>
+                  {loadProgress.loaded} / {loadProgress.total}
+                </span>
               </div>
               <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
                 <div
@@ -100,9 +104,21 @@ export function UploadMoreButton() {
 
           {status && !isLoading && (
             <div className="bg-gray-800/50 rounded p-2.5 text-xs text-gray-400 space-y-0.5">
-              <p><span className="text-green-400 font-medium">{status.uploaded}</span> new runs uploaded</p>
-              {status.skipped > 0 && <p><span className="text-gray-300 font-medium">{status.skipped}</span> already existed (skipped)</p>}
-              {status.failed > 0 && <p><span className="text-red-400 font-medium">{status.failed}</span> failed</p>}
+              <p>
+                <span className="text-green-400 font-medium">{status.uploaded}</span> new runs
+                uploaded
+              </p>
+              {status.skipped > 0 && (
+                <p>
+                  <span className="text-gray-300 font-medium">{status.skipped}</span> already
+                  existed (skipped)
+                </p>
+              )}
+              {status.failed > 0 && (
+                <p>
+                  <span className="text-red-400 font-medium">{status.failed}</span> failed
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -113,7 +129,10 @@ export function UploadMoreButton() {
         <ProfileChooser
           profiles={detectedProfiles}
           onSelect={(profile) => processFiles(pendingFiles, profile)}
-          onCancel={() => { setPendingFiles(null); setDetectedProfiles([]); }}
+          onCancel={() => {
+            setPendingFiles(null);
+            setDetectedProfiles([]);
+          }}
         />
       )}
     </div>

@@ -34,9 +34,7 @@ export function FilterBar() {
   return (
     <div className="bg-gray-900/50 border-b border-gray-800 px-4 py-2">
       <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
-        <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-          Filters
-        </span>
+        <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Filters</span>
 
         {/* Profile single-select */}
         {options.profiles.length > 1 && (
@@ -102,10 +100,7 @@ export function FilterBar() {
             <select
               value={ascensionMin ?? ''}
               onChange={(e) =>
-                setAscensionRange(
-                  e.target.value ? Number(e.target.value) : null,
-                  ascensionMax
-                )
+                setAscensionRange(e.target.value ? Number(e.target.value) : null, ascensionMax)
               }
               className="bg-gray-800 border border-gray-700 rounded text-xs text-gray-300 px-1.5 py-1"
             >
@@ -120,10 +115,7 @@ export function FilterBar() {
             <select
               value={ascensionMax ?? ''}
               onChange={(e) =>
-                setAscensionRange(
-                  ascensionMin,
-                  e.target.value ? Number(e.target.value) : null
-                )
+                setAscensionRange(ascensionMin, e.target.value ? Number(e.target.value) : null)
               }
               className="bg-gray-800 border border-gray-700 rounded text-xs text-gray-300 px-1.5 py-1"
             >
@@ -176,7 +168,7 @@ export function FilterBar() {
         {/* Reset */}
         {hasActiveFilters && (
           <button
-            onClick={() => defaults ? applyDefaults(defaults) : resetFilters()}
+            onClick={() => (defaults ? applyDefaults(defaults) : resetFilters())}
             className="text-xs text-gray-500 hover:text-gray-300 underline"
           >
             Reset

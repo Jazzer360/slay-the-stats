@@ -34,7 +34,13 @@ export function AncientEloPage() {
   if (filteredRuns.length === 0) {
     return (
       <div className="text-center text-gray-500 py-20">
-        <p>No runs loaded. <Link to="/import" className="text-purple-400 hover:text-purple-300">Import your runs</Link> to get started.</p>
+        <p>
+          No runs loaded.{' '}
+          <Link to="/import" className="text-purple-400 hover:text-purple-300">
+            Import your runs
+          </Link>{' '}
+          to get started.
+        </p>
       </div>
     );
   }

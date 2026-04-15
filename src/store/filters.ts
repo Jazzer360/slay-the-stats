@@ -20,18 +20,18 @@ export const useFilterStore = create<FilterStore>((set) => ({
   setProfile: (profile) => set({ profile }),
   setCharacter: (character) => set({ character }),
   setPlayerMode: (playerMode) => set({ playerMode }),
-  setAscensionRange: (ascensionMin, ascensionMax) =>
-    set({ ascensionMin, ascensionMax }),
+  setAscensionRange: (ascensionMin, ascensionMax) => set({ ascensionMin, ascensionMax }),
   setResult: (result) => set({ result }),
   setDateRange: (dateFrom, dateTo) => set({ dateFrom, dateTo }),
   setBuildIds: (buildIds) => set({ buildIds }),
   resetFilters: () => set(DEFAULT_FILTERS),
-  applyDefaults: (defaults) => set({
-    ...DEFAULT_FILTERS,
-    character: defaults.character,
-    playerMode: defaults.playerMode,
-    ascensionMin: defaults.ascensionMin,
-    ascensionMax: defaults.ascensionMax,
-    result: defaults.result,
-  }),
+  applyDefaults: (defaults) =>
+    set({
+      ...DEFAULT_FILTERS,
+      character: defaults.character,
+      playerMode: defaults.playerMode,
+      ascensionMin: defaults.ascensionMin,
+      ascensionMax: defaults.ascensionMax,
+      result: defaults.result,
+    }),
 }));

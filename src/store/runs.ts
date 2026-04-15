@@ -22,6 +22,5 @@ export const useRunsStore = create<RunsState>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
   setLoadProgress: (loadProgress) => set({ loadProgress }),
   setError: (error) => set({ error, isLoading: false }),
-  clear: () =>
-    set({ runs: [], isLoading: false, loadProgress: null, error: null }),
+  clear: () => set({ runs: [], isLoading: false, loadProgress: null, error: null }),
 }));

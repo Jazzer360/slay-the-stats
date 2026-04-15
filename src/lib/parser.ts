@@ -1,6 +1,10 @@
 import type { RunData, ParsedRun } from '../types/run';
 
-export function parseRunFile(fileName: string, jsonText: string, profile: string | null = null): ParsedRun {
+export function parseRunFile(
+  fileName: string,
+  jsonText: string,
+  profile: string | null = null,
+): ParsedRun {
   const data = JSON.parse(jsonText) as RunData;
 
   // Basic validation

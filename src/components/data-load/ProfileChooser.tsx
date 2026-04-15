@@ -8,12 +8,15 @@ export function ProfileChooser({ profiles, onSelect, onCancel }: ProfileChooserP
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel();
+      }}
     >
       <div className="bg-gray-900 border border-gray-800 rounded-xl w-full max-w-sm mx-4 p-6">
         <h3 className="text-lg font-semibold text-gray-100 mb-2">Multiple Profiles Detected</h3>
         <p className="text-sm text-gray-400 mb-5">
-          The selected folder contains multiple game profiles. Choose which profile's runs to import, or import all of them.
+          The selected folder contains multiple game profiles. Choose which profile's runs to
+          import, or import all of them.
         </p>
 
         <div className="flex flex-col gap-2">

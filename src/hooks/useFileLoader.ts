@@ -3,8 +3,7 @@ import { useRunsStore } from '../store/runs';
 import { parseRunFile } from '../lib/parser';
 import type { ParsedRun } from '../types/run';
 
-const EXPECTED_PATH =
-  '%APPDATA%\\SlayTheSpire2';
+const EXPECTED_PATH = '%APPDATA%\\SlayTheSpire2';
 
 const PROFILE_PATTERN = /\bprofile(\d+)\b/i;
 
@@ -16,9 +15,7 @@ export function useFileLoader() {
       setLoading(true);
       setError(null);
 
-      const files = Array.from(fileList).filter((f) =>
-        f.name.endsWith('.run')
-      );
+      const files = Array.from(fileList).filter((f) => f.name.endsWith('.run'));
 
       if (files.length === 0) {
         setError('No .run files found in the selected folder.');
@@ -39,17 +36,16 @@ export function useFileLoader() {
             try {
               const text = await file.text();
               // Extract profile from webkitRelativePath
-              const relativePath = (file as File & { webkitRelativePath?: string }).webkitRelativePath ?? '';
+              const relativePath =
+                (file as File & { webkitRelativePath?: string }).webkitRelativePath ?? '';
               const profileMatch = relativePath.match(PROFILE_PATTERN);
               const profile = profileMatch ? profileMatch[0] : null;
               return parseRunFile(file.name, text, profile);
             } catch (e) {
-              errors.push(
-                `${file.name}: ${e instanceof Error ? e.message : String(e)}`
-              );
+              errors.push(`${file.name}: ${e instanceof Error ? e.message : String(e)}`);
               return null;
             }
-          })
+          }),
         );
 
         for (const result of batchResults) {
@@ -72,7 +68,7 @@ export function useFileLoader() {
       setLoadProgress(null);
       setLoading(false);
     },
-    [setRuns, setLoading, setLoadProgress, setError]
+    [setRuns, setLoading, setLoadProgress, setError],
   );
 
   return {

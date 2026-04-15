@@ -14,9 +14,12 @@ export function AncientDetailPage() {
   const { elo: ancientElo } = useAncientElo(filteredRuns);
   const { base } = useProfileNav();
 
-  const getAncientDetailPath = useCallback((id: string) => {
-    return `${base}/ancient-elo/${encodeURIComponent(id)}`;
-  }, [base]);
+  const getAncientDetailPath = useCallback(
+    (id: string) => {
+      return `${base}/ancient-elo/${encodeURIComponent(id)}`;
+    },
+    [base],
+  );
 
   const entry = ancientElo.get(decodedId);
 
@@ -24,14 +27,22 @@ export function AncientDetailPage() {
     return (
       <div className="text-center text-gray-500 py-20">
         <p>Ancient reward not found.</p>
-        <Link to={`${base}/ancient-elo`} className="text-purple-400 hover:text-purple-300 text-sm mt-2 inline-block">
+        <Link
+          to={`${base}/ancient-elo`}
+          className="text-purple-400 hover:text-purple-300 text-sm mt-2 inline-block"
+        >
           ← Back to Ancient ELO Rankings
         </Link>
       </div>
     );
   }
 
-  const ratingColor = entry.rating >= 1600 ? 'text-green-400' : entry.rating >= 1400 ? 'text-gray-200' : 'text-red-400';
+  const ratingColor =
+    entry.rating >= 1600
+      ? 'text-green-400'
+      : entry.rating >= 1400
+        ? 'text-gray-200'
+        : 'text-red-400';
 
   return (
     <div>
@@ -42,11 +53,24 @@ export function AncientDetailPage() {
         </Link>
         <h2 className="text-2xl font-bold text-gray-100 mt-2">{formatId(decodedId)}</h2>
         <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-sm">
-          <span className="text-gray-400">ELO: <span className={`font-mono font-bold ${ratingColor}`}>{formatElo(entry.rating)}</span></span>
-          <span className="text-gray-400">Seen: <span className="text-gray-200">{entry.timesSeen}</span></span>
-          <span className="text-gray-400">Picked: <span className="text-gray-200">{entry.timesPicked}</span></span>
-          <span className="text-gray-400">Pick Rate: <span className="text-gray-200">{formatPercent(entry.pickRate)}</span></span>
-          <span className="text-gray-400">Runs: <span className="text-green-500">{entry.runWins}W</span> / <span className="text-red-500">{entry.runLosses}L</span> ({formatPercent(entry.runWinRate)})</span>
+          <span className="text-gray-400">
+            ELO:{' '}
+            <span className={`font-mono font-bold ${ratingColor}`}>{formatElo(entry.rating)}</span>
+          </span>
+          <span className="text-gray-400">
+            Seen: <span className="text-gray-200">{entry.timesSeen}</span>
+          </span>
+          <span className="text-gray-400">
+            Picked: <span className="text-gray-200">{entry.timesPicked}</span>
+          </span>
+          <span className="text-gray-400">
+            Pick Rate: <span className="text-gray-200">{formatPercent(entry.pickRate)}</span>
+          </span>
+          <span className="text-gray-400">
+            Runs: <span className="text-green-500">{entry.runWins}W</span> /{' '}
+            <span className="text-red-500">{entry.runLosses}L</span> (
+            {formatPercent(entry.runWinRate)})
+          </span>
         </div>
       </div>
 
@@ -59,7 +83,13 @@ export function AncientDetailPage() {
       </h3>
       <div className="space-y-3">
         {entry.appearances.map((appearance) => (
-          <RunCard key={appearance.fileName} appearance={appearance} entityId={decodedId} base={base} getDetailPath={getAncientDetailPath} />
+          <RunCard
+            key={appearance.fileName}
+            appearance={appearance}
+            entityId={decodedId}
+            base={base}
+            getDetailPath={getAncientDetailPath}
+          />
         ))}
       </div>
     </div>

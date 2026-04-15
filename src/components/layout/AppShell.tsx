@@ -28,25 +28,25 @@ export function AppShell() {
   const { user, userProfile, authLoading } = useAuthStore();
   const location = useLocation();
 
-  const navItems = NAV_ITEMS.filter(
-    (item) => !isProfileView || item.to !== '/import'
-  ).map((item) => ({
-    ...item,
-    to: isProfileView && item.profilePath !== undefined
-      ? `${profileBase}${item.profilePath}`
-      : item.to,
-  }));
+  const navItems = NAV_ITEMS.filter((item) => !isProfileView || item.to !== '/import').map(
+    (item) => ({
+      ...item,
+      to:
+        isProfileView && item.profilePath !== undefined
+          ? `${profileBase}${item.profilePath}`
+          : item.to,
+    }),
+  );
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const hideFilterBar = ['/', '/import', '/about', '/privacy', '/settings'].includes(location.pathname);
+  const hideFilterBar = ['/', '/import', '/about', '/privacy', '/settings'].includes(
+    location.pathname,
+  );
 
   const displayName =
-    userProfile?.screenName ??
-    user?.displayName ??
-    user?.email?.split('@')[0] ??
-    'Account';
+    userProfile?.screenName ?? user?.displayName ?? user?.email?.split('@')[0] ?? 'Account';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -84,8 +84,8 @@ export function AppShell() {
             )}
 
             {/* Auth area */}
-            {!authLoading && (
-              user ? (
+            {!authLoading &&
+              (user ? (
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu((v) => !v)}
@@ -95,8 +95,18 @@ export function AppShell() {
                       {displayName[0].toUpperCase()}
                     </span>
                     <span className="hidden sm:inline max-w-30 truncate">{displayName}</span>
-                    <svg className="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <svg
+                      className="w-3 h-3 text-gray-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </button>
 
@@ -122,7 +132,10 @@ export function AppShell() {
                         )}
                         <div className="h-px bg-gray-800 my-1" />
                         <button
-                          onClick={() => { doSignOut(); setShowUserMenu(false); }}
+                          onClick={() => {
+                            doSignOut();
+                            setShowUserMenu(false);
+                          }}
                           className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition-colors"
                         >
                           Sign Out
@@ -138,8 +151,7 @@ export function AppShell() {
                 >
                   Sign In
                 </button>
-              )
-            )}
+              ))}
 
             {/* Mobile hamburger button */}
             <button
@@ -149,11 +161,21 @@ export function AppShell() {
             >
               {mobileMenuOpen ? (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               ) : (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               )}
             </button>
@@ -213,10 +235,7 @@ function CookieSettingsButton() {
   const reset = useConsentStore((s) => s.reset);
 
   return (
-    <button
-      onClick={reset}
-      className="hover:text-gray-400 transition-colors"
-    >
+    <button onClick={reset} className="hover:text-gray-400 transition-colors">
       Cookie Settings{consent !== 'undecided' && `: ${consent}`}
     </button>
   );

@@ -51,9 +51,10 @@ export function ImportPage() {
   }
 
   const isWiping = isLoading && loadProgress != null && loadProgress.total === 0;
-  const progressPct = loadProgress && loadProgress.total > 0
-    ? Math.round((loadProgress.loaded / loadProgress.total) * 100)
-    : 0;
+  const progressPct =
+    loadProgress && loadProgress.total > 0
+      ? Math.round((loadProgress.loaded / loadProgress.total) * 100)
+      : 0;
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
@@ -132,16 +133,24 @@ export function ImportPage() {
           disabled={isLoading}
           className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 px-4 rounded-lg transition-colors"
         >
-          {isLoading ? (isWiping ? 'Clearing old runs…' : (user ? 'Uploading…' : 'Loading…')) : 'Select SlayTheSpire2 Folder'}
+          {isLoading
+            ? isWiping
+              ? 'Clearing old runs…'
+              : user
+                ? 'Uploading…'
+                : 'Loading…'
+            : 'Select SlayTheSpire2 Folder'}
         </button>
 
         {/* Progress */}
         {isLoading && loadProgress != null && (
           <div>
             <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>{isWiping ? 'Removing existing runs…' : (user ? 'Uploading…' : 'Loading…')}</span>
+              <span>{isWiping ? 'Removing existing runs…' : user ? 'Uploading…' : 'Loading…'}</span>
               {!isWiping && (
-                <span>{loadProgress.loaded} / {loadProgress.total} ({progressPct}%)</span>
+                <span>
+                  {loadProgress.loaded} / {loadProgress.total} ({progressPct}%)
+                </span>
               )}
             </div>
             <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
@@ -156,9 +165,7 @@ export function ImportPage() {
         {/* Cloud upload summary */}
         {status && !isLoading && (
           <div className="bg-gray-800/50 rounded p-3 text-xs text-gray-400 space-y-0.5">
-            {wipeFirst && (
-              <p className="text-gray-500 mb-1">Previous runs cleared.</p>
-            )}
+            {wipeFirst && <p className="text-gray-500 mb-1">Previous runs cleared.</p>}
             <p>
               <span className="text-green-400 font-medium">{status.uploaded}</span> run
               {status.uploaded !== 1 ? 's' : ''} uploaded
@@ -199,9 +206,7 @@ export function ImportPage() {
 
       {/* How to find your files */}
       <div className="mt-10 space-y-3">
-        <h3 className="text-base font-semibold text-gray-200">
-          Where are my run files?
-        </h3>
+        <h3 className="text-base font-semibold text-gray-200">Where are my run files?</h3>
         <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 space-y-3 text-sm text-gray-400">
           <p>Run files are stored in your AppData folder on Windows:</p>
           <code className="block bg-gray-800/60 text-purple-300 px-3 py-2 rounded text-xs font-mono">
@@ -209,17 +214,28 @@ export function ImportPage() {
           </code>
           <p>
             The folder contains a sub-folder for each in-game profile (e.g.,{' '}
-            <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">profile0</code>,{' '}
-            <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">profile1</code>
+            <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">
+              profile0
+            </code>
+            ,{' '}
+            <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">
+              profile1
+            </code>
             ). Each profile's .run files are stored inside its folder.
           </p>
           <ul className="list-disc list-inside space-y-1 text-gray-500">
             <li>
-              Select the root <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">SlayTheSpire2</code>{' '}
+              Select the root{' '}
+              <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">
+                SlayTheSpire2
+              </code>{' '}
               folder to import all profiles at once.
             </li>
             <li>
-              Select a single <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">profile#</code>{' '}
+              Select a single{' '}
+              <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">
+                profile#
+              </code>{' '}
               sub-folder to import only that profile.
             </li>
           </ul>
@@ -236,9 +252,7 @@ export function ImportPage() {
       {/* What happens to my data */}
       {!user && (
         <div className="mt-8 space-y-3">
-          <h3 className="text-base font-semibold text-gray-200">
-            Privacy &amp; data
-          </h3>
+          <h3 className="text-base font-semibold text-gray-200">Privacy &amp; data</h3>
           <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
             <p>
               Without an account, your run files never leave your browser. All parsing, ELO
@@ -258,7 +272,10 @@ export function ImportPage() {
         <ProfileChooser
           profiles={detectedProfiles}
           onSelect={(profile) => processFiles(pendingFiles, profile)}
-          onCancel={() => { setPendingFiles(null); setDetectedProfiles([]); }}
+          onCancel={() => {
+            setPendingFiles(null);
+            setDetectedProfiles([]);
+          }}
         />
       )}
     </div>

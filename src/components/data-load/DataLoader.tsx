@@ -53,12 +53,10 @@ export function DataLoader() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-100 mb-2">
-          ⚔ Slay the Stats
-        </h2>
+        <h2 className="text-3xl font-bold text-gray-100 mb-2">⚔ Slay the Stats</h2>
         <p className="text-gray-400 max-w-lg">
-          Load your Slay the Spire 2 run history to analyze card pick rates,
-          ELO rankings, and run statistics.
+          Load your Slay the Spire 2 run history to analyze card pick rates, ELO rankings, and run
+          statistics.
         </p>
       </div>
 
@@ -70,15 +68,14 @@ export function DataLoader() {
         {!isCloudMode && (
           <div className="bg-gray-800/50 rounded p-3 mb-4">
             <p className="text-xs text-gray-500 mb-1">Expected location:</p>
-            <code className="text-xs text-purple-400 break-all">
-              {expectedPath}
-            </code>
+            <code className="text-xs text-purple-400 break-all">{expectedPath}</code>
           </div>
         )}
 
         {isCloudMode && (
           <div className="bg-blue-900/20 border border-blue-800/40 rounded p-3 mb-4 text-xs text-blue-300">
-            Select your SlayTheSpire2 folder to upload new runs. Already-uploaded runs will be skipped automatically.
+            Select your SlayTheSpire2 folder to upload new runs. Already-uploaded runs will be
+            skipped automatically.
           </div>
         )}
 
@@ -103,7 +100,9 @@ export function DataLoader() {
             className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
           >
             {isLoading
-              ? isCloudMode ? 'Uploading...' : 'Loading...'
+              ? isCloudMode
+                ? 'Uploading...'
+                : 'Loading...'
               : 'Select SlayTheSpire2 Folder'}
           </button>
         </div>
@@ -137,9 +136,21 @@ export function DataLoader() {
         {/* Upload summary */}
         {uploadStatus && !loadProgress && (
           <div className="mt-4 bg-gray-800/50 rounded p-3 text-xs text-gray-400 space-y-0.5">
-            <p><span className="text-green-400 font-medium">{uploadStatus.uploaded}</span> runs uploaded</p>
-            {uploadStatus.skipped > 0 && <p><span className="text-gray-300 font-medium">{uploadStatus.skipped}</span> already existed (skipped)</p>}
-            {uploadStatus.failed > 0 && <p><span className="text-red-400 font-medium">{uploadStatus.failed}</span> failed</p>}
+            <p>
+              <span className="text-green-400 font-medium">{uploadStatus.uploaded}</span> runs
+              uploaded
+            </p>
+            {uploadStatus.skipped > 0 && (
+              <p>
+                <span className="text-gray-300 font-medium">{uploadStatus.skipped}</span> already
+                existed (skipped)
+              </p>
+            )}
+            {uploadStatus.failed > 0 && (
+              <p>
+                <span className="text-red-400 font-medium">{uploadStatus.failed}</span> failed
+              </p>
+            )}
           </div>
         )}
 
@@ -153,7 +164,8 @@ export function DataLoader() {
 
       {!isCloudMode && (
         <p className="text-xs text-gray-600 max-w-md text-center">
-          All processing happens locally in your browser. Sign in to store and sync runs to the cloud.
+          All processing happens locally in your browser. Sign in to store and sync runs to the
+          cloud.
         </p>
       )}
 
@@ -162,7 +174,10 @@ export function DataLoader() {
         <ProfileChooser
           profiles={detectedProfiles}
           onSelect={(profile) => processFiles(pendingFiles, profile)}
-          onCancel={() => { setPendingFiles(null); setDetectedProfiles([]); }}
+          onCancel={() => {
+            setPendingFiles(null);
+            setDetectedProfiles([]);
+          }}
         />
       )}
     </div>

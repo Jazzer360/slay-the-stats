@@ -20,10 +20,13 @@ export function CardDetailPage() {
   const cardElo = useCardElo(filteredRuns, { upgradeAware, enchantmentAware });
   const { base } = useProfileNav();
 
-  const getCardDetailPath = useCallback((id: string) => {
-    const slug = id.replace(/^CARD\./, '').toLowerCase();
-    return `${base}/card-elo/${encodeURIComponent(slug)}`;
-  }, [base]);
+  const getCardDetailPath = useCallback(
+    (id: string) => {
+      const slug = id.replace(/^CARD\./, '').toLowerCase();
+      return `${base}/card-elo/${encodeURIComponent(slug)}`;
+    },
+    [base],
+  );
 
   const entry = cardElo.get(decodedId);
 
@@ -31,7 +34,10 @@ export function CardDetailPage() {
     return (
       <div className="text-center text-gray-500 py-20">
         <p>Card not found.</p>
-        <Link to={`${base}/card-elo`} className="text-purple-400 hover:text-purple-300 text-sm mt-2 inline-block">
+        <Link
+          to={`${base}/card-elo`}
+          className="text-purple-400 hover:text-purple-300 text-sm mt-2 inline-block"
+        >
           ← Back to Card ELO Rankings
         </Link>
       </div>
@@ -39,7 +45,12 @@ export function CardDetailPage() {
   }
 
   const meta = getCardMeta(decodedId);
-  const ratingColor = entry.rating >= 1600 ? 'text-green-400' : entry.rating >= 1400 ? 'text-gray-200' : 'text-red-400';
+  const ratingColor =
+    entry.rating >= 1600
+      ? 'text-green-400'
+      : entry.rating >= 1400
+        ? 'text-gray-200'
+        : 'text-red-400';
 
   return (
     <div>
@@ -57,11 +68,24 @@ export function CardDetailPage() {
           </div>
         )}
         <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-sm">
-          <span className="text-gray-400">ELO: <span className={`font-mono font-bold ${ratingColor}`}>{formatElo(entry.rating)}</span></span>
-          <span className="text-gray-400">Seen: <span className="text-gray-200">{entry.timesSeen}</span></span>
-          <span className="text-gray-400">Picked: <span className="text-gray-200">{entry.timesPicked}</span></span>
-          <span className="text-gray-400">Pick Rate: <span className="text-gray-200">{formatPercent(entry.pickRate)}</span></span>
-          <span className="text-gray-400">Runs: <span className="text-green-500">{entry.runWins}W</span> / <span className="text-red-500">{entry.runLosses}L</span> ({formatPercent(entry.runWinRate)})</span>
+          <span className="text-gray-400">
+            ELO:{' '}
+            <span className={`font-mono font-bold ${ratingColor}`}>{formatElo(entry.rating)}</span>
+          </span>
+          <span className="text-gray-400">
+            Seen: <span className="text-gray-200">{entry.timesSeen}</span>
+          </span>
+          <span className="text-gray-400">
+            Picked: <span className="text-gray-200">{entry.timesPicked}</span>
+          </span>
+          <span className="text-gray-400">
+            Pick Rate: <span className="text-gray-200">{formatPercent(entry.pickRate)}</span>
+          </span>
+          <span className="text-gray-400">
+            Runs: <span className="text-green-500">{entry.runWins}W</span> /{' '}
+            <span className="text-red-500">{entry.runLosses}L</span> (
+            {formatPercent(entry.runWinRate)})
+          </span>
         </div>
       </div>
 
@@ -74,7 +98,13 @@ export function CardDetailPage() {
       </h3>
       <div className="space-y-3">
         {entry.appearances.map((appearance) => (
-          <RunCard key={appearance.fileName} appearance={appearance} entityId={decodedId} base={base} getDetailPath={getCardDetailPath} />
+          <RunCard
+            key={appearance.fileName}
+            appearance={appearance}
+            entityId={decodedId}
+            base={base}
+            getDetailPath={getCardDetailPath}
+          />
         ))}
       </div>
     </div>

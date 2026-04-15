@@ -41,7 +41,14 @@ function AppRoutes() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/import" element={<ImportPage />} />
-        <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
+        <Route
+          path="/settings"
+          element={
+            <RequireAuth>
+              <SettingsPage />
+            </RequireAuth>
+          }
+        />
         <Route path="/u/:screenName" element={<ProfilePage />}>
           <Route index element={<DashboardPage />} />
           <Route path="card-elo" element={<CardEloPage />} />

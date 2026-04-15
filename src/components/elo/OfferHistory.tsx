@@ -2,7 +2,17 @@ import { Link } from 'react-router';
 import { formatId, formatDate } from '../../lib/format';
 import type { RunAppearance, OfferInstance } from '../../types/elo';
 
-export function RunCard({ appearance, entityId, base, getDetailPath }: { appearance: RunAppearance; entityId: string; base: string; getDetailPath?: (id: string) => string }) {
+export function RunCard({
+  appearance,
+  entityId,
+  base,
+  getDetailPath,
+}: {
+  appearance: RunAppearance;
+  entityId: string;
+  base: string;
+  getDetailPath?: (id: string) => string;
+}) {
   const runPath = `${base}/runs/${encodeURIComponent(appearance.fileName.replace(/\.run$/, ''))}`;
   const totalEloChange = appearance.offers.reduce((sum, o) => sum + o.eloChange, 0);
 
@@ -15,7 +25,9 @@ export function RunCard({ appearance, entityId, base, getDetailPath }: { appeara
             {appearance.win ? 'Victory' : 'Defeat'}
           </span>
           <span className="text-gray-500">|</span>
-          <span className="text-gray-300">{formatId(appearance.character)} A{appearance.ascension}</span>
+          <span className="text-gray-300">
+            {formatId(appearance.character)} A{appearance.ascension}
+          </span>
           <span className="text-gray-500">|</span>
           <span className="text-gray-400">{formatDate(appearance.startTime)}</span>
           <span className="text-gray-500">|</span>
@@ -23,8 +35,11 @@ export function RunCard({ appearance, entityId, base, getDetailPath }: { appeara
           <span className="text-gray-500">|</span>
           <span className="text-gray-500">Floors: {appearance.floorsReached}</span>
           <span className="text-gray-500">|</span>
-          <span className={`font-mono text-xs ${totalEloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {totalEloChange >= 0 ? '+' : ''}{totalEloChange.toFixed(1)} ELO
+          <span
+            className={`font-mono text-xs ${totalEloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}
+          >
+            {totalEloChange >= 0 ? '+' : ''}
+            {totalEloChange.toFixed(1)} ELO
           </span>
         </div>
         <Link to={runPath} className="text-purple-400 hover:text-purple-300 text-xs shrink-0">
@@ -42,15 +57,28 @@ export function RunCard({ appearance, entityId, base, getDetailPath }: { appeara
   );
 }
 
-function OfferRow({ offer, entityId, getDetailPath }: { offer: OfferInstance; entityId: string; getDetailPath?: (id: string) => string }) {
+function OfferRow({
+  offer,
+  entityId,
+  getDetailPath,
+}: {
+  offer: OfferInstance;
+  entityId: string;
+  getDetailPath?: (id: string) => string;
+}) {
   return (
     <div className="flex items-center gap-3 px-4 py-2 text-sm">
       <span className="text-gray-500 w-16 shrink-0">Floor {offer.floor}</span>
-      <span className={`w-14 shrink-0 font-medium ${offer.wasPicked ? 'text-green-400' : 'text-gray-500'}`}>
+      <span
+        className={`w-14 shrink-0 font-medium ${offer.wasPicked ? 'text-green-400' : 'text-gray-500'}`}
+      >
         {offer.wasPicked ? 'Picked' : 'Passed'}
       </span>
-      <span className={`w-16 shrink-0 font-mono text-xs ${offer.eloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-        {offer.eloChange >= 0 ? '+' : ''}{offer.eloChange.toFixed(1)}
+      <span
+        className={`w-16 shrink-0 font-mono text-xs ${offer.eloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}
+      >
+        {offer.eloChange >= 0 ? '+' : ''}
+        {offer.eloChange.toFixed(1)}
       </span>
       <div className="flex gap-1.5 flex-wrap">
         {offer.allOptions.map((id) => {
@@ -69,7 +97,11 @@ function OfferRow({ offer, entityId, getDetailPath }: { offer: OfferInstance; en
           const isLinkable = !isTarget && !id.startsWith('SKIP_') && id !== 'SACRIFICE';
           if (getDetailPath && isLinkable) {
             return (
-              <Link key={id} to={getDetailPath(id)} className={`${className} hover:brightness-125 transition-all`}>
+              <Link
+                key={id}
+                to={getDetailPath(id)}
+                className={`${className} hover:brightness-125 transition-all`}
+              >
                 {formatId(id)}
               </Link>
             );

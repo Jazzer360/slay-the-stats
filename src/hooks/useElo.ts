@@ -3,7 +3,10 @@ import { computeCardElo, computeAncientElo, type CardEloOptions } from '../lib/e
 import type { EloMap } from '../types/elo';
 import type { ParsedRun } from '../types/run';
 
-export function useCardElo(filteredRuns: ParsedRun[], options: CardEloOptions = { upgradeAware: true, enchantmentAware: true }): EloMap {
+export function useCardElo(
+  filteredRuns: ParsedRun[],
+  options: CardEloOptions = { upgradeAware: true, enchantmentAware: true },
+): EloMap {
   const { upgradeAware, enchantmentAware } = options;
   return useMemo(
     () => computeCardElo(filteredRuns, { upgradeAware, enchantmentAware }),
@@ -11,6 +14,9 @@ export function useCardElo(filteredRuns: ParsedRun[], options: CardEloOptions = 
   );
 }
 
-export function useAncientElo(filteredRuns: ParsedRun[]): { elo: EloMap; ancientMap: Map<string, string> } {
+export function useAncientElo(filteredRuns: ParsedRun[]): {
+  elo: EloMap;
+  ancientMap: Map<string, string>;
+} {
   return useMemo(() => computeAncientElo(filteredRuns), [filteredRuns]);
 }

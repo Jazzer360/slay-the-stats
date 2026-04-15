@@ -39,7 +39,10 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   };
 }
 
-export async function createUserProfile(uid: string, data: Omit<UserProfile, 'uid'>): Promise<void> {
+export async function createUserProfile(
+  uid: string,
+  data: Omit<UserProfile, 'uid'>,
+): Promise<void> {
   await setDoc(doc(db, 'users', uid), {
     screenName: data.screenName,
     profileVisibility: data.profileVisibility,
@@ -47,7 +50,10 @@ export async function createUserProfile(uid: string, data: Omit<UserProfile, 'ui
   });
 }
 
-export async function updateUserProfile(uid: string, partial: Partial<Pick<UserProfile, 'screenName' | 'profileVisibility' | 'defaultFilters'>>): Promise<void> {
+export async function updateUserProfile(
+  uid: string,
+  partial: Partial<Pick<UserProfile, 'screenName' | 'profileVisibility' | 'defaultFilters'>>,
+): Promise<void> {
   await updateDoc(doc(db, 'users', uid), partial);
 }
 
@@ -59,7 +65,11 @@ export async function updateUserProfile(uid: string, partial: Partial<Pick<UserP
  * - Updates users/{uid}.screenName
  * Throws if the name is already taken.
  */
-export async function reserveScreenName(uid: string, newName: string, oldName?: string | null): Promise<void> {
+export async function reserveScreenName(
+  uid: string,
+  newName: string,
+  oldName?: string | null,
+): Promise<void> {
   const newNameLower = newName.toLowerCase();
   const oldNameLower = oldName?.toLowerCase();
 
@@ -111,7 +121,12 @@ export interface ShareDoc {
   createdAt: number;
 }
 
-export async function createShare(token: string, uid: string, fileName: string, runContent: string): Promise<void> {
+export async function createShare(
+  token: string,
+  uid: string,
+  fileName: string,
+  runContent: string,
+): Promise<void> {
   if (runContent.length > 900_000) {
     throw new Error('Run file is too large to share (> 900 KB).');
   }
@@ -148,7 +163,11 @@ export async function getShare(token: string): Promise<ShareDoc | null> {
   };
 }
 
-export async function createPublicShare(token: string, fileName: string, runContent: string): Promise<void> {
+export async function createPublicShare(
+  token: string,
+  fileName: string,
+  runContent: string,
+): Promise<void> {
   if (runContent.length > 900_000) {
     throw new Error('Run file is too large to share (> 900 KB).');
   }

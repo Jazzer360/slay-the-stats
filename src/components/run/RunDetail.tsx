@@ -122,16 +122,10 @@ export function RunDetail({ run }: { run: ParsedRun }) {
       <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-8">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold text-gray-100">
-              {formatId(player.character)}
-            </h2>
-            <span className="text-sm text-gray-500">
-              Ascension {d.ascension}
-            </span>
+            <h2 className="text-lg font-semibold text-gray-100">{formatId(player.character)}</h2>
+            <span className="text-sm text-gray-500">Ascension {d.ascension}</span>
             {d.modifiers.length > 0 && (
-              <span className="text-xs text-gray-600">
-                {d.modifiers.map(formatId).join(', ')}
-              </span>
+              <span className="text-xs text-gray-600">{d.modifiers.map(formatId).join(', ')}</span>
             )}
           </div>
           {d.win ? (
@@ -172,9 +166,7 @@ export function RunDetail({ run }: { run: ParsedRun }) {
           {d.killed_by_encounter !== 'NONE.NONE' && (
             <div>
               <span className="text-gray-500">Killed by:</span>{' '}
-              <span className="text-red-400">
-                {formatId(d.killed_by_encounter)}
-              </span>
+              <span className="text-red-400">{formatId(d.killed_by_encounter)}</span>
             </div>
           )}
         </div>
@@ -183,9 +175,7 @@ export function RunDetail({ run }: { run: ParsedRun }) {
       {/* HP Chart */}
       {hpData.length > 0 && (
         <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-8">
-          <h3 className="text-base font-semibold text-gray-200 mb-3">
-            Health Over Time
-          </h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-3">Health Over Time</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height={256}>
               <AreaChart data={hpData} margin={{ top: 16, right: 20, bottom: 5, left: 0 }}>
@@ -194,12 +184,24 @@ export function RunDetail({ run }: { run: ParsedRun }) {
                   dataKey="floor"
                   stroke="#6b7280"
                   tick={{ fill: '#9ca3af', fontSize: 11 }}
-                  label={{ value: 'Floor', position: 'insideBottomRight', offset: -5, fill: '#6b7280', fontSize: 11 }}
+                  label={{
+                    value: 'Floor',
+                    position: 'insideBottomRight',
+                    offset: -5,
+                    fill: '#6b7280',
+                    fontSize: 11,
+                  }}
                 />
                 <YAxis
                   stroke="#6b7280"
                   tick={{ fill: '#9ca3af', fontSize: 11 }}
-                  label={{ value: 'HP', angle: -90, position: 'insideLeft', fill: '#6b7280', fontSize: 11 }}
+                  label={{
+                    value: 'HP',
+                    angle: -90,
+                    position: 'insideLeft',
+                    fill: '#6b7280',
+                    fontSize: 11,
+                  }}
                 />
                 <Tooltip
                   contentStyle={{
@@ -209,10 +211,7 @@ export function RunDetail({ run }: { run: ParsedRun }) {
                     color: '#e5e7eb',
                     fontSize: '12px',
                   }}
-                  formatter={(value, name) => [
-                    value,
-                    name === 'maxHp' ? 'Max HP' : 'Current HP',
-                  ]}
+                  formatter={(value, name) => [value, name === 'maxHp' ? 'Max HP' : 'Current HP']}
                   labelFormatter={(label) => {
                     const floor = Number(label);
                     const pt = hpData.find((p) => p.floor === floor);
@@ -302,12 +301,10 @@ export function RunDetail({ run }: { run: ParsedRun }) {
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {player.relics.map((relic, i) => {
-                const relicColor = RARITY_COLORS[getRelicMeta(relic.id)?.rarity ?? ''] ?? 'text-yellow-400/80';
+                const relicColor =
+                  RARITY_COLORS[getRelicMeta(relic.id)?.rarity ?? ''] ?? 'text-yellow-400/80';
                 return (
-                  <span
-                    key={i}
-                    className={`bg-gray-800 ${relicColor} text-xs px-2 py-1 rounded`}
-                  >
+                  <span key={i} className={`bg-gray-800 ${relicColor} text-xs px-2 py-1 rounded`}>
                     {formatId(relic.id)}
                   </span>
                 );
@@ -322,7 +319,8 @@ export function RunDetail({ run }: { run: ParsedRun }) {
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {player.potions.map((pot, i) => {
-                  const potionColor = RARITY_COLORS[getPotionMeta(pot.id)?.rarity ?? ''] ?? 'text-cyan-400/80';
+                  const potionColor =
+                    RARITY_COLORS[getPotionMeta(pot.id)?.rarity ?? ''] ?? 'text-cyan-400/80';
                   return (
                     <span
                       key={i}
@@ -359,16 +357,12 @@ export function RunDetail({ run }: { run: ParsedRun }) {
 
       {/* Floor-by-floor timeline */}
       <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
-        <h3 className="text-base font-semibold text-gray-200 mb-3">
-          Floor-by-Floor Timeline
-        </h3>
+        <h3 className="text-base font-semibold text-gray-200 mb-3">Floor-by-Floor Timeline</h3>
         <div className="space-y-1">
           {timeline.acts.map((act) => (
             <div key={act.actIndex}>
               <div className="bg-purple-900/20 border border-purple-800/30 rounded px-3 py-1.5 mb-1 mt-2">
-                <span className="text-purple-400 text-sm font-medium">
-                  {act.label}
-                </span>
+                <span className="text-purple-400 text-sm font-medium">{act.label}</span>
               </div>
               {act.floors.map((floor, i) => (
                 <div key={floor.floorNumber}>
@@ -419,7 +413,12 @@ const CARDPOOL_COLORS: Record<string, string> = {
 function DeckDisplay({ deck, character }: { deck: DeckCard[]; character: string }) {
   const consolidated = consolidateDeck(deck);
   // Derive cardpool name from e.g. "CHARACTER.IRONCLAD" → "Ironclad"
-  const charPool = character.split('.').pop()?.toLowerCase().replace(/(^|\s)\w/g, (c) => c.toUpperCase()) ?? '';
+  const charPool =
+    character
+      .split('.')
+      .pop()
+      ?.toLowerCase()
+      .replace(/(^|\s)\w/g, (c) => c.toUpperCase()) ?? '';
 
   const groups: { type: string; cards: ConsolidatedCard[] }[] = [];
   let currentType = '';
@@ -437,7 +436,8 @@ function DeckDisplay({ deck, character }: { deck: DeckCard[]; character: string 
       {groups.map((group) => (
         <div key={group.type}>
           <div className="text-xs font-medium uppercase tracking-wider mb-1.5 text-gray-500">
-            {group.type === '' ? 'Other' : group.type}s ({group.cards.reduce((s, c) => s + c.count, 0)})
+            {group.type === '' ? 'Other' : group.type}s (
+            {group.cards.reduce((s, c) => s + c.count, 0)})
           </div>
           <div className="flex flex-wrap gap-1.5">
             {group.cards.map((item, i) => {
@@ -445,7 +445,8 @@ function DeckDisplay({ deck, character }: { deck: DeckCard[]; character: string 
               const rarity = meta?.rarity ?? 'Common';
               const color = RARITY_COLORS[rarity] ?? 'text-gray-100';
               const cardColor = meta?.color ?? '';
-              const hidePip = cardColor === charPool || cardColor === 'Curse' || rarity === 'Ancient';
+              const hidePip =
+                cardColor === charPool || cardColor === 'Curse' || rarity === 'Ancient';
               const poolColor = CARDPOOL_COLORS[cardColor] ?? '#6b7280';
               return (
                 <span
@@ -462,9 +463,7 @@ function DeckDisplay({ deck, character }: { deck: DeckCard[]; character: string 
                   {formatId(item.id)}
                   {item.upgraded ? '+' : ''}
                   {item.enchantment ? ` [${formatId(item.enchantment)}]` : ''}
-                  {item.count > 1 && (
-                    <span className="text-gray-500 ml-0.5">x{item.count}</span>
-                  )}
+                  {item.count > 1 && <span className="text-gray-500 ml-0.5">x{item.count}</span>}
                 </span>
               );
             })}
@@ -477,13 +476,28 @@ function DeckDisplay({ deck, character }: { deck: DeckCard[]; character: string 
 
 function FloorRow({ floor }: { floor: FloorSummary }) {
   // Split events: some go in the right-aligned stats column, rest stay in details
-  const goldChange = floor.events.find((e): e is Extract<FloorEvent, { type: 'gold-change' }> => e.type === 'gold-change');
-  const maxHpGained = floor.events.find((e): e is Extract<FloorEvent, { type: 'max-hp-gained' }> => e.type === 'max-hp-gained');
-  const maxHpLost = floor.events.find((e): e is Extract<FloorEvent, { type: 'max-hp-lost' }> => e.type === 'max-hp-lost');
-  const potionsUsed = floor.events.filter((e): e is Extract<FloorEvent, { type: 'potion-used' }> => e.type === 'potion-used');
-  const potionsDiscarded = floor.events.filter((e): e is Extract<FloorEvent, { type: 'potion-discarded' }> => e.type === 'potion-discarded');
+  const goldChange = floor.events.find(
+    (e): e is Extract<FloorEvent, { type: 'gold-change' }> => e.type === 'gold-change',
+  );
+  const maxHpGained = floor.events.find(
+    (e): e is Extract<FloorEvent, { type: 'max-hp-gained' }> => e.type === 'max-hp-gained',
+  );
+  const maxHpLost = floor.events.find(
+    (e): e is Extract<FloorEvent, { type: 'max-hp-lost' }> => e.type === 'max-hp-lost',
+  );
+  const potionsUsed = floor.events.filter(
+    (e): e is Extract<FloorEvent, { type: 'potion-used' }> => e.type === 'potion-used',
+  );
+  const potionsDiscarded = floor.events.filter(
+    (e): e is Extract<FloorEvent, { type: 'potion-discarded' }> => e.type === 'potion-discarded',
+  );
   const detailEvents = floor.events.filter(
-    (e) => e.type !== 'gold-change' && e.type !== 'max-hp-gained' && e.type !== 'max-hp-lost' && e.type !== 'potion-used' && e.type !== 'potion-discarded',
+    (e) =>
+      e.type !== 'gold-change' &&
+      e.type !== 'max-hp-gained' &&
+      e.type !== 'max-hp-lost' &&
+      e.type !== 'potion-used' &&
+      e.type !== 'potion-discarded',
   );
 
   // Build gold adjustment string
@@ -497,13 +511,9 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
   const statsContent = floor.hasStats && (
     <div className="flex flex-col items-end gap-0.5">
       <div className="whitespace-nowrap">
-        <span className="text-gray-500">
-          {floor.currentGold}g
-        </span>
+        <span className="text-gray-500">{floor.currentGold}g</span>
         {goldParts.length > 0 && (
-          <span className="text-yellow-600/70 ml-1">
-            ({goldParts.join(', ')})
-          </span>
+          <span className="text-yellow-600/70 ml-1">({goldParts.join(', ')})</span>
         )}
         <span className="mx-1.5 text-gray-700">|</span>
         <span
@@ -511,49 +521,46 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
             floor.hpHealed > floor.damageTaken
               ? 'text-green-400/70'
               : floor.damageTaken > floor.hpHealed
-              ? 'text-red-400/70'
-              : 'text-gray-500'
+                ? 'text-red-400/70'
+                : 'text-gray-500'
           }
         >
           {floor.currentHp < floor.maxHp * 0.3 && (
             <span className="text-red-400 font-semibold">{floor.currentHp}</span>
           )}
-          {floor.currentHp >= floor.maxHp * 0.3 && floor.currentHp}
-          /{floor.maxHp} HP
+          {floor.currentHp >= floor.maxHp * 0.3 && floor.currentHp}/{floor.maxHp} HP
         </span>
         {floor.damageTaken > 0 && (
-          <span className="text-red-500/50 ml-1">
-            (-{floor.damageTaken})
-          </span>
+          <span className="text-red-500/50 ml-1">(-{floor.damageTaken})</span>
         )}
-        {floor.hpHealed > 0 && (
-          <span className="text-green-500/50 ml-1">
-            (+{floor.hpHealed})
-          </span>
-        )}
+        {floor.hpHealed > 0 && <span className="text-green-500/50 ml-1">(+{floor.hpHealed})</span>}
       </div>
       {(maxHpGained || maxHpLost) && (
         <div className="whitespace-nowrap text-xs">
-          {maxHpGained && (
-            <span className="text-green-500/50">+{maxHpGained.amount} max HP</span>
-          )}
+          {maxHpGained && <span className="text-green-500/50">+{maxHpGained.amount} max HP</span>}
           {maxHpGained && maxHpLost && <span className="text-gray-700 mx-1">·</span>}
-          {maxHpLost && (
-            <span className="text-red-500/50">-{maxHpLost.amount} max HP</span>
-          )}
+          {maxHpLost && <span className="text-red-500/50">-{maxHpLost.amount} max HP</span>}
         </div>
       )}
       {potionsUsed.length > 0 && (
         <div className="whitespace-nowrap text-xs">
           <span className="text-cyan-500/70">
-            Used {potionsUsed.flatMap((e) => e.potions).map(formatId).join(', ')}
+            Used{' '}
+            {potionsUsed
+              .flatMap((e) => e.potions)
+              .map(formatId)
+              .join(', ')}
           </span>
         </div>
       )}
       {potionsDiscarded.length > 0 && (
         <div className="whitespace-nowrap text-xs">
           <span className="text-orange-400/60">
-            Discarded {potionsDiscarded.flatMap((e) => e.potions).map(formatId).join(', ')}
+            Discarded{' '}
+            {potionsDiscarded
+              .flatMap((e) => e.potions)
+              .map(formatId)
+              .join(', ')}
           </span>
         </div>
       )}
@@ -562,21 +569,15 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
 
   const titleContent = (
     <>
-      <span className="text-gray-300">
-        {floor.title}
-      </span>
-      {floor.isWeak && (
-        <span className="text-gray-600 text-xs ml-1">(weak)</span>
-      )}
+      <span className="text-gray-300">{floor.title}</span>
+      {floor.isWeak && <span className="text-gray-600 text-xs ml-1">(weak)</span>}
       {floor.monsters.length > 0 && (
         <span className="text-gray-600 text-xs ml-2">
           vs {floor.monsters.map(formatId).join(', ')}
         </span>
       )}
       {floor.turnsTaken ? (
-        <span className="text-gray-600 text-xs ml-2">
-          ({floor.turnsTaken} turns)
-        </span>
+        <span className="text-gray-600 text-xs ml-2">({floor.turnsTaken} turns)</span>
       ) : null}
     </>
   );
@@ -594,21 +595,15 @@ function FloorRow({ floor }: { floor: FloorSummary }) {
         <div className="hidden md:flex flex-1 min-w-0 items-start gap-3">
           <div className="flex-1 min-w-0">
             {titleContent}
-            {detailEvents.length > 0 && <FloorDetails events={detailEvents} isShop={floor.isShop} />}
+            {detailEvents.length > 0 && (
+              <FloorDetails events={detailEvents} isShop={floor.isShop} />
+            )}
           </div>
-          {floor.hasStats && (
-            <div className="shrink-0 text-xs">
-              {statsContent}
-            </div>
-          )}
+          {floor.hasStats && <div className="shrink-0 text-xs">{statsContent}</div>}
         </div>
 
         {/* Mobile: stats summary on the first row */}
-        {floor.hasStats && (
-          <div className="md:hidden ml-auto shrink-0 text-xs">
-            {statsContent}
-          </div>
-        )}
+        {floor.hasStats && <div className="md:hidden ml-auto shrink-0 text-xs">{statsContent}</div>}
       </div>
 
       {/* Mobile: floor name and details below */}
@@ -667,65 +662,69 @@ function ShopDetails({ events }: { events: FloorEvent[] }) {
         cardItems.push(
           <span key={`cards-off-${cardItems.length}`} className="text-gray-600">
             [{event.offered.map(formatId).join(', ')}]
-          </span>
+          </span>,
         );
         break;
       case 'cards-obtained':
         cardItems.push(
           <span key={`cards-obt-${cardItems.length}`} className="text-green-400/70">
-            {event.verb} {event.cards.map((c) => formatId(c.name) + (c.upgraded ? '+' : '')).join(', ')}
-          </span>
+            {event.verb}{' '}
+            {event.cards.map((c) => formatId(c.name) + (c.upgraded ? '+' : '')).join(', ')}
+          </span>,
         );
         break;
       case 'cards-removed':
         cardItems.push(
           <span key={`cards-rem-${cardItems.length}`} className="text-red-500/70">
             Removed {event.cards.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'relics-offered':
         relicItems.push(
           <span key={`rel-off-${relicItems.length}`} className="text-gray-600">
             [{event.offered.map(formatId).join(', ')}]
-          </span>
+          </span>,
         );
         break;
       case 'relic-obtained':
         relicItems.push(
           <span key={`rel-obt-${relicItems.length}`} className="text-yellow-400/70">
             {event.verb} {event.relics.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'potions-offered':
         potionItems.push(
           <span key={`pot-off-${potionItems.length}`} className="text-gray-600">
             [{event.offered.map(formatId).join(', ')}]
-          </span>
+          </span>,
         );
         break;
       case 'potion-obtained':
         potionItems.push(
           <span key={`pot-obt-${potionItems.length}`} className="text-cyan-400/70">
             {event.verb} {event.potions.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       default:
         otherItems.push(
           <span key={`other-${otherItems.length}`} className="text-gray-500">
             {event.type}
-          </span>
+          </span>,
         );
         break;
     }
   }
 
   const sections: { label: string; labelColor: string; items: React.ReactNode[] }[] = [];
-  if (cardItems.length > 0) sections.push({ label: 'Cards', labelColor: 'text-green-600/70', items: cardItems });
-  if (relicItems.length > 0) sections.push({ label: 'Relics', labelColor: 'text-yellow-600/70', items: relicItems });
-  if (potionItems.length > 0) sections.push({ label: 'Potions', labelColor: 'text-cyan-600/70', items: potionItems });
+  if (cardItems.length > 0)
+    sections.push({ label: 'Cards', labelColor: 'text-green-600/70', items: cardItems });
+  if (relicItems.length > 0)
+    sections.push({ label: 'Relics', labelColor: 'text-yellow-600/70', items: relicItems });
+  if (potionItems.length > 0)
+    sections.push({ label: 'Potions', labelColor: 'text-cyan-600/70', items: potionItems });
 
   if (sections.length === 0 && otherItems.length === 0) return null;
 
@@ -766,26 +765,22 @@ function FloorDetails({ events, isShop }: { events: FloorEvent[]; isShop?: boole
     switch (event.type) {
       case 'card-reward': {
         const fmtCard = (c: { id: string; upgraded: boolean; enchantment?: string }) =>
-          formatId(c.id) + (c.upgraded ? '+' : '') + (c.enchantment ? ` [${formatId(c.enchantment)}]` : '');
+          formatId(c.id) +
+          (c.upgraded ? '+' : '') +
+          (c.enchantment ? ` [${formatId(c.enchantment)}]` : '');
         const offeredStr = event.offered.map(fmtCard).join(', ');
         if (event.picked) {
           cardRewards.push(
             <div key={`card-${cardRewards.length}`} className="flex flex-wrap gap-x-2 gap-y-0.5">
-              <span className="text-green-400/70">
-                Picked {fmtCard(event.picked)}
-              </span>
-              <span className="text-gray-600">
-                from [{offeredStr}]
-              </span>
-            </div>
+              <span className="text-green-400/70">Picked {fmtCard(event.picked)}</span>
+              <span className="text-gray-600">from [{offeredStr}]</span>
+            </div>,
           );
         } else {
           cardRewards.push(
             <div key={`card-${cardRewards.length}`}>
-              <span className="text-yellow-500/70">
-                Skipped [{offeredStr}]
-              </span>
-            </div>
+              <span className="text-yellow-500/70">Skipped [{offeredStr}]</span>
+            </div>,
           );
         }
         break;
@@ -794,124 +789,128 @@ function FloorDetails({ events, isShop }: { events: FloorEvent[]; isShop?: boole
         otherItems.push(
           <span key={`cards-off-${otherItems.length}`} className="text-gray-600">
             Cards [{event.offered.map(formatId).join(', ')}]
-          </span>
+          </span>,
         );
         break;
       case 'cards-obtained':
         otherItems.push(
-          <span key={`cards-obt-${otherItems.length}`} className={event.verb === 'Gained' ? 'text-green-500/70' : 'text-green-400/70'}>
-            {event.verb} {event.cards.map((c) => formatId(c.name) + (c.upgraded ? '+' : '')).join(', ')}
-          </span>
+          <span
+            key={`cards-obt-${otherItems.length}`}
+            className={event.verb === 'Gained' ? 'text-green-500/70' : 'text-green-400/70'}
+          >
+            {event.verb}{' '}
+            {event.cards.map((c) => formatId(c.name) + (c.upgraded ? '+' : '')).join(', ')}
+          </span>,
         );
         break;
       case 'cards-removed':
         otherItems.push(
           <span key={`cards-rem-${otherItems.length}`} className="text-red-500/70">
             Removed {event.cards.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'card-transformed':
         otherItems.push(
           <span key={`card-xform-${otherItems.length}`} className="text-blue-400/70">
             {formatId(event.original)} → {formatId(event.result)}
-          </span>
+          </span>,
         );
         break;
       case 'card-enchanted':
         otherItems.push(
           <span key={`card-ench-${otherItems.length}`} className="text-purple-400/70">
             Enchanted {formatId(event.card)} with {formatId(event.enchantment)}
-          </span>
+          </span>,
         );
         break;
       case 'cards-upgraded':
         otherItems.push(
           <span key={`cards-upg-${otherItems.length}`} className="text-blue-300/70">
             Upgraded {event.cards.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'relics-offered':
         otherItems.push(
           <span key={`rel-off-${otherItems.length}`} className="text-gray-600">
             Relics [{event.offered.map(formatId).join(', ')}]
-          </span>
+          </span>,
         );
         break;
       case 'relic-obtained':
         otherItems.push(
           <span key={`rel-obt-${otherItems.length}`} className="text-yellow-400/70">
             {event.verb} {event.relics.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'relic-skipped':
         otherItems.push(
           <span key={`rel-skip-${otherItems.length}`} className="text-yellow-500/70">
             Skipped relic {event.skipped.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'ancient-picked':
         otherItems.push(
           <span key={`anc-pick-${otherItems.length}`} className="text-purple-400/70">
             Picked {formatId(event.chosen)}
-          </span>
+          </span>,
         );
         otherItems.push(
           <span key={`anc-off-${otherItems.length}`} className="text-gray-600">
             from [{event.offered.map(formatId).join(', ')}]
-          </span>
+          </span>,
         );
         break;
       case 'ancient-skipped':
         otherItems.push(
           <span key={`anc-skip-${otherItems.length}`} className="text-yellow-500/70">
             Skipped [{event.offered.map(formatId).join(', ')}]
-          </span>
+          </span>,
         );
         break;
       case 'event-choice':
         otherItems.push(
           <span key={`ev-${otherItems.length}`} className="text-teal-400/70">
             Choice: {formatId(event.optionName)}
-          </span>
+          </span>,
         );
         break;
       case 'potions-offered':
         otherItems.push(
           <span key={`pot-off-${otherItems.length}`} className="text-gray-600">
             Potions [{event.offered.map(formatId).join(', ')}]
-          </span>
+          </span>,
         );
         break;
       case 'potion-obtained':
         otherItems.push(
           <span key={`pot-obt-${otherItems.length}`} className="text-cyan-400/70">
             {event.verb} {event.potions.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'potion-skipped':
         otherItems.push(
           <span key={`pot-skip-${otherItems.length}`} className="text-gray-600">
             Skipped {event.potions.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'potion-discarded':
         otherItems.push(
           <span key={`pot-disc-${otherItems.length}`} className="text-orange-400/60">
             Discarded {event.potions.map(formatId).join(', ')}
-          </span>
+          </span>,
         );
         break;
       case 'rest-site':
         otherItems.push(
           <span key={`rest-${otherItems.length}`} className="text-green-400/70">
             {event.choices.join(', ')}
-          </span>
+          </span>,
         );
         break;
     }

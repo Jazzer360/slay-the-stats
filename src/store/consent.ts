@@ -8,7 +8,9 @@ function loadConsent(): ConsentStatus {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v === 'accepted' || v === 'declined') return v;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return 'undecided';
 }
 

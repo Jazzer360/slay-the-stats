@@ -8,10 +8,7 @@ function expectedScore(ratingA: number, ratingB: number): number {
   return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
 }
 
-function getOrCreateEntry(
-  map: EloMap,
-  id: string
-): EloEntry {
+function getOrCreateEntry(map: EloMap, id: string): EloEntry {
   let entry = map.get(id);
   if (!entry) {
     entry = {
@@ -68,17 +65,19 @@ function recordOffer(
   offer: OfferInstance,
 ): void {
   let runOffers = offerLog.get(entityId);
-  if (!runOffers) { runOffers = new Map(); offerLog.set(entityId, runOffers); }
+  if (!runOffers) {
+    runOffers = new Map();
+    offerLog.set(entityId, runOffers);
+  }
   let offers = runOffers.get(fileName);
-  if (!offers) { offers = []; runOffers.set(fileName, offers); }
+  if (!offers) {
+    offers = [];
+    runOffers.set(fileName, offers);
+  }
   offers.push(offer);
 }
 
-function finalizeAppearances(
-  elo: EloMap,
-  offerLog: OfferLog,
-  runMeta: Map<string, RunMeta>,
-): void {
+function finalizeAppearances(elo: EloMap, offerLog: OfferLog, runMeta: Map<string, RunMeta>): void {
   for (const [entityId, runOffers] of offerLog) {
     const entry = elo.get(entityId);
     if (!entry) continue;
@@ -133,7 +132,10 @@ export interface CardEloOptions {
  * Compute ELO ratings for card choices across all provided runs.
  * Runs should already be filtered and sorted chronologically.
  */
-export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { upgradeAware: true, enchantmentAware: true }): EloMap {
+export function computeCardElo(
+  runs: ParsedRun[],
+  options: CardEloOptions = { upgradeAware: true, enchantmentAware: true },
+): EloMap {
   const elo: EloMap = new Map();
   const offerLog: OfferLog = new Map();
   const runMetaMap = new Map<string, RunMeta>();
@@ -199,12 +201,23 @@ export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { up
         if (total % cardGroupSize !== 0) {
           console.warn(
             `[ELO] Ungroupable card choices: ${run.fileName} floor ${currentFloor} — ` +
-            `${total} choices, expected groups of ${cardGroupSize}` +
-            (lastingCandyActive ? ' (Lasting Candy active)' : '') +
-            ` | skipping floor`,
+              `${total} choices, expected groups of ${cardGroupSize}` +
+              (lastingCandyActive ? ' (Lasting Candy active)' : '') +
+              ` | skipping floor`,
           );
         }
-        const pickedIds = processCardChoices(elo, choices, actIdx, isBoss, hasPaelsWing, cardGroupSize, options, currentFloor, run.fileName, offerLog);
+        const pickedIds = processCardChoices(
+          elo,
+          choices,
+          actIdx,
+          isBoss,
+          hasPaelsWing,
+          cardGroupSize,
+          options,
+          currentFloor,
+          run.fileName,
+          offerLog,
+        );
         for (const id of pickedIds) pickedInRun.add(id);
       }
     }
@@ -224,8 +237,7 @@ export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { up
 
   // Compute derived rates
   for (const entry of elo.values()) {
-    entry.pickRate =
-      entry.timesSeen > 0 ? entry.timesPicked / entry.timesSeen : 0;
+    entry.pickRate = entry.timesSeen > 0 ? entry.timesPicked / entry.timesSeen : 0;
     const totalRuns = entry.runWins + entry.runLosses;
     entry.runWinRate = totalRuns > 0 ? entry.runWins / totalRuns : 0;
   }
@@ -238,9 +250,12 @@ export function computeCardElo(runs: ParsedRun[], options: CardEloOptions = { up
  */
 function getCardId(choice: CardChoice, options: CardEloOptions): string {
   const base = choice.card.id;
-  let id = options.upgradeAware && choice.card.current_upgrade_level && choice.card.current_upgrade_level > 0
-    ? `${base}+`
-    : base;
+  let id =
+    options.upgradeAware &&
+    choice.card.current_upgrade_level &&
+    choice.card.current_upgrade_level > 0
+      ? `${base}+`
+      : base;
   if (options.enchantmentAware && choice.card.enchantment) {
     id += ` [${choice.card.enchantment.id}]`;
   }
@@ -389,7 +404,10 @@ function processCardChoices(
  * Compute ELO ratings for ancient (post-boss) reward choices.
  * Also builds a mapping of reward TextKey -> ancient event name.
  */
-export function computeAncientElo(runs: ParsedRun[]): { elo: EloMap; ancientMap: Map<string, string> } {
+export function computeAncientElo(runs: ParsedRun[]): {
+  elo: EloMap;
+  ancientMap: Map<string, string>;
+} {
   const elo: EloMap = new Map();
   const ancientMap = new Map<string, string>(); // TextKey -> ancient name (e.g. "EVENT.PAEL")
   const offerLog: OfferLog = new Map();
@@ -419,11 +437,7 @@ export function computeAncientElo(runs: ParsedRun[]): { elo: EloMap; ancientMap:
       for (const mapPoint of act) {
         currentFloor++;
         const stats = mapPoint.player_stats?.[0];
-        if (
-          !stats?.ancient_choice ||
-          stats.ancient_choice.length === 0
-        )
-          continue;
+        if (!stats?.ancient_choice || stats.ancient_choice.length === 0) continue;
 
         // Extract the ancient name from the room's model_id
         const ancientName = mapPoint.rooms?.[0]?.model_id ?? 'UNKNOWN';
@@ -431,7 +445,14 @@ export function computeAncientElo(runs: ParsedRun[]): { elo: EloMap; ancientMap:
           ancientMap.set(normalizeAncientId(choice), ancientName);
         }
 
-        const pickedId = processAncientChoices(elo, stats.ancient_choice, currentFloor, actIdx, run.fileName, offerLog);
+        const pickedId = processAncientChoices(
+          elo,
+          stats.ancient_choice,
+          currentFloor,
+          actIdx,
+          run.fileName,
+          offerLog,
+        );
         if (pickedId) pickedInRun.add(pickedId);
       }
     }
@@ -451,8 +472,7 @@ export function computeAncientElo(runs: ParsedRun[]): { elo: EloMap; ancientMap:
 
   // Compute derived rates
   for (const entry of elo.values()) {
-    entry.pickRate =
-      entry.timesSeen > 0 ? entry.timesPicked / entry.timesSeen : 0;
+    entry.pickRate = entry.timesSeen > 0 ? entry.timesPicked / entry.timesSeen : 0;
     const totalRuns = entry.runWins + entry.runLosses;
     entry.runWinRate = totalRuns > 0 ? entry.runWins / totalRuns : 0;
   }

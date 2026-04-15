@@ -16,7 +16,8 @@ export function CookieBanner() {
           See our{' '}
           <Link to="/privacy" className="text-purple-400 hover:text-purple-300 underline">
             Privacy Policy
-          </Link>.
+          </Link>
+          .
         </p>
         <div className="flex gap-2 shrink-0">
           <button

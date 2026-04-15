@@ -29,5 +29,13 @@ export function useProfileNav() {
     navigate(`${base}/ancient-elo/${encodeURIComponent(entityId)}`);
   }
 
-  return { toRunDetail, toRunsWithCard, toRunsWithAncient, toCardDetail, toAncientDetail, runsPath, base };
+  return {
+    toRunDetail,
+    toRunsWithCard,
+    toRunsWithAncient,
+    toCardDetail,
+    toAncientDetail,
+    runsPath,
+    base,
+  };
 }

@@ -105,16 +105,25 @@ export function EloHistoryChart({ entry }: EloHistoryChartProps) {
   );
 }
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payload: DataPoint }[] }) {
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload: DataPoint }[];
+}) {
   if (!active || !payload?.[0]) return null;
   const d = payload[0].payload;
   return (
     <div className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs shadow-lg">
       <div className="text-gray-200 font-mono font-bold">{d.rating}</div>
       <div className={`${d.eloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-        {d.eloChange >= 0 ? '+' : ''}{d.eloChange.toFixed(1)}
+        {d.eloChange >= 0 ? '+' : ''}
+        {d.eloChange.toFixed(1)}
       </div>
-      <div className="text-gray-400 mt-1">Floor {d.floor} · {d.picked ? 'Picked' : 'Passed'}</div>
+      <div className="text-gray-400 mt-1">
+        Floor {d.floor} · {d.picked ? 'Picked' : 'Passed'}
+      </div>
       <div className="text-gray-500">{d.date}</div>
     </div>
   );

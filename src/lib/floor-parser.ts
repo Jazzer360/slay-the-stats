@@ -65,7 +65,9 @@ export function parseRunTimeline(data: RunData): RunTimeline {
 
       const monsterIds = room?.monster_ids ?? [];
 
-      const events = stats ? parseFloorEvents(stats, isShop, hasBingBong, cardGroupSize, monsterIds) : [];
+      const events = stats
+        ? parseFloorEvents(stats, isShop, hasBingBong, cardGroupSize, monsterIds)
+        : [];
 
       floors.push({
         floorNumber: roomIdx + 1,
@@ -117,7 +119,7 @@ function parseFloorEvents(
           type: 'cards-obtained',
           cards: pickedCards.map((c) => ({
             name: c.card.id,
-            upgraded: !!(c.card.current_upgrade_level),
+            upgraded: !!c.card.current_upgrade_level,
           })),
           verb: 'Bought',
         });
@@ -131,15 +133,17 @@ function parseFloorEvents(
       for (const group of groups) {
         const offered = group.map((c) => ({
           id: c.card.id,
-          upgraded: !!(c.card.current_upgrade_level),
+          upgraded: !!c.card.current_upgrade_level,
           ...(c.card.enchantment ? { enchantment: c.card.enchantment.id } : {}),
         }));
         const pickedChoice = group.find((c) => c.was_picked);
         const picked = pickedChoice
           ? {
               id: pickedChoice.card.id,
-              upgraded: !!(pickedChoice.card.current_upgrade_level),
-              ...(pickedChoice.card.enchantment ? { enchantment: pickedChoice.card.enchantment.id } : {}),
+              upgraded: !!pickedChoice.card.current_upgrade_level,
+              ...(pickedChoice.card.enchantment
+                ? { enchantment: pickedChoice.card.enchantment.id }
+                : {}),
             }
           : null;
         events.push({ type: 'card-reward', offered, picked });
@@ -182,7 +186,7 @@ function parseFloorEvents(
           type: 'cards-obtained',
           cards: boughtCards.map((c) => ({
             name: c.id,
-            upgraded: !!(c.current_upgrade_level),
+            upgraded: !!c.current_upgrade_level,
           })),
           verb: 'Bought',
         });
@@ -192,7 +196,7 @@ function parseFloorEvents(
           type: 'cards-obtained',
           cards: dupeCards.map((c) => ({
             name: c.id,
-            upgraded: !!(c.current_upgrade_level),
+            upgraded: !!c.current_upgrade_level,
           })),
           verb: 'Gained',
         });
@@ -202,7 +206,7 @@ function parseFloorEvents(
         type: 'cards-obtained',
         cards: extraGained.map((c) => ({
           name: c.id,
-          upgraded: !!(c.current_upgrade_level),
+          upgraded: !!c.current_upgrade_level,
         })),
         verb: isShop ? 'Bought' : 'Gained',
       });
@@ -397,7 +401,9 @@ function parseFloorEvents(
  * Find the global floor at which Lasting Candy was obtained.
  * Returns -1 if the relic is not present.
  */
-function getLastingCandyFloor(relics: { id: string; floor_added_to_deck: number }[] | undefined): number {
+function getLastingCandyFloor(
+  relics: { id: string; floor_added_to_deck: number }[] | undefined,
+): number {
   if (!relics) return -1;
   const relic = relics.find((r) => r.id === 'RELIC.LASTING_CANDY');
   return relic ? relic.floor_added_to_deck : -1;

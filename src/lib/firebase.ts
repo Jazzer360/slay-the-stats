@@ -6,13 +6,13 @@ import { getStorage } from 'firebase/storage';
 import { getAnalytics, type Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCFRT9eSAWdDGP74mB8Zb4tXiFoUwlEOlc",
-  authDomain: "slay-the-stats.firebaseapp.com",
-  projectId: "slay-the-stats",
-  storageBucket: "slay-the-stats.firebasestorage.app",
-  messagingSenderId: "973938765208",
-  appId: "1:973938765208:web:d48b0b58449131eb684fed",
-  measurementId: "G-5T9NRST648",
+  apiKey: 'AIzaSyCFRT9eSAWdDGP74mB8Zb4tXiFoUwlEOlc',
+  authDomain: 'slay-the-stats.firebaseapp.com',
+  projectId: 'slay-the-stats',
+  storageBucket: 'slay-the-stats.firebasestorage.app',
+  messagingSenderId: '973938765208',
+  appId: '1:973938765208:web:d48b0b58449131eb684fed',
+  measurementId: 'G-5T9NRST648',
 };
 
 const app = initializeApp(firebaseConfig);

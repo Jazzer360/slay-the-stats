@@ -5,10 +5,11 @@ import { parseRunFile } from '../lib/parser';
 import { RunDetail } from '../components/run/RunDetail';
 import type { ParsedRun } from '../types/run';
 
-
 export function SharedRunPage() {
   const { token } = useParams<{ token: string }>();
-  const [pageState, setPageState] = useState<'loading' | 'not-found' | 'loaded' | 'error'>('loading');
+  const [pageState, setPageState] = useState<'loading' | 'not-found' | 'loaded' | 'error'>(
+    'loading',
+  );
   const [run, setRun] = useState<ParsedRun | null>(null);
   const [isAnonymous, setIsAnonymous] = useState(false);
 
@@ -35,7 +36,9 @@ export function SharedRunPage() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   if (pageState === 'loading') {
@@ -51,7 +54,9 @@ export function SharedRunPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-center">
         <p className="text-2xl font-bold text-gray-300">Share Not Found</p>
         <p className="text-gray-500 text-sm">This share link is invalid or has been removed.</p>
-        <Link to="/" className="text-purple-400 hover:underline text-sm">Go Home</Link>
+        <Link to="/" className="text-purple-400 hover:underline text-sm">
+          Go Home
+        </Link>
       </div>
     );
   }

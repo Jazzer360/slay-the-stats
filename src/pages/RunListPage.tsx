@@ -58,9 +58,7 @@ export function RunListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const cardFilter = searchParams.get('card');
   const ancientFilter = searchParams.get('ancient');
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'startTime', desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'startTime', desc: true }]);
   const [globalFilter, setGlobalFilter] = useState('');
 
   const displayRuns = useMemo(() => {
@@ -70,10 +68,7 @@ export function RunListPage() {
     return runs;
   }, [filteredRuns, cardFilter, ancientFilter]);
 
-  const data = useMemo(
-    () => displayRuns.map(summarizeRun),
-    [displayRuns]
-  );
+  const data = useMemo(() => displayRuns.map(summarizeRun), [displayRuns]);
 
   const columns = useMemo(
     () => [
@@ -87,23 +82,18 @@ export function RunListPage() {
       }),
       columnHelper.accessor('character', {
         header: 'Character',
-        cell: (info) => (
-          <span className="text-gray-200">{formatId(info.getValue())}</span>
-        ),
+        cell: (info) => <span className="text-gray-200">{formatId(info.getValue())}</span>,
       }),
       columnHelper.accessor('ascension', {
         header: 'Asc',
-        cell: (info) => (
-          <span className="text-gray-400">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="text-gray-400">{info.getValue()}</span>,
         size: 60,
       }),
       columnHelper.accessor('win', {
         header: 'Result',
         cell: (info) => {
           const row = info.row.original;
-          if (row.wasAbandoned)
-            return <span className="text-gray-500">Abandoned</span>;
+          if (row.wasAbandoned) return <span className="text-gray-500">Abandoned</span>;
           return info.getValue() ? (
             <span className="text-green-400 font-medium">Victory</span>
           ) : (
@@ -113,23 +103,17 @@ export function RunListPage() {
       }),
       columnHelper.accessor('floorsReached', {
         header: 'Floors',
-        cell: (info) => (
-          <span className="text-gray-400">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="text-gray-400">{info.getValue()}</span>,
         size: 70,
       }),
       columnHelper.accessor('deckSize', {
         header: 'Deck',
-        cell: (info) => (
-          <span className="text-gray-400">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="text-gray-400">{info.getValue()}</span>,
         size: 60,
       }),
       columnHelper.accessor('relicCount', {
         header: 'Relics',
-        cell: (info) => (
-          <span className="text-gray-400">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="text-gray-400">{info.getValue()}</span>,
         size: 70,
       }),
       columnHelper.accessor('killedBy', {
@@ -137,9 +121,7 @@ export function RunListPage() {
         cell: (info) => {
           const val = info.getValue();
           return val ? (
-            <span className="text-red-400/70 text-sm">
-              {formatId(val)}
-            </span>
+            <span className="text-red-400/70 text-sm">{formatId(val)}</span>
           ) : (
             <span className="text-gray-700">—</span>
           );
@@ -148,13 +130,11 @@ export function RunListPage() {
       columnHelper.accessor('runTime', {
         header: 'Time',
         cell: (info) => (
-          <span className="text-gray-500 text-sm">
-            {formatDuration(info.getValue())}
-          </span>
+          <span className="text-gray-500 text-sm">{formatDuration(info.getValue())}</span>
         ),
       }),
     ],
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -184,7 +164,13 @@ export function RunListPage() {
   if (filteredRuns.length === 0) {
     return (
       <div className="text-center text-gray-500 py-20">
-        <p>No runs loaded. <Link to="/import" className="text-purple-400 hover:text-purple-300">Import your runs</Link> to get started.</p>
+        <p>
+          No runs loaded.{' '}
+          <Link to="/import" className="text-purple-400 hover:text-purple-300">
+            Import your runs
+          </Link>{' '}
+          to get started.
+        </p>
       </div>
     );
   }
@@ -213,9 +199,7 @@ export function RunListPage() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-100">Run History</h2>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500">
-            {data.length} runs
-          </span>
+          <span className="text-xs text-gray-500">{data.length} runs</span>
           <input
             type="text"
             placeholder="Search..."
@@ -238,10 +222,7 @@ export function RunListPage() {
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     <div className="flex items-center gap-1">
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
                         asc: ' ↑',
                         desc: ' ↓',
@@ -274,8 +255,7 @@ export function RunListPage() {
       {table.getPageCount() > 1 && (
         <div className="flex items-center justify-between mt-3">
           <span className="text-xs text-gray-500">
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
+            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
           </span>
           <div className="flex gap-1">
             <button

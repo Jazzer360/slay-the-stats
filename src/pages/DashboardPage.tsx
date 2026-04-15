@@ -18,28 +18,19 @@ import {
   Line,
 } from 'recharts';
 
-const COLORS = [  '#c084fc',
-  '#60a5fa',
-  '#34d399',
-  '#fbbf24',
-  '#f87171',
-  '#a78bfa',
-];
+const COLORS = ['#c084fc', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa'];
 
 const CHARACTER_COLORS: Record<string, string> = {
-  'CHARACTER.IRONCLAD': '#ef4444',   // red-500
-  'CHARACTER.SILENT': '#22c55e',     // green-500
-  'CHARACTER.DEFECT': '#60a5fa',     // blue-400
-  'CHARACTER.REGENT': '#fbbf24',     // amber-400
+  'CHARACTER.IRONCLAD': '#ef4444', // red-500
+  'CHARACTER.SILENT': '#22c55e', // green-500
+  'CHARACTER.DEFECT': '#60a5fa', // blue-400
+  'CHARACTER.REGENT': '#fbbf24', // amber-400
   'CHARACTER.NECROBINDER': '#8b5cf6', // violet-500
 };
 
 export function DashboardPage() {
   const filteredRuns = useFilteredRuns();
-  const stats = useMemo(
-    () => computeAggregateStats(filteredRuns),
-    [filteredRuns]
-  );
+  const stats = useMemo(() => computeAggregateStats(filteredRuns), [filteredRuns]);
 
   // Win rate moving average
   const [maWindow, setMaWindow] = useState(10);
@@ -48,12 +39,10 @@ export function DashboardPage() {
     if (filteredRuns.length === 0 || filteredRuns.length < maWindow) return [];
 
     // Sort by start time ascending
-    const sorted = [...filteredRuns].sort(
-      (a, b) => a.data.start_time - b.data.start_time
-    );
+    const sorted = [...filteredRuns].sort((a, b) => a.data.start_time - b.data.start_time);
 
     const runFloors = sorted.map((r) =>
-      r.data.map_point_history.reduce((s, act) => s + act.length, 0)
+      r.data.map_point_history.reduce((s, act) => s + act.length, 0),
     );
 
     const result: { run: number; winRate: number; avgFloors: number }[] = [];
@@ -80,7 +69,13 @@ export function DashboardPage() {
   if (filteredRuns.length === 0) {
     return (
       <div className="text-center text-gray-500 py-20">
-        <p>No runs loaded. <Link to="/import" className="text-purple-400 hover:text-purple-300">Import your runs</Link> to get started.</p>
+        <p>
+          No runs loaded.{' '}
+          <Link to="/import" className="text-purple-400 hover:text-purple-300">
+            Import your runs
+          </Link>{' '}
+          to get started.
+        </p>
       </div>
     );
   }
@@ -96,100 +91,91 @@ export function DashboardPage() {
         <StatCard label="Wins" value={stats.wins.toString()} />
         <StatCard label="Losses" value={stats.losses.toString()} />
         <StatCard label="Avg Time" value={formatDuration(Math.round(stats.avgRunTime))} />
-        <StatCard
-          label="Avg Ascension"
-          value={stats.avgAscension.toFixed(1)}
-        />
+        <StatCard label="Avg Ascension" value={stats.avgAscension.toFixed(1)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
         {/* Character distribution */}
         <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
-          <h3 className="text-base font-semibold text-gray-200 mb-4">
-            Character Distribution
-          </h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-4">Character Distribution</h3>
           <ResponsiveContainer width="100%" height={256}>
-              <PieChart>
-                <Pie
-                  data={stats.characterBreakdown.map((cb) => ({
-                    name: formatId(cb.character),
-                    value: cb.count,
-                  }))}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={90}
-                  paddingAngle={3}
-                  dataKey="value"
-                  label={({ name, value }) => `${name} (${value})`}
-                >
-                  {stats.characterBreakdown.map((cb, idx) => (
-                    <Cell
-                      key={idx}
-                      fill={CHARACTER_COLORS[cb.character] ?? COLORS[idx % COLORS.length]}
-                      stroke="transparent"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: '#1f2937',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#e5e7eb',
-                  }}
-                />
-              </PieChart>
+            <PieChart>
+              <Pie
+                data={stats.characterBreakdown.map((cb) => ({
+                  name: formatId(cb.character),
+                  value: cb.count,
+                }))}
+                cx="50%"
+                cy="50%"
+                innerRadius={50}
+                outerRadius={90}
+                paddingAngle={3}
+                dataKey="value"
+                label={({ name, value }) => `${name} (${value})`}
+              >
+                {stats.characterBreakdown.map((cb, idx) => (
+                  <Cell
+                    key={idx}
+                    fill={CHARACTER_COLORS[cb.character] ?? COLORS[idx % COLORS.length]}
+                    stroke="transparent"
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  background: '#1f2937',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#e5e7eb',
+                }}
+              />
+            </PieChart>
           </ResponsiveContainer>
         </div>
 
         {/* Win rate by character */}
         <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
-          <h3 className="text-base font-semibold text-gray-200 mb-4">
-            Win Rate by Character
-          </h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-4">Win Rate by Character</h3>
           <ResponsiveContainer width="100%" height={256}>
-              <BarChart
-                data={stats.characterBreakdown.map((cb) => ({
-                  name: formatId(cb.character),
-                  character: cb.character,
-                  winRate: cb.winRate,
-                  count: cb.count,
-                }))}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis
-                  dataKey="name"
-                  stroke="#6b7280"
-                  fontSize={12}
-                />
-                <YAxis
-                  stroke="#6b7280"
-                  fontSize={12}
-                  domain={[0, 1]}
-                  tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: '#1f2937',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#e5e7eb',
-                  }}
-                  formatter={((value: unknown, _name: unknown, props: { payload: { count: number } }) => [
+            <BarChart
+              data={stats.characterBreakdown.map((cb) => ({
+                name: formatId(cb.character),
+                character: cb.character,
+                winRate: cb.winRate,
+                count: cb.count,
+              }))}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
+              <YAxis
+                stroke="#6b7280"
+                fontSize={12}
+                domain={[0, 1]}
+                tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: '#1f2937',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#e5e7eb',
+                }}
+                formatter={
+                  ((value: unknown, _name: unknown, props: { payload: { count: number } }) => [
                     `${formatPercent(value as number)} (${props.payload.count} runs)`,
                     'Win Rate',
-                  ]) as never}
-                />
-                <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>
-                  {stats.characterBreakdown.map((cb, idx) => (
-                    <Cell
-                      key={idx}
-                      fill={CHARACTER_COLORS[cb.character] ?? COLORS[idx % COLORS.length]}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
+                  ]) as never
+                }
+              />
+              <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>
+                {stats.characterBreakdown.map((cb, idx) => (
+                  <Cell
+                    key={idx}
+                    fill={CHARACTER_COLORS[cb.character] ?? COLORS[idx % COLORS.length]}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -197,9 +183,7 @@ export function DashboardPage() {
       {/* Win rate moving average */}
       <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-gray-200">
-            Win Rate (Moving Average)
-          </h3>
+          <h3 className="text-base font-semibold text-gray-200">Win Rate (Moving Average)</h3>
           <div className="flex items-center gap-2">
             <label className="text-xs text-gray-500">Window:</label>
             <input
@@ -229,64 +213,73 @@ export function DashboardPage() {
               </span>
             </div>
             <ResponsiveContainer width="100%" height={256}>
-                <LineChart data={winRateMA}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis
-                    dataKey="run"
-                    stroke="#6b7280"
-                    fontSize={11}
-                    label={{ value: 'Run #', position: 'insideBottomRight', offset: -5, fill: '#6b7280', fontSize: 11 }}
-                  />
-                  <YAxis
-                    yAxisId="left"
-                    stroke="#9f7aea"
-                    fontSize={11}
-                    domain={[0, 100]}
-                    tickFormatter={(v) => `${v.toFixed(0)}%`}
-                  />
-                  <YAxis
-                    yAxisId="right"
-                    orientation="right"
-                    stroke="#34d399"
-                    fontSize={11}
-                    domain={[0, 49]}
-                    tickCount={8}
-                    tickFormatter={(v) => `${v}`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: '#1f2937',
-                      border: '1px solid #374151',
-                      borderRadius: '8px',
-                      color: '#e5e7eb',
-                      fontSize: '12px',
-                    }}
-                    formatter={((value: unknown, name: string) => {
-                      if (name === 'winRate') return [`${(value as number).toFixed(1)}%`, 'Win Rate'];
+              <LineChart data={winRateMA}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis
+                  dataKey="run"
+                  stroke="#6b7280"
+                  fontSize={11}
+                  label={{
+                    value: 'Run #',
+                    position: 'insideBottomRight',
+                    offset: -5,
+                    fill: '#6b7280',
+                    fontSize: 11,
+                  }}
+                />
+                <YAxis
+                  yAxisId="left"
+                  stroke="#9f7aea"
+                  fontSize={11}
+                  domain={[0, 100]}
+                  tickFormatter={(v) => `${v.toFixed(0)}%`}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="#34d399"
+                  fontSize={11}
+                  domain={[0, 49]}
+                  tickCount={8}
+                  tickFormatter={(v) => `${v}`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#1f2937',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#e5e7eb',
+                    fontSize: '12px',
+                  }}
+                  formatter={
+                    ((value: unknown, name: string) => {
+                      if (name === 'winRate')
+                        return [`${(value as number).toFixed(1)}%`, 'Win Rate'];
                       if (name === 'avgFloors') return [(value as number).toFixed(1), 'Avg Floors'];
                       return [value, name];
-                    }) as never}
-                    labelFormatter={(label) => `Run #${label}`}
-                  />
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="winRate"
-                    stroke="#c084fc"
-                    strokeWidth={2}
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="avgFloors"
-                    stroke="#34d399"
-                    strokeWidth={2}
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
+                    }) as never
+                  }
+                  labelFormatter={(label) => `Run #${label}`}
+                />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="winRate"
+                  stroke="#c084fc"
+                  strokeWidth={2}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="avgFloors"
+                  stroke="#34d399"
+                  strokeWidth={2}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </>
         ) : (
@@ -299,39 +292,30 @@ export function DashboardPage() {
       {/* Common deaths */}
       {stats.commonDeaths.length > 0 && (
         <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
-          <h3 className="text-base font-semibold text-gray-200 mb-4">
-            Most Common Deaths
-          </h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-4">Most Common Deaths</h3>
           <ResponsiveContainer width="100%" height={256}>
-              <BarChart
-                data={stats.commonDeaths.slice(0, 8)}
-                layout="vertical"
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis type="number" stroke="#6b7280" fontSize={12} />
-                <YAxis
-                  type="category"
-                  dataKey="encounter"
-                  stroke="#6b7280"
-                  fontSize={11}
-                  width={150}
-                  tickFormatter={formatId}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: '#1f2937',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#e5e7eb',
-                  }}
-                  labelFormatter={(l) => formatId(String(l))}
-                />
-                <Bar
-                  dataKey="count"
-                  fill="#f87171"
-                  radius={[0, 4, 4, 0]}
-                />
-              </BarChart>
+            <BarChart data={stats.commonDeaths.slice(0, 8)} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis type="number" stroke="#6b7280" fontSize={12} />
+              <YAxis
+                type="category"
+                dataKey="encounter"
+                stroke="#6b7280"
+                fontSize={11}
+                width={150}
+                tickFormatter={formatId}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: '#1f2937',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#e5e7eb',
+                }}
+                labelFormatter={(l) => formatId(String(l))}
+              />
+              <Bar dataKey="count" fill="#f87171" radius={[0, 4, 4, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       )}

@@ -96,7 +96,9 @@ export function ProfilePage() {
         {loadProgress && (
           <div className="w-full max-w-sm">
             <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-              <span>{loadProgress.loaded} / {loadProgress.total} runs</span>
+              <span>
+                {loadProgress.loaded} / {loadProgress.total} runs
+              </span>
             </div>
             <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
               <div
@@ -115,7 +117,8 @@ export function ProfilePage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-center">
         <p className="text-2xl font-bold text-gray-300">Profile Not Found</p>
         <p className="text-gray-500 text-sm">
-          No user with the screen name <span className="text-gray-300 font-mono">{screenName}</span> exists.
+          No user with the screen name <span className="text-gray-300 font-mono">{screenName}</span>{' '}
+          exists.
         </p>
       </div>
     );
@@ -126,7 +129,8 @@ export function ProfilePage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-center">
         <p className="text-2xl font-bold text-gray-300">Private Profile</p>
         <p className="text-gray-500 text-sm">
-          <span className="text-gray-300 font-medium">{profile?.screenName}</span>'s profile is private.
+          <span className="text-gray-300 font-medium">{profile?.screenName}</span>'s profile is
+          private.
         </p>
       </div>
     );

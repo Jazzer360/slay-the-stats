@@ -1,4 +1,12 @@
-import { ref, uploadString, getDownloadURL, deleteObject, getBytes, listAll, type UploadMetadata } from 'firebase/storage';
+import {
+  ref,
+  uploadString,
+  getDownloadURL,
+  deleteObject,
+  getBytes,
+  listAll,
+  type UploadMetadata,
+} from 'firebase/storage';
 import { storage } from './firebase';
 import { parseRunFile } from './parser';
 import type { ParsedRun } from '../types/run';

@@ -59,7 +59,9 @@ export function useCloudLoader() {
 
     load();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.uid, setRuns, setLoading, setLoadProgress, setError, clear, resetFilters]);
 
   // Apply user's default filters once when their profile loads

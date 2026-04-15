@@ -7,7 +7,6 @@ import { useAuthStore } from '../store/auth';
 import { createShare, createPublicShare } from '../lib/firestore';
 import { RunDetail } from '../components/run/RunDetail';
 
-
 export function RunDetailPage() {
   const { fileName } = useParams<{ fileName: string }>();
   const runs = useActiveRuns();
@@ -15,7 +14,9 @@ export function RunDetailPage() {
   const isProfileView = useProfileRunsStore((s) => s.profileRuns !== null);
   const { toRunDetail, runsPath } = useProfileNav();
   const decodedName = fileName ? decodeURIComponent(fileName) : '';
-  const runIndex = runs.findIndex((r) => r.fileName === `${decodedName}.run` || r.fileName === decodedName);
+  const runIndex = runs.findIndex(
+    (r) => r.fileName === `${decodedName}.run` || r.fileName === decodedName,
+  );
   const run = runIndex >= 0 ? runs[runIndex] : undefined;
   const prevRun = runIndex > 0 ? runs[runIndex - 1] : undefined;
   const nextRun = runIndex >= 0 && runIndex < runs.length - 1 ? runs[runIndex + 1] : undefined;
@@ -71,10 +72,7 @@ export function RunDetailPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <Link
-          to={runsPath}
-          className="text-sm text-gray-500 hover:text-gray-300"
-        >
+        <Link to={runsPath} className="text-sm text-gray-500 hover:text-gray-300">
           ← Back to Run List
         </Link>
         <div className="flex items-center gap-2">
@@ -104,11 +102,17 @@ export function RunDetailPage() {
                 shareState === 'copied'
                   ? 'bg-green-800 text-green-300'
                   : shareState === 'error'
-                  ? 'bg-red-800 text-red-300'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ? 'bg-red-800 text-red-300'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              {shareState === 'sharing' ? 'Sharing…' : shareState === 'copied' ? '✓ Link Copied!' : shareState === 'error' ? 'Share Failed' : 'Share Run'}
+              {shareState === 'sharing'
+                ? 'Sharing…'
+                : shareState === 'copied'
+                  ? '✓ Link Copied!'
+                  : shareState === 'error'
+                    ? 'Share Failed'
+                    : 'Share Run'}
             </button>
           )}
         </div>

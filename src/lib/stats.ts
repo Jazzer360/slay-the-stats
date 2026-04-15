@@ -146,14 +146,10 @@ export function computeAggregateStats(runs: ParsedRun[]): AggregateStats {
     losses,
     abandoned,
     winRate: summaries.length > 0 ? wins / summaries.length : 0,
-    avgRunTime:
-      summaries.reduce((sum, s) => sum + s.runTime, 0) / summaries.length,
-    avgFloorsReached:
-      summaries.reduce((sum, s) => sum + s.floorsReached, 0) / summaries.length,
-    avgDeckSize:
-      summaries.reduce((sum, s) => sum + s.deckSize, 0) / summaries.length,
-    avgAscension:
-      summaries.reduce((sum, s) => sum + s.ascension, 0) / summaries.length,
+    avgRunTime: summaries.reduce((sum, s) => sum + s.runTime, 0) / summaries.length,
+    avgFloorsReached: summaries.reduce((sum, s) => sum + s.floorsReached, 0) / summaries.length,
+    avgDeckSize: summaries.reduce((sum, s) => sum + s.deckSize, 0) / summaries.length,
+    avgAscension: summaries.reduce((sum, s) => sum + s.ascension, 0) / summaries.length,
     characterBreakdown,
     ascensionBreakdown,
     commonDeaths,
