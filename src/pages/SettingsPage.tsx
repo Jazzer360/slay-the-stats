@@ -2,11 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../store/auth';
 import { useRunsStore } from '../store/runs';
 import { doSignOut } from '../lib/auth';
-import {
-  updateUserProfile,
-  reserveScreenName,
-  isScreenNameAvailable,
-} from '../lib/firestore';
+import { updateUserProfile, reserveScreenName, isScreenNameAvailable } from '../lib/firestore';
 import { deleteRunFile, listUserRunFiles, deleteAllRunFiles } from '../lib/cloudStorage';
 import type { DefaultProfileFilters } from '../types/user';
 import { EMPTY_DEFAULT_FILTERS } from '../types/user';
@@ -22,7 +18,7 @@ export function SettingsPage() {
   // ─── Profile section ─────────────────────────────────────────
   const [screenName, setScreenName] = useState(userProfile?.screenName ?? '');
   const [visibility, setVisibility] = useState<'public' | 'private'>(
-    userProfile?.profileVisibility ?? 'private'
+    userProfile?.profileVisibility ?? 'private',
   );
   const [availability, setAvailability] = useState<AvailabilityState>('idle');
   const [profileSaving, setProfileSaving] = useState(false);
@@ -31,7 +27,7 @@ export function SettingsPage() {
 
   // ─── Default filter settings ──────────────────────────────────
   const [defaultFilters, setDefaultFilters] = useState<DefaultProfileFilters>(
-    userProfile?.defaultFilters ?? { ...EMPTY_DEFAULT_FILTERS }
+    userProfile?.defaultFilters ?? { ...EMPTY_DEFAULT_FILTERS },
   );
 
   useEffect(() => {
@@ -74,7 +70,9 @@ export function SettingsPage() {
 
       if (nameChanged) {
         if (!SCREEN_NAME_REGEX.test(trimmed) && trimmed.length > 0) {
-          throw new Error('Screen name must be 3-20 characters and contain only letters, numbers, _ or -');
+          throw new Error(
+            'Screen name must be 3-20 characters and contain only letters, numbers, _ or -',
+          );
         }
         if (trimmed.length > 0) {
           await reserveScreenName(user.uid, trimmed, userProfile.screenName);
@@ -92,7 +90,12 @@ export function SettingsPage() {
         await updateUserProfile(user.uid, updates as Parameters<typeof updateUserProfile>[1]);
       }
 
-      setUserProfile({ ...userProfile, screenName: trimmed || null, profileVisibility: visibility, defaultFilters });
+      setUserProfile({
+        ...userProfile,
+        screenName: trimmed || null,
+        profileVisibility: visibility,
+        defaultFilters,
+      });
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 3000);
     } catch (err) {
@@ -121,7 +124,9 @@ export function SettingsPage() {
     }
   }, [user]);
 
-  useEffect(() => { loadRunFileNames(); }, [loadRunFileNames]);
+  useEffect(() => {
+    loadRunFileNames();
+  }, [loadRunFileNames]);
 
   async function handleDeleteRun(fileName: string) {
     if (!user) return;
@@ -168,12 +173,17 @@ export function SettingsPage() {
         {/* Screen name */}
         <div>
           <label className="block text-xs text-gray-400 mb-1.5">Screen Name</label>
-          <p className="text-xs text-gray-500 mb-2">A screen name is required to make your profile public.</p>
+          <p className="text-xs text-gray-500 mb-2">
+            A screen name is required to make your profile public.
+          </p>
           <div className="relative">
             <input
               type="text"
               value={screenName}
-              onChange={(e) => { setScreenName(e.target.value); setProfileSaved(false); }}
+              onChange={(e) => {
+                setScreenName(e.target.value);
+                setProfileSaved(false);
+              }}
               placeholder="e.g. IroncladsUnite"
               maxLength={20}
               className="w-full bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2.5 text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 pr-24"
@@ -182,14 +192,20 @@ export function SettingsPage() {
               {availability === 'checking' && <span className="text-gray-500">checking…</span>}
               {availability === 'available' && <span className="text-green-400">✓ available</span>}
               {availability === 'taken' && <span className="text-red-400">✗ taken</span>}
-              {availability === 'invalid' && <span className="text-yellow-500">invalid format</span>}
+              {availability === 'invalid' && (
+                <span className="text-yellow-500">invalid format</span>
+              )}
             </span>
           </div>
-          <p className="mt-1.5 text-xs text-gray-600">3–20 characters. Letters, numbers, _ and - allowed.</p>
+          <p className="mt-1.5 text-xs text-gray-600">
+            3–20 characters. Letters, numbers, _ and - allowed.
+          </p>
           {profileLink && (
             <p className="mt-2 text-xs text-gray-500">
               Profile URL:{' '}
-              <a href={profileLink} className="text-purple-400 hover:underline break-all">{profileLink}</a>
+              <a href={profileLink} className="text-purple-400 hover:underline break-all">
+                {profileLink}
+              </a>
             </p>
           )}
         </div>
@@ -225,13 +241,16 @@ export function SettingsPage() {
           </p>
         </div>
 
-        {profileSaveError && (
-          <p className="text-sm text-red-400">{profileSaveError}</p>
-        )}
+        {profileSaveError && <p className="text-sm text-red-400">{profileSaveError}</p>}
 
         <button
           onClick={handleSaveProfile}
-          disabled={profileSaving || availability === 'taken' || availability === 'invalid' || availability === 'checking'}
+          disabled={
+            profileSaving ||
+            availability === 'taken' ||
+            availability === 'invalid' ||
+            availability === 'checking'
+          }
           className="bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           {profileSaving ? 'Saving…' : profileSaved ? '✓ Saved' : 'Save Profile'}
@@ -243,7 +262,8 @@ export function SettingsPage() {
         <div>
           <h3 className="text-base font-semibold text-gray-200">Default Profile Filters</h3>
           <p className="text-xs text-gray-500 mt-1.5">
-            When visitors view your public profile, these filters will be applied by default. They can still change the filters themselves.
+            When visitors view your public profile, these filters will be applied by default. They
+            can still change the filters themselves.
           </p>
         </div>
 
@@ -252,14 +272,17 @@ export function SettingsPage() {
           <label className="block text-xs text-gray-400 mb-1.5">Character</label>
           <select
             value={defaultFilters.character ?? ''}
-            onChange={(e) => setDefaultFilters({ ...defaultFilters, character: e.target.value || null })}
+            onChange={(e) =>
+              setDefaultFilters({ ...defaultFilters, character: e.target.value || null })
+            }
             className="bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 px-3 py-2"
           >
             <option value="">All</option>
-            <option value="IRONCLAD">Ironclad</option>
-            <option value="THE_SILENT">Silent</option>
-            <option value="DEFECT">Defect</option>
-            <option value="WATCHER">Watcher</option>
+            <option value="CHARACTER.IRONCLAD">Ironclad</option>
+            <option value="CHARACTER.SILENT">Silent</option>
+            <option value="CHARACTER.REGENT">Regent</option>
+            <option value="CHARACTER.NECROBINDER">Necrobinder</option>
+            <option value="CHARACTER.DEFECT">Defect</option>
           </select>
         </div>
 
@@ -269,23 +292,37 @@ export function SettingsPage() {
           <div className="flex items-center gap-2">
             <select
               value={defaultFilters.ascensionMin ?? ''}
-              onChange={(e) => setDefaultFilters({ ...defaultFilters, ascensionMin: e.target.value ? Number(e.target.value) : null })}
+              onChange={(e) =>
+                setDefaultFilters({
+                  ...defaultFilters,
+                  ascensionMin: e.target.value ? Number(e.target.value) : null,
+                })
+              }
               className="bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 px-3 py-2"
             >
               <option value="">Min</option>
               {Array.from({ length: 11 }, (_, i) => (
-                <option key={i} value={i}>{i}</option>
+                <option key={i} value={i}>
+                  {i}
+                </option>
               ))}
             </select>
             <span className="text-gray-600">–</span>
             <select
               value={defaultFilters.ascensionMax ?? ''}
-              onChange={(e) => setDefaultFilters({ ...defaultFilters, ascensionMax: e.target.value ? Number(e.target.value) : null })}
+              onChange={(e) =>
+                setDefaultFilters({
+                  ...defaultFilters,
+                  ascensionMax: e.target.value ? Number(e.target.value) : null,
+                })
+              }
               className="bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 px-3 py-2"
             >
               <option value="">Max</option>
               {Array.from({ length: 11 }, (_, i) => (
-                <option key={i} value={i}>{i}</option>
+                <option key={i} value={i}>
+                  {i}
+                </option>
               ))}
             </select>
           </div>
@@ -331,7 +368,9 @@ export function SettingsPage() {
           </div>
         </div>
 
-        <p className="text-xs text-gray-600">These defaults are saved with your profile settings above.</p>
+        <p className="text-xs text-gray-600">
+          These defaults are saved with your profile settings above.
+        </p>
       </section>
 
       {/* ── Uploaded Runs ─────────────────────────────────────── */}
@@ -341,9 +380,7 @@ export function SettingsPage() {
           <span className="text-xs text-gray-500">{runFileNames.length} total</span>
         </div>
 
-        {runsLoading && (
-          <p className="text-sm text-gray-500">Loading…</p>
-        )}
+        {runsLoading && <p className="text-sm text-gray-500">Loading…</p>}
 
         {!runsLoading && runFileNames.length === 0 && (
           <p className="text-sm text-gray-500">No runs uploaded yet.</p>
@@ -395,7 +432,9 @@ export function SettingsPage() {
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-sm mx-4">
             <h4 className="text-gray-100 font-medium mb-2">Delete Run?</h4>
             <p className="text-sm text-gray-400 mb-1 break-all font-mono">{deleteConfirm}</p>
-            <p className="text-xs text-gray-500 mb-5">This will permanently delete the run from your cloud storage. This cannot be undone.</p>
+            <p className="text-xs text-gray-500 mb-5">
+              This will permanently delete the run from your cloud storage. This cannot be undone.
+            </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
@@ -419,7 +458,10 @@ export function SettingsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-sm mx-4">
             <h4 className="text-gray-100 font-medium mb-2">Delete All Run History?</h4>
-            <p className="text-sm text-gray-400 mb-1">This will permanently delete all <strong>{runFileNames.length}</strong> runs from your cloud storage.</p>
+            <p className="text-sm text-gray-400 mb-1">
+              This will permanently delete all <strong>{runFileNames.length}</strong> runs from your
+              cloud storage.
+            </p>
             <p className="text-xs text-red-400 mb-5">This action cannot be undone.</p>
             <div className="flex gap-3">
               <button

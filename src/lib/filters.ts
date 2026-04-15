@@ -1,5 +1,14 @@
 import type { ParsedRun } from '../types/run';
 
+/** Canonical in-game character pick order. */
+export const CHARACTER_ORDER = [
+  'CHARACTER.IRONCLAD',
+  'CHARACTER.SILENT',
+  'CHARACTER.REGENT',
+  'CHARACTER.NECROBINDER',
+  'CHARACTER.DEFECT',
+] as const;
+
 export interface FilterState {
   profile: string | null; // single-select, null = all
   character: string | null; // single-select, null = all
@@ -24,10 +33,7 @@ export const DEFAULT_FILTERS: FilterState = {
   buildIds: [],
 };
 
-export function applyFilters(
-  runs: ParsedRun[],
-  filters: FilterState
-): ParsedRun[] {
+export function applyFilters(runs: ParsedRun[], filters: FilterState): ParsedRun[] {
   return runs.filter((run) => {
     const d = run.data;
 
@@ -37,10 +43,7 @@ export function applyFilters(
     }
 
     // Character filter
-    if (
-      filters.character !== null &&
-      d.players[0]?.character !== filters.character
-    ) {
+    if (filters.character !== null && d.players[0]?.character !== filters.character) {
       return false;
     }
 
@@ -69,10 +72,7 @@ export function applyFilters(
     }
 
     // Build version
-    if (
-      filters.buildIds.length > 0 &&
-      !filters.buildIds.includes(d.build_id)
-    ) {
+    if (filters.buildIds.length > 0 && !filters.buildIds.includes(d.build_id)) {
       return false;
     }
 
@@ -99,9 +99,19 @@ export function extractFilterOptions(runs: ParsedRun[]) {
     if (d.players.length > 1) hasMultiplayer = true;
   }
 
+  const sortedCharacters = [...characters].sort((a, b) => {
+    const ai = CHARACTER_ORDER.indexOf(a as (typeof CHARACTER_ORDER)[number]);
+    const bi = CHARACTER_ORDER.indexOf(b as (typeof CHARACTER_ORDER)[number]);
+    // Known characters by pick order, unknown (modded) characters alphabetically at end
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
   return {
     profiles: [...profiles].sort(),
-    characters: [...characters].sort(),
+    characters: sortedCharacters,
     ascensions: [...ascensions].sort((a, b) => a - b),
     buildIds: [...buildIds].sort(),
     hasMultiplayer,

@@ -135,8 +135,14 @@ describe('extractFilterOptions', () => {
     expect(options.characters).toContain('CHARACTER.REGENT');
     expect(options.characters).toContain('CHARACTER.NECROBINDER');
     expect(options.characters).toContain('CHARACTER.DEFECT');
-    // Characters should be sorted
-    expect(options.characters).toEqual([...options.characters].sort());
+    // Characters should follow canonical pick order
+    expect(options.characters.slice(0, 5)).toEqual([
+      'CHARACTER.IRONCLAD',
+      'CHARACTER.SILENT',
+      'CHARACTER.REGENT',
+      'CHARACTER.NECROBINDER',
+      'CHARACTER.DEFECT',
+    ]);
   });
 
   it('detects multiplayer', () => {

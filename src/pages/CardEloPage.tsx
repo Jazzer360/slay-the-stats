@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { useProfileNav } from '../hooks/useProfileNav';
@@ -15,11 +16,19 @@ export function CardEloPage() {
   const setEnchantmentAware = useEloOptionsStore((s) => s.setEnchantmentAware);
 
   const cardElo = useCardElo(filteredRuns, { upgradeAware, enchantmentAware });
+  const [rarityFilter, setRarityFilter] = useState<string | null>(null);
+  const [colorFilter, setColorFilter] = useState<string | null>(null);
 
   if (filteredRuns.length === 0) {
     return (
       <div className="text-center text-gray-500 py-20">
-        <p>No runs loaded. <Link to="/import" className="text-purple-400 hover:text-purple-300">Import your runs</Link> to get started.</p>
+        <p>
+          No runs loaded.{' '}
+          <Link to="/import" className="text-purple-400 hover:text-purple-300">
+            Import your runs
+          </Link>{' '}
+          to get started.
+        </p>
       </div>
     );
   }
@@ -31,6 +40,10 @@ export function CardEloPage() {
       entityLabel="Card"
       showCardMeta
       onEntityClick={(id) => toCardDetail(id)}
+      rarityFilter={rarityFilter}
+      onRarityFilterChange={setRarityFilter}
+      colorFilter={colorFilter}
+      onColorFilterChange={setColorFilter}
       titleExtra={
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-1.5 text-sm text-gray-400 cursor-pointer select-none">

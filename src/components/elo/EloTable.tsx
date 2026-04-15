@@ -44,6 +44,10 @@ interface EloTableProps {
   showCardMeta?: boolean; // Show rarity/color columns for cards
   onEntityClick?: (id: string) => void; // Navigate when a name is clicked
   titleExtra?: React.ReactNode; // Extra content rendered to the right of the title
+  rarityFilter?: string | null; // Display-only rarity filter
+  onRarityFilterChange?: (rarity: string | null) => void;
+  colorFilter?: string | null; // Display-only class/color filter
+  onColorFilterChange?: (color: string | null) => void;
 }
 
 const columnHelper = createColumnHelper<EloEntry & { rank: number }>();
@@ -55,24 +59,30 @@ export function EloTable({
   entityLabel = 'Option',
   showCardMeta = false,
   onEntityClick,
+  rarityFilter,
+  onRarityFilterChange,
+  colorFilter,
+  onColorFilterChange,
 }: EloTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'rating', desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'rating', desc: true }]);
   const [globalFilter, setGlobalFilter] = useState('');
 
   const data = useMemo(() => {
-    const entries = [...eloMap.values()].sort((a, b) => b.rating - a.rating);
+    let entries = [...eloMap.values()].sort((a, b) => b.rating - a.rating);
+    if (rarityFilter) {
+      entries = entries.filter((e) => getCardMeta(e.id)?.rarity === rarityFilter);
+    }
+    if (colorFilter) {
+      entries = entries.filter((e) => getCardMeta(e.id)?.color === colorFilter);
+    }
     return entries.map((entry, idx) => ({ ...entry, rank: idx + 1 }));
-  }, [eloMap]);
+  }, [eloMap, rarityFilter, colorFilter]);
 
   const columns = useMemo(
     () => [
       columnHelper.accessor('rank', {
         header: '#',
-        cell: (info) => (
-          <span className="text-gray-500">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="text-gray-500">{info.getValue()}</span>,
         size: 50,
       }),
       columnHelper.accessor('id', {
@@ -81,22 +91,25 @@ export function EloTable({
           const id = info.getValue();
           const isSkip = id.startsWith('SKIP_');
           const isSacrifice = id === 'SACRIFICE';
-          const baseClass = isSkip ? 'text-yellow-400 italic' : isSacrifice ? 'text-purple-400 italic' : 'text-gray-200';
+          const baseClass = isSkip
+            ? 'text-yellow-400 italic'
+            : isSacrifice
+              ? 'text-purple-400 italic'
+              : 'text-gray-200';
           if (onEntityClick && !isSkip && !isSacrifice) {
             return (
               <button
                 className={`${baseClass} hover:underline cursor-pointer text-left`}
-                onClick={(e) => { e.stopPropagation(); onEntityClick(id); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEntityClick(id);
+                }}
               >
                 {formatId(id)}
               </button>
             );
           }
-          return (
-            <span className={baseClass}>
-              {formatId(id)}
-            </span>
-          );
+          return <span className={baseClass}>{formatId(id)}</span>;
         },
       }),
       ...(showCardMeta
@@ -124,7 +137,9 @@ export function EloTable({
                 if (!meta) return null;
                 const badgeClass = RARITY_COLORS[meta.rarity] ?? 'bg-gray-700 text-gray-300';
                 return (
-                  <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium ${badgeClass}`}>
+                  <span
+                    className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium ${badgeClass}`}
+                  >
                     {meta.rarity}
                   </span>
                 );
@@ -137,37 +152,21 @@ export function EloTable({
         cell: (info) => {
           const rating = info.getValue();
           const color =
-            rating >= 1600
-              ? 'text-green-400'
-              : rating >= 1400
-              ? 'text-gray-200'
-              : 'text-red-400';
-          return (
-            <span className={`font-mono font-bold ${color}`}>
-              {formatElo(rating)}
-            </span>
-          );
+            rating >= 1600 ? 'text-green-400' : rating >= 1400 ? 'text-gray-200' : 'text-red-400';
+          return <span className={`font-mono font-bold ${color}`}>{formatElo(rating)}</span>;
         },
       }),
       columnHelper.accessor('timesSeen', {
         header: 'Seen',
-        cell: (info) => (
-          <span className="text-gray-400">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="text-gray-400">{info.getValue()}</span>,
       }),
       columnHelper.accessor('timesPicked', {
         header: 'Picked',
-        cell: (info) => (
-          <span className="text-gray-400">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="text-gray-400">{info.getValue()}</span>,
       }),
       columnHelper.accessor('pickRate', {
         header: 'Pick Rate',
-        cell: (info) => (
-          <span className="text-gray-300">
-            {formatPercent(info.getValue())}
-          </span>
-        ),
+        cell: (info) => <span className="text-gray-300">{formatPercent(info.getValue())}</span>,
       }),
       columnHelper.accessor('matches', {
         header: 'Run W',
@@ -186,14 +185,12 @@ export function EloTable({
       columnHelper.accessor('losses', {
         header: 'Win Rate',
         cell: (info) => (
-          <span className="text-gray-300">
-            {formatPercent(info.row.original.runWinRate)}
-          </span>
+          <span className="text-gray-300">{formatPercent(info.row.original.runWinRate)}</span>
         ),
         sortingFn: (a, b) => a.original.runWinRate - b.original.runWinRate,
       }),
     ],
-    [entityLabel, showCardMeta, onEntityClick]
+    [entityLabel, showCardMeta, onEntityClick],
   );
 
   const table = useReactTable({
@@ -217,15 +214,52 @@ export function EloTable({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div className="flex flex-wrap items-center gap-4">
           <h2 className="text-lg font-semibold text-gray-100">{title}</h2>
           {titleExtra}
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500">
-            {data.length} entries
-          </span>
+        <div className="flex flex-wrap items-center gap-3">
+          {(rarityFilter || colorFilter || globalFilter) && (
+            <button
+              onClick={() => {
+                onRarityFilterChange?.(null);
+                onColorFilterChange?.(null);
+                setGlobalFilter('');
+              }}
+              className="px-2 py-1.5 rounded text-xs text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition-colors"
+              title="Reset filters"
+            >
+              ✕ Reset
+            </button>
+          )}
+          {onRarityFilterChange && (
+            <select
+              value={rarityFilter ?? ''}
+              onChange={(e) => onRarityFilterChange(e.target.value || null)}
+              className="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-purple-500 focus:outline-none"
+            >
+              <option value="">All Rarities</option>
+              <option value="Common">Common</option>
+              <option value="Uncommon">Uncommon</option>
+              <option value="Rare">Rare</option>
+            </select>
+          )}
+          {onColorFilterChange && (
+            <select
+              value={colorFilter ?? ''}
+              onChange={(e) => onColorFilterChange(e.target.value || null)}
+              className="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:border-purple-500 focus:outline-none"
+            >
+              <option value="">All Classes</option>
+              <option value="Ironclad">Ironclad</option>
+              <option value="Silent">Silent</option>
+              <option value="Regent">Regent</option>
+              <option value="Necrobinder">Necrobinder</option>
+              <option value="Defect">Defect</option>
+              <option value="Colorless">Colorless</option>
+            </select>
+          )}
           <input
             type="text"
             placeholder="Search..."
@@ -233,6 +267,7 @@ export function EloTable({
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 placeholder-gray-600 focus:border-purple-500 focus:outline-none"
           />
+          <span className="text-xs text-gray-500">{data.length} entries</span>
         </div>
       </div>
 
@@ -248,10 +283,7 @@ export function EloTable({
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     <div className="flex items-center gap-1">
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
                         asc: ' ↑',
                         desc: ' ↓',
@@ -264,10 +296,7 @@ export function EloTable({
           </thead>
           <tbody className="divide-y divide-gray-800/50">
             {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="hover:bg-gray-900/50 transition-colors"
-              >
+              <tr key={row.id} className="hover:bg-gray-900/50 transition-colors">
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-3 py-2">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -283,8 +312,7 @@ export function EloTable({
       {table.getPageCount() > 1 && (
         <div className="flex items-center justify-between mt-3">
           <span className="text-xs text-gray-500">
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
+            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
           </span>
           <div className="flex gap-1">
             <button

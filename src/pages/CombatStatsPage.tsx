@@ -62,16 +62,19 @@ function groupByAct(stats: CombatBucketStats[]): ActRow[] {
 
 export function CombatStatsPage() {
   const filteredRuns = useFilteredRuns();
-  const combatStats = useMemo(
-    () => computeCombatStats(filteredRuns),
-    [filteredRuns],
-  );
+  const combatStats = useMemo(() => computeCombatStats(filteredRuns), [filteredRuns]);
   const groups = useMemo(() => groupByAct(combatStats), [combatStats]);
 
   if (filteredRuns.length === 0) {
     return (
       <div className="text-center text-gray-500 py-20">
-        <p>No runs loaded. <Link to="/import" className="text-purple-400 hover:text-purple-300">Import your runs</Link> to get started.</p>
+        <p>
+          No runs loaded.{' '}
+          <Link to="/import" className="text-purple-400 hover:text-purple-300">
+            Import your runs
+          </Link>{' '}
+          to get started.
+        </p>
       </div>
     );
   }
@@ -90,10 +93,7 @@ export function CombatStatsPage() {
 
       <div className="space-y-8">
         {groups.map((actRow) => (
-          <div
-            key={actRow.actNum}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-4"
-          >
+          <div key={actRow.actNum} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {actRow.variants.map((group) => (
               <ActSection key={group.actKey} group={group} />
             ))}
@@ -108,49 +108,75 @@ function ActSection({ group }: { group: ActGroup }) {
   return (
     <div className="bg-gray-900/60 border border-gray-800 rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-800">
-        <h3 className="text-sm font-semibold text-purple-400">
-          {group.heading}
-        </h3>
+        <h3 className="text-sm font-semibold text-purple-400">{group.heading}</h3>
       </div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wider">
-            <th rowSpan={2} className="text-left px-3 py-2 align-bottom">Type</th>
-            <th rowSpan={2} className="text-right px-3 py-2 align-bottom">Fights</th>
-            <th colSpan={4} className="text-center px-1 pt-2 pb-0.5 border-b border-gray-800">
-              <span className="inline-flex items-center gap-1">
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14.5 17.5L3 6V3h3l11.5 11.5" />
-                  <path d="M13 19l6-6" />
-                  <path d="M16 16l4 4" />
-                  <path d="M19 21l2-2" />
-                </svg>
-                Dmg Taken
-              </span>
-            </th>
-            <th rowSpan={2} className="text-right px-3 py-2 align-bottom">Deaths</th>
-            <th rowSpan={2} className="text-right px-3 py-2 align-bottom">Death&nbsp;%</th>
-          </tr>
-          <tr className="border-b border-gray-800 text-gray-500 text-xs tracking-wider">
-            <th className="text-right px-3 py-1">Avg</th>
-            <th className="text-right px-3 py-1">P20</th>
-            <th className="text-right px-3 py-1">P50</th>
-            <th className="text-right px-3 py-1">P80</th>
-          </tr>
-        </thead>
-        <tbody>
-          {group.rows.map((row) => (
-            <TierSection key={row.bucket.tier} stats={row} />
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wider">
+              <th rowSpan={2} className="text-left px-3 py-2 align-bottom">
+                Type
+              </th>
+              <th rowSpan={2} className="text-right px-3 py-2 align-bottom">
+                Fights
+              </th>
+              <th colSpan={4} className="text-center px-1 pt-2 pb-0.5 border-b border-gray-800">
+                <span className="inline-flex items-center gap-1">
+                  <svg
+                    className="w-3 h-3"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M14.5 17.5L3 6V3h3l11.5 11.5" />
+                    <path d="M13 19l6-6" />
+                    <path d="M16 16l4 4" />
+                    <path d="M19 21l2-2" />
+                  </svg>
+                  Dmg Taken
+                </span>
+              </th>
+              <th rowSpan={2} className="text-right px-3 py-2 align-bottom">
+                Deaths
+              </th>
+              <th rowSpan={2} className="text-right px-3 py-2 align-bottom">
+                Death&nbsp;%
+              </th>
+            </tr>
+            <tr className="border-b border-gray-800 text-gray-500 text-xs tracking-wider">
+              <th className="text-right px-3 py-1">Avg</th>
+              <th className="text-right px-3 py-1">P20</th>
+              <th className="text-right px-3 py-1">P50</th>
+              <th className="text-right px-3 py-1">P80</th>
+            </tr>
+          </thead>
+          <tbody>
+            {group.rows.map((row) => (
+              <TierSection key={row.bucket.tier} stats={row} />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
 function TierSection({ stats }: { stats: CombatBucketStats }) {
   const [expanded, setExpanded] = useState(false);
-  const { bucket, timesFought, avgDamageTaken, p20DamageTaken, p50DamageTaken, p80DamageTaken, timesDied, deathRate, encounters } = stats;
+  const {
+    bucket,
+    timesFought,
+    avgDamageTaken,
+    p20DamageTaken,
+    p50DamageTaken,
+    p80DamageTaken,
+    timesDied,
+    deathRate,
+    encounters,
+  } = stats;
   const tierLabel = bucket.tier[0].toUpperCase() + bucket.tier.slice(1);
 
   return (
@@ -173,17 +199,24 @@ function TierSection({ stats }: { stats: CombatBucketStats }) {
           </span>
         </td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{timesFought}</td>
-        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{avgDamageTaken.toFixed(1)}</td>
-        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{p20DamageTaken.toFixed(1)}</td>
-        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{p50DamageTaken.toFixed(1)}</td>
-        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{p80DamageTaken.toFixed(1)}</td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">
+          {avgDamageTaken.toFixed(1)}
+        </td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">
+          {p20DamageTaken.toFixed(1)}
+        </td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">
+          {p50DamageTaken.toFixed(1)}
+        </td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">
+          {p80DamageTaken.toFixed(1)}
+        </td>
         <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{timesDied}</td>
-        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">{formatPercent(deathRate)}</td>
+        <td className="text-right px-3 py-2 text-gray-300 tabular-nums">
+          {formatPercent(deathRate)}
+        </td>
       </tr>
-      {expanded &&
-        encounters.map((enc) => (
-          <EncounterRow key={enc.encounterId} enc={enc} />
-        ))}
+      {expanded && encounters.map((enc) => <EncounterRow key={enc.encounterId} enc={enc} />)}
     </>
   );
 }
@@ -209,9 +242,7 @@ function EncounterRow({ enc }: { enc: EncounterStats }) {
       <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
         {enc.p80DamageTaken.toFixed(1)}
       </td>
-      <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
-        {enc.timesDied}
-      </td>
+      <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">{enc.timesDied}</td>
       <td className="text-right px-3 py-1.5 text-gray-500 text-xs tabular-nums">
         {formatPercent(enc.deathRate)}
       </td>
