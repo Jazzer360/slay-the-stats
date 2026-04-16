@@ -44,7 +44,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: Desktop Uploader ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
           body: |
             Automated build of SlayTheStatsUploader.exe from commit ${{ github.sha }}.
           files: uploader/client/dist/SlayTheStatsUploader.exe
