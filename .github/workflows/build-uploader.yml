@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'uploader/client/**'
+  workflow_dispatch:
 
 permissions:
   contents: write
