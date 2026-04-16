@@ -4,6 +4,11 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
   runTransaction,
   serverTimestamp,
   Timestamp,
@@ -180,4 +185,32 @@ export async function createPublicShare(
 
 export async function deleteShare(token: string): Promise<void> {
   await deleteDoc(doc(db, 'shares', token));
+}
+
+// ─── API Keys (Desktop Uploader) ─────────────────────────────────
+
+export async function getApiKeyForUser(uid: string): Promise<string | null> {
+  const q = query(collection(db, 'api_keys'), where('uid', '==', uid));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return snap.docs[0].data().key as string;
+}
+
+export async function revokeApiKey(uid: string): Promise<void> {
+  const q = query(collection(db, 'api_keys'), where('uid', '==', uid));
+  const snap = await getDocs(q);
+  for (const d of snap.docs) {
+    await deleteDoc(d.ref);
+  }
+}
+
+export async function createApiKey(uid: string): Promise<string> {
+  await revokeApiKey(uid);
+  const key = `sts_${crypto.randomUUID().replace(/-/g, '')}`;
+  await addDoc(collection(db, 'api_keys'), {
+    uid,
+    key,
+    createdAt: serverTimestamp(),
+  });
+  return key;
 }

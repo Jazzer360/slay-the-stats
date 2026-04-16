@@ -28,3 +28,7 @@ dist-ssr
 # Test fixture run files (downloaded from Firebase Storage)
 test/fixtures/*.run
 .env
+.venv
+
+# Build Artifacts
+build

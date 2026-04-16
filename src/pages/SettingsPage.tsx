@@ -2,7 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../store/auth';
 import { useRunsStore } from '../store/runs';
 import { doSignOut } from '../lib/auth';
-import { updateUserProfile, reserveScreenName, isScreenNameAvailable } from '../lib/firestore';
+import {
+  updateUserProfile,
+  reserveScreenName,
+  isScreenNameAvailable,
+  getApiKeyForUser,
+  createApiKey,
+  revokeApiKey,
+} from '../lib/firestore';
 import { deleteRunFile, listUserRunFiles, deleteAllRunFiles } from '../lib/cloudStorage';
 import type { DefaultProfileFilters } from '../types/user';
 import { EMPTY_DEFAULT_FILTERS } from '../types/user';
@@ -113,6 +120,15 @@ export function SettingsPage() {
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
 
+  // ─── API Key section ──────────────────────────────────────────
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [apiKeyLoading, setApiKeyLoading] = useState(true);
+  const [apiKeyVisible, setApiKeyVisible] = useState(false);
+  const [apiKeyGenerating, setApiKeyGenerating] = useState(false);
+  const [apiKeyRevokeConfirm, setApiKeyRevokeConfirm] = useState(false);
+  const [apiKeyRevoking, setApiKeyRevoking] = useState(false);
+  const [apiKeyCopied, setApiKeyCopied] = useState(false);
+
   const loadRunFileNames = useCallback(async () => {
     if (!user) return;
     try {
@@ -127,6 +143,60 @@ export function SettingsPage() {
   useEffect(() => {
     loadRunFileNames();
   }, [loadRunFileNames]);
+
+  // Load API key on mount
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const key = await getApiKeyForUser(user.uid);
+        if (!cancelled) setApiKey(key);
+      } finally {
+        if (!cancelled) setApiKeyLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  async function handleGenerateApiKey() {
+    if (!user) return;
+    setApiKeyGenerating(true);
+    try {
+      const key = await createApiKey(user.uid);
+      setApiKey(key);
+      setApiKeyVisible(true);
+    } catch (err) {
+      console.error('Failed to generate API key:', err);
+    } finally {
+      setApiKeyGenerating(false);
+    }
+  }
+
+  async function handleRevokeApiKey() {
+    if (!user) return;
+    setApiKeyRevoking(true);
+    try {
+      await revokeApiKey(user.uid);
+      setApiKey(null);
+      setApiKeyVisible(false);
+    } catch (err) {
+      console.error('Failed to revoke API key:', err);
+    } finally {
+      setApiKeyRevoking(false);
+      setApiKeyRevokeConfirm(false);
+    }
+  }
+
+  function handleCopyApiKey() {
+    if (!apiKey) return;
+    navigator.clipboard.writeText(apiKey).then(() => {
+      setApiKeyCopied(true);
+      setTimeout(() => setApiKeyCopied(false), 2000);
+    });
+  }
 
   async function handleDeleteRun(fileName: string) {
     if (!user) return;
@@ -414,6 +484,132 @@ export function SettingsPage() {
         )}
       </section>
 
+      {/* ── Desktop Uploader (API Key) ─────────────────────────── */}
+      <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-6 space-y-4">
+        <div>
+          <h3 className="text-base font-semibold text-gray-200">Desktop Uploader</h3>
+          <p className="text-xs text-gray-500 mt-1.5">
+            Generate an API key for the desktop uploader app. It will automatically sync your run
+            history files to your account as you play.
+          </p>
+        </div>
+
+        {apiKeyLoading && <p className="text-sm text-gray-500">Loading…</p>}
+
+        {!apiKeyLoading && !apiKey && (
+          <button
+            onClick={handleGenerateApiKey}
+            disabled={apiKeyGenerating}
+            className="bg-purple-600 hover:bg-purple-500 disabled:bg-purple-800 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            {apiKeyGenerating ? 'Generating…' : 'Generate API Key'}
+          </button>
+        )}
+
+        {!apiKeyLoading && apiKey && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5">Your API Key</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={apiKeyVisible ? apiKey : '•'.repeat(apiKey.length)}
+                  className="flex-1 bg-gray-800 border border-gray-700 text-gray-100 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none"
+                />
+                <button
+                  onClick={() => setApiKeyVisible(!apiKeyVisible)}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-gray-200 px-3 py-2 rounded-lg text-sm transition-colors"
+                  title={apiKeyVisible ? 'Hide' : 'Show'}
+                >
+                  {apiKeyVisible ? (
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+                <button
+                  onClick={handleCopyApiKey}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-gray-200 px-3 py-2 rounded-lg text-sm transition-colors"
+                  title="Copy to clipboard"
+                >
+                  {apiKeyCopied ? (
+                    <svg
+                      className="w-4 h-4 text-green-400"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleGenerateApiKey}
+                disabled={apiKeyGenerating}
+                className="text-sm text-purple-400 hover:text-purple-300 disabled:opacity-50 transition-colors"
+              >
+                {apiKeyGenerating ? 'Generating…' : 'Regenerate Key'}
+              </button>
+              <button
+                onClick={() => setApiKeyRevokeConfirm(true)}
+                className="text-sm text-red-500 hover:text-red-400 transition-colors"
+              >
+                Revoke Key
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-600">
+              Paste this key into the desktop uploader settings. If you regenerate, the old key
+              stops working immediately.
+            </p>
+          </div>
+        )}
+      </section>
+
       {/* ── Account ───────────────────────────────────────────── */}
       <section className="bg-gray-900/60 border border-gray-800 rounded-xl p-6 space-y-3">
         <h3 className="text-base font-semibold text-gray-200">Account</h3>
@@ -476,6 +672,34 @@ export function SettingsPage() {
                 className="flex-1 bg-red-700 hover:bg-red-600 disabled:bg-red-900 text-white py-2 rounded-lg text-sm transition-colors"
               >
                 {deletingAll ? 'Deleting…' : 'Delete All'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Revoke API Key Confirmation Modal ──────────────────── */}
+      {apiKeyRevokeConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-sm mx-4">
+            <h4 className="text-gray-100 font-medium mb-2">Revoke API Key?</h4>
+            <p className="text-sm text-gray-400 mb-1">
+              The desktop uploader will no longer be able to upload runs with this key.
+            </p>
+            <p className="text-xs text-gray-500 mb-5">You can generate a new key at any time.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setApiKeyRevokeConfirm(false)}
+                className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded-lg text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRevokeApiKey}
+                disabled={apiKeyRevoking}
+                className="flex-1 bg-red-700 hover:bg-red-600 disabled:bg-red-900 text-white py-2 rounded-lg text-sm transition-colors"
+              >
+                {apiKeyRevoking ? 'Revoking…' : 'Revoke'}
               </button>
             </div>
           </div>

@@ -43,5 +43,18 @@ service cloud.firestore {
                     && request.resource.data.runContent.size() <= 900000;
       allow delete: if false;
     }
+
+    // API keys for desktop uploader
+    // Cloud Function reads via Admin SDK (bypasses rules).
+    // Users manage their own keys from the website.
+    match /api_keys/{keyId} {
+      allow read: if request.auth != null
+                  && resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['uid', 'key', 'createdAt']);
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+    }
   }
 }
