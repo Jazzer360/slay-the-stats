@@ -13,7 +13,8 @@ import { downloadAllUserRuns } from '../lib/cloudStorage';
 export function useCloudLoader() {
   const user = useAuthStore((s) => s.user);
   const userProfile = useAuthStore((s) => s.userProfile);
-  const { setRuns, setLoading, setLoadProgress, setError, clear } = useRunsStore();
+  const { setRuns, setLoading, setCloudLoadDone, setLoadProgress, setError, clear } =
+    useRunsStore();
   const { applyDefaults, resetFilters } = useFilterStore();
   const prevUidRef = useRef<string | null>(null);
   const appliedFiltersRef = useRef<string | null>(null);
@@ -52,6 +53,7 @@ export function useCloudLoader() {
       } finally {
         if (!cancelled) {
           setLoading(false);
+          setCloudLoadDone(true);
           setLoadProgress(null);
         }
       }
@@ -62,7 +64,16 @@ export function useCloudLoader() {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid, setRuns, setLoading, setLoadProgress, setError, clear, resetFilters]);
+  }, [
+    user?.uid,
+    setRuns,
+    setLoading,
+    setCloudLoadDone,
+    setLoadProgress,
+    setError,
+    clear,
+    resetFilters,
+  ]);
 
   // Apply user's default filters once when their profile loads
   useEffect(() => {

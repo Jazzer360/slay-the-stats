@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
+import { useRunsStore } from '../store/runs';
+import { useAuthStore } from '../store/auth';
 import { useProfileNav } from '../hooks/useProfileNav';
 import { useAncientElo } from '../hooks/useElo';
 import { EloTable } from '../components/elo/EloTable';
@@ -31,7 +33,18 @@ export function AncientEloPage() {
     return filtered;
   }, [ancientElo, ancientMap, selectedAncient]);
 
+  const { authLoading, user } = useAuthStore();
+  const cloudLoadDone = useRunsStore((s) => s.cloudLoadDone);
+
   if (filteredRuns.length === 0) {
+    if (authLoading || (user && !cloudLoadDone)) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-400 text-sm">Loading runs…</p>
+        </div>
+      );
+    }
     return (
       <div className="text-center text-gray-500 py-20">
         <p>
