@@ -160,6 +160,60 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Desktop uploader */}
+      <section className="mb-14">
+        <h3 className="text-lg font-semibold text-gray-100 mb-5">Desktop Uploader</h3>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-5 space-y-3">
+          <p className="text-gray-300 text-sm leading-relaxed">
+            Don't want to manually import after every session? The{' '}
+            <span className="font-medium text-gray-100">SlayTheStats Desktop Uploader</span> is a
+            small Windows app that sits in your system tray and automatically uploads new{' '}
+            <code className="text-purple-400">.run</code> files to your account as they're created.
+          </p>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            It uses a file system watcher to detect new runs the moment Slay the Spire 2 saves
+            them, then uploads each file directly to your cloud account via a secure signed URL.
+            Files already uploaded are tracked locally and skipped. Failed uploads are retried
+            automatically.
+          </p>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            The uploader is a single portable <code className="text-purple-400">.exe</code> — no
+            installation or admin rights needed. Just download it, paste your API key from the{' '}
+            <Link to="/settings" className="text-purple-400 hover:text-purple-300">
+              Settings
+            </Link>{' '}
+            page, select your profiles, and it handles the rest. You can optionally set it to start
+            with Windows so you never have to think about it.
+          </p>
+          <p className="text-gray-500 text-xs leading-relaxed">
+            Fully open source — the complete source code is in the{' '}
+            <a
+              href="https://github.com/Jazzer360/slay-the-stats/tree/main/uploader/client"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-purple-400 hover:text-purple-300"
+            >
+              uploader/client
+            </a>{' '}
+            directory of the repository.
+          </p>
+          <div className="pt-1">
+            <a
+              href="https://github.com/Jazzer360/slay-the-stats/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z" />
+                <path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z" />
+              </svg>
+              Download from GitHub Releases →
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Planned features + Known issues */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-14">
         <div>

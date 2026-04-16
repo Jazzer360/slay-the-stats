@@ -249,6 +249,96 @@ export function ImportPage() {
         </div>
       </div>
 
+      {/* Desktop uploader */}
+      {user && (
+        <div className="mt-10 space-y-3">
+          <h3 className="text-base font-semibold text-gray-200">
+            Automatic Uploads with the Desktop Uploader
+          </h3>
+          <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 space-y-4 text-sm text-gray-400">
+            <p>
+              Instead of manually importing runs each time, you can install the{' '}
+              <span className="text-gray-200 font-medium">SlayTheStats Desktop Uploader</span> — a
+              lightweight Windows application that runs silently in your system tray and
+              automatically uploads new <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">.run</code> files
+              to your account as soon as they're created.
+            </p>
+
+            <div className="bg-gray-800/40 rounded-lg p-4 space-y-2">
+              <p className="text-gray-300 font-medium text-xs uppercase tracking-wide">How it works</p>
+              <ol className="list-decimal list-inside space-y-1.5 text-gray-400">
+                <li>
+                  Download the portable executable — no installer required. It's a single{' '}
+                  <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">
+                    SlayTheStatsUploader.exe
+                  </code>{' '}
+                  file you can place anywhere on your system.
+                </li>
+                <li>
+                  On first launch, a settings window opens. Paste your API key (generated on the{' '}
+                  <Link to="/settings" className="text-purple-400 hover:text-purple-300">
+                    Settings page
+                  </Link>
+                  ) and select which game profiles to monitor.
+                </li>
+                <li>
+                  The uploader minimizes to your system tray and uses a file system watcher to
+                  detect new <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">.run</code> files
+                  the moment they appear in your selected profile folders.
+                </li>
+                <li>
+                  Each new run file is uploaded directly to your cloud account via a secure signed
+                  URL. Files already uploaded are tracked locally and automatically skipped.
+                </li>
+              </ol>
+            </div>
+
+            <div className="bg-gray-800/40 rounded-lg p-4 space-y-2">
+              <p className="text-gray-300 font-medium text-xs uppercase tracking-wide">Features</p>
+              <ul className="list-disc list-inside space-y-1 text-gray-400">
+                <li>Runs silently in the system tray — no window to keep open.</li>
+                <li>Optionally starts automatically when you log in to Windows (configurable in settings).</li>
+                <li>Pause and resume monitoring from the tray icon right-click menu.</li>
+                <li>Retries failed uploads automatically with exponential backoff.</li>
+                <li>Keeps a local log file for troubleshooting.</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <p>
+                <span className="text-gray-300 font-medium">Portable &amp; open source:</span>{' '}
+                The uploader is a single portable <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">.exe</code> —
+                no installation or admin rights needed. Just download and run. The full source code
+                is available in the{' '}
+                <a
+                  href="https://github.com/Jazzer360/slay-the-stats/tree/main/uploader/client"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-400 hover:text-purple-300"
+                >
+                  uploader/client
+                </a>{' '}
+                directory of the GitHub repository. It's written in Python and built with
+                PyInstaller.
+              </p>
+            </div>
+
+            <a
+              href="https://github.com/Jazzer360/slay-the-stats/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z" />
+                <path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z" />
+              </svg>
+              Download Latest Uploader
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* What happens to my data */}
       {!user && (
         <div className="mt-8 space-y-3">
