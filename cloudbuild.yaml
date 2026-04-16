@@ -1,0 +1,44 @@
+# Cloud Build — Firebase site, rules, and CORS
+# Trigger: push to main (excludes uploader/**)
+#
+# Required IAM roles for the Cloud Build service account:
+#   - Firebase Hosting Admin
+#   - Firebase Rules Admin (Firestore + Storage)
+#   - Storage Admin (for CORS)
+#   - Service Account User
+#   - Logs Writer
+#
+# Required substitution variables (set on the trigger):
+#   _STORAGE_BUCKET: slay-the-stats.firebasestorage.app
+
+steps:
+  # ── 1. Install npm deps ────────────────────────────────────────
+  - name: node:22
+    id: npm-install
+    args: ['ci']
+    entrypoint: npm
+
+  # ── 2. Build Vite site ─────────────────────────────────────────
+  - name: node:22
+    id: build-site
+    args: ['run', 'build']
+    entrypoint: npm
+    waitFor: [npm-install]
+
+  # ── 3. Deploy hosting + Firestore rules + Storage rules ────────
+  - name: us-docker.pkg.dev/firebase-cli/us/firebase
+    id: deploy-firebase
+    args: ['deploy', '--only', 'hosting,firestore:rules,storage', '--project', '$PROJECT_ID']
+    waitFor: [build-site]
+
+  # ── 4. Apply CORS config to Storage bucket ─────────────────────
+  - name: gcr.io/cloud-builders/gcloud
+    id: apply-cors
+    args: ['storage', 'buckets', 'update', 'gs://${_STORAGE_BUCKET}', '--cors-file=cors.json']
+    waitFor: ['-']
+
+substitutions:
+  _STORAGE_BUCKET: slay-the-stats.firebasestorage.app
+
+options:
+  logging: CLOUD_LOGGING_ONLY

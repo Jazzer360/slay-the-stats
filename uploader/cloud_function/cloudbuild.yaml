@@ -1,0 +1,33 @@
+# Cloud Build — Cloud Function deploy
+# Trigger: push to main, included files: uploader/cloud_function/**
+#
+# Required IAM roles for the Cloud Build service account:
+#   - Cloud Functions Developer
+#   - Service Account User
+#   - Logs Writer
+#
+# Required substitution variables (set on the trigger):
+#   _STORAGE_BUCKET: slay-the-stats.firebasestorage.app
+
+steps:
+  - name: gcr.io/cloud-builders/gcloud
+    id: deploy-function
+    args:
+      - functions
+      - deploy
+      - generate-signed-url
+      - --gen2
+      - --region=us-central1
+      - --runtime=python312
+      - --trigger-http
+      - --allow-unauthenticated
+      - --source=uploader/cloud_function
+      - --entry-point=generate_signed_url
+      - --set-env-vars=STORAGE_BUCKET=${_STORAGE_BUCKET}
+      - --project=$PROJECT_ID
+
+substitutions:
+  _STORAGE_BUCKET: slay-the-stats.firebasestorage.app
+
+options:
+  logging: CLOUD_LOGGING_ONLY
