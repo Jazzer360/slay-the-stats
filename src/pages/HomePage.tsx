@@ -171,9 +171,9 @@ export function HomePage() {
             <code className="text-purple-400">.run</code> files to your account as they're created.
           </p>
           <p className="text-gray-400 text-sm leading-relaxed">
-            It uses a file system watcher to detect new runs the moment Slay the Spire 2 saves
-            them, then uploads each file directly to your cloud account via a secure signed URL.
-            Files already uploaded are tracked locally and skipped. Failed uploads are retried
+            It uses a file system watcher to detect new runs the moment Slay the Spire 2 saves them,
+            then uploads each file directly to your cloud account via a secure signed URL. Files
+            already uploaded are tracked locally and skipped. Failed uploads are retried
             automatically.
           </p>
           <p className="text-gray-400 text-sm leading-relaxed">

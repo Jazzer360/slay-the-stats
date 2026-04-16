@@ -260,12 +260,17 @@ export function ImportPage() {
               Instead of manually importing runs each time, you can install the{' '}
               <span className="text-gray-200 font-medium">SlayTheStats Desktop Uploader</span> — a
               lightweight Windows application that runs silently in your system tray and
-              automatically uploads new <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">.run</code> files
-              to your account as soon as they're created.
+              automatically uploads new{' '}
+              <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">
+                .run
+              </code>{' '}
+              files to your account as soon as they're created.
             </p>
 
             <div className="bg-gray-800/40 rounded-lg p-4 space-y-2">
-              <p className="text-gray-300 font-medium text-xs uppercase tracking-wide">How it works</p>
+              <p className="text-gray-300 font-medium text-xs uppercase tracking-wide">
+                How it works
+              </p>
               <ol className="list-decimal list-inside space-y-1.5 text-gray-400">
                 <li>
                   Download the portable executable — no installer required. It's a single{' '}
@@ -283,8 +288,11 @@ export function ImportPage() {
                 </li>
                 <li>
                   The uploader minimizes to your system tray and uses a file system watcher to
-                  detect new <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">.run</code> files
-                  the moment they appear in your selected profile folders.
+                  detect new{' '}
+                  <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">
+                    .run
+                  </code>{' '}
+                  files the moment they appear in your selected profile folders.
                 </li>
                 <li>
                   Each new run file is uploaded directly to your cloud account via a secure signed
@@ -297,7 +305,10 @@ export function ImportPage() {
               <p className="text-gray-300 font-medium text-xs uppercase tracking-wide">Features</p>
               <ul className="list-disc list-inside space-y-1 text-gray-400">
                 <li>Runs silently in the system tray — no window to keep open.</li>
-                <li>Optionally starts automatically when you log in to Windows (configurable in settings).</li>
+                <li>
+                  Optionally starts automatically when you log in to Windows (configurable in
+                  settings).
+                </li>
                 <li>Pause and resume monitoring from the tray icon right-click menu.</li>
                 <li>Retries failed uploads automatically with exponential backoff.</li>
                 <li>Keeps a local log file for troubleshooting.</li>
@@ -306,10 +317,13 @@ export function ImportPage() {
 
             <div className="space-y-2">
               <p>
-                <span className="text-gray-300 font-medium">Portable &amp; open source:</span>{' '}
-                The uploader is a single portable <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">.exe</code> —
-                no installation or admin rights needed. Just download and run. The full source code
-                is available in the{' '}
+                <span className="text-gray-300 font-medium">Portable &amp; open source:</span> The
+                uploader is a single portable{' '}
+                <code className="text-purple-300 text-xs bg-gray-800/60 px-1 py-0.5 rounded">
+                  .exe
+                </code>{' '}
+                — no installation or admin rights needed. Just download and run. The full source
+                code is available in the{' '}
                 <a
                   href="https://github.com/Jazzer360/slay-the-stats/tree/main/uploader/client"
                   target="_blank"
