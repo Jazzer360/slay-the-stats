@@ -332,31 +332,65 @@ export function DashboardPage() {
                 allowDecimals={false}
               />
               <Tooltip
-                contentStyle={{
-                  background: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#e5e7eb',
-                  fontSize: '12px',
-                }}
-                formatter={
-                  ((
-                    value: unknown,
-                    name: string,
-                    item: { payload?: { p20?: number; p80?: number } },
-                  ) => {
-                    if (name === 'avgSize') return [(value as number).toFixed(1), 'Average'];
-                    if (name === 'medianSize') return [(value as number).toFixed(1), 'Median'];
-                    if (name === 'band') {
-                      const p20 = item?.payload?.p20 ?? 0;
-                      const p80 = item?.payload?.p80 ?? 0;
-                      return [`${p20.toFixed(1)} – ${p80.toFixed(1)}`, '20–80%'];
+                cursor={{ stroke: '#6b7280', strokeWidth: 1 }}
+                content={
+                  ((props: {
+                    active?: boolean;
+                    payload?: ReadonlyArray<{
+                      name?: string;
+                      value?: number;
+                      color?: string;
+                      payload?: { p20?: number; p80?: number };
+                    }>;
+                    label?: number;
+                  }) => {
+                    const { active, payload, label } = props;
+                    if (!active || !payload || payload.length === 0) return null;
+                    const rows: Array<{ label: string; value: string; color: string }> = [];
+                    for (const item of payload) {
+                      if (item.name === 'avgSize') {
+                        rows.push({
+                          label: 'Average',
+                          value: (item.value ?? 0).toFixed(1),
+                          color: '#c084fc',
+                        });
+                      } else if (item.name === 'medianSize') {
+                        rows.push({
+                          label: 'Median',
+                          value: (item.value ?? 0).toFixed(1),
+                          color: '#60a5fa',
+                        });
+                      } else if (item.name === 'band') {
+                        const p20 = item.payload?.p20 ?? 0;
+                        const p80 = item.payload?.p80 ?? 0;
+                        rows.push({
+                          label: '20–80%',
+                          value: `${p20.toFixed(1)} – ${p80.toFixed(1)}`,
+                          color: '#c084fc',
+                        });
+                      }
                     }
-                    if (name === 'sampleSize') return [(value as number).toString(), 'Runs'];
-                    return [value, name];
+                    return (
+                      <div
+                        style={{
+                          background: '#1f2937',
+                          border: '1px solid #374151',
+                          borderRadius: 8,
+                          padding: '8px 12px',
+                          fontSize: 12,
+                          color: '#e5e7eb',
+                        }}
+                      >
+                        <div style={{ marginBottom: 4 }}>Floor {label}</div>
+                        {rows.map((r) => (
+                          <div key={r.label} style={{ color: r.color }}>
+                            {r.label} : <span style={{ color: '#e5e7eb' }}>{r.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
                   }) as never
                 }
-                labelFormatter={(label) => `Floor ${label}`}
               />
               <Legend
                 wrapperStyle={{ fontSize: 12, color: '#9ca3af' }}
