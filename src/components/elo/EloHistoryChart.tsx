@@ -31,7 +31,7 @@ export function EloHistoryChart({ entry }: EloHistoryChartProps) {
     const points: DataPoint[] = [];
     // Appearances are sorted most-recent-first; we need chronological order
     const sorted = [...entry.appearances].reverse();
-    // Start with the initial ELO baseline
+    // Start with the initial Elo baseline
     if (sorted.length > 0) {
       points.push({
         index: 0,
@@ -76,7 +76,7 @@ export function EloHistoryChart({ entry }: EloHistoryChartProps) {
   return (
     <div className="bg-[#0a0f1a] rounded-xl border border-gray-800 p-4 mb-6">
       <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
-        ELO Over Time
+        Elo Over Time
       </h3>
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>

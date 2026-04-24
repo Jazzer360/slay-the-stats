@@ -359,7 +359,7 @@ export function ImportPage() {
           <h3 className="text-base font-semibold text-gray-200">Privacy &amp; data</h3>
           <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 text-sm text-gray-400 space-y-2">
             <p>
-              Without an account, your run files never leave your browser. All parsing, ELO
+              Without an account, your run files never leave your browser. All parsing, Elo
               calculation, and stats happen locally. Nothing is sent to any server.
             </p>
             <p>

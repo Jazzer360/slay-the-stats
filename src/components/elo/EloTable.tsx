@@ -148,7 +148,7 @@ export function EloTable({
           ]
         : []),
       columnHelper.accessor('rating', {
-        header: 'ELO',
+        header: 'Elo',
         cell: (info) => {
           const rating = info.getValue();
           const color =

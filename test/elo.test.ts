@@ -10,7 +10,7 @@ describe('computeCardElo', () => {
     expect(elo.size).toBe(0);
   });
 
-  it('produces ELO entries for all fixtures', () => {
+  it('produces Elo entries for all fixtures', () => {
     const runs = loadAllFixtures();
     const elo = computeCardElo(runs);
 
@@ -62,7 +62,7 @@ describe('computeCardElo', () => {
     expect(elo.has('SACRIFICE')).toBe(false);
   });
 
-  it('excludes floor 1 card choices from ELO', () => {
+  it('excludes floor 1 card choices from Elo', () => {
     // 1772739653.run has floor 1 card choices
     const run = loadFixture('1772739653.run');
 
@@ -70,12 +70,12 @@ describe('computeCardElo', () => {
     const floor1Choices = run.data.map_point_history[0]?.[0]?.player_stats?.[0]?.card_choices;
     expect(floor1Choices).toBeDefined();
     expect(floor1Choices!.length).toBeGreaterThan(0);
-    // Now compute ELO with just this run
+    // Now compute Elo with just this run
     const elo = computeCardElo([run]);
 
     // Floor 1 cards should not have been counted at floor 1 specifically.
     // But they might appear on later floors too. The test verifies the exclusion
-    // logic runs without error and that the overall ELO is consistent.
+    // logic runs without error and that the overall Elo is consistent.
     // We verify timesSeen is correct by checking it doesn't include floor 1.
     for (const entry of elo.values()) {
       // Each entry's matches should be consistent (wins + losses = matches)
@@ -83,7 +83,7 @@ describe('computeCardElo', () => {
     }
   });
 
-  it('excludes shop floor card choices from ELO', () => {
+  it('excludes shop floor card choices from Elo', () => {
     // 1772739653.run has shop floors with card_choices
     const run = loadFixture('1772739653.run');
 
@@ -101,7 +101,7 @@ describe('computeCardElo', () => {
     }
     expect(shopChoiceFloors).toBeGreaterThan(0);
 
-    // ELO computation should still succeed
+    // Elo computation should still succeed
     const elo = computeCardElo([run]);
     for (const entry of elo.values()) {
       expect(entry.wins + entry.losses).toBe(entry.matches);
@@ -140,7 +140,7 @@ describe('computeCardElo', () => {
 
     // No ungroupable-card-choices warnings should fire for this run
     const eloWarnings = spy.mock.calls.filter(
-      (args: unknown[]) => typeof args[0] === 'string' && args[0].includes('[ELO] Ungroupable'),
+      (args: unknown[]) => typeof args[0] === 'string' && args[0].includes('[Elo] Ungroupable'),
     );
     expect(eloWarnings).toHaveLength(0);
     spy.mockRestore();
@@ -181,7 +181,7 @@ describe('computeCardElo', () => {
     expect(hasRunLoss).toBe(true);
   });
 
-  it('ELO ratings are symmetric (total K-factor movement sums to ~0)', () => {
+  it('Elo ratings are symmetric (total K-factor movement sums to ~0)', () => {
     const runs = loadAllFixtures();
     const elo = computeCardElo(runs);
 
@@ -269,7 +269,7 @@ describe('computeAncientElo', () => {
     }
   });
 
-  it('ELO ratings are symmetric for ancient choices', () => {
+  it('Elo ratings are symmetric for ancient choices', () => {
     const runs = loadAllFixtures();
     const { elo } = computeAncientElo(runs);
 

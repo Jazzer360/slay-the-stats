@@ -17,6 +17,6 @@ export const TEST_FIXTURES = [
   '1774125604.run', // Abandoned, very short (2 floors)
   '1774144997.run', // Abandoned
   '1773793331.run', // Lasting Candy + Battleworn Dummy event (multi-room combat)
-  '1774314181.run', // Pael's Wing relic (SACRIFICE option in card ELO)
+  '1774314181.run', // Pael's Wing relic (SACRIFICE option in card Elo)
   '1774380897.run', // Pael's Wing relic
 ];

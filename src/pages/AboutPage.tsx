@@ -11,9 +11,9 @@ export function AboutPage() {
       </p>
 
       <section className="mb-10">
-        <h3 className="text-base font-semibold text-gray-200 mb-3">ELO Card Rating System</h3>
+        <h3 className="text-base font-semibold text-gray-200 mb-3">Elo Card Rating System</h3>
         <p className="text-gray-300 leading-relaxed mb-3">
-          The ELO-based card rating system used in this app was inspired by{' '}
+          The Elo-based card rating system used in this app was inspired by{' '}
           <a
             href="https://www.youtube.com/@Jorbs"
             target="_blank"
@@ -27,12 +27,12 @@ export function AboutPage() {
         </p>
         <p className="text-gray-400 leading-relaxed mb-3">
           Every time you pick a card from a reward screen, that choice is treated as a head-to-head
-          match: the card you picked "wins" against each card you passed on. Over many runs, the ELO
+          match: the card you picked "wins" against each card you passed on. Over many runs, the Elo
           ratings converge to reflect your personal card preferences — which cards you reach for
           most often when given the choice.
         </p>
         <p className="text-yellow-500/80 leading-relaxed text-sm">
-          Important: ELO ratings are not an indicator of how well a card has performed for you in
+          Important: Elo ratings are not an indicator of how well a card has performed for you in
           runs. They do not measure win rate contribution or combat effectiveness. They simply show
           which cards you have been valuing higher when adding to your deck.
         </p>
@@ -42,27 +42,27 @@ export function AboutPage() {
         <h3 className="text-base font-semibold text-gray-200 mb-3">How Filtering Works</h3>
         <p className="text-gray-400 leading-relaxed mb-3">
           Filters (character, ascension range, date range, etc.) don't just slice the run list —
-          they recalculate <em>all</em> stats and ELO ratings from scratch using only the matching
+          they recalculate <em>all</em> stats and Elo ratings from scratch using only the matching
           runs. This means:
         </p>
         <ul className="list-disc list-inside text-gray-400 space-y-2 text-sm mb-3">
           <li>
-            ELO on a character-filtered view shows your card preferences for that character only,
+            Elo on a character-filtered view shows your card preferences for that character only,
             not averaged across all characters.
           </li>
           <li>Win rates, average floor, and deck stats all reflect only the filtered subset.</li>
           <li>Switching filters instantly re-derives everything — no cached numbers.</li>
         </ul>
         <p className="text-gray-500 text-sm">
-          Because ELO requires many matchups to stabilize, filtering to a small subset of runs will
-          produce noisier ratings. The full run set gives the most reliable ELO picture.
+          Because Elo requires many matchups to stabilize, filtering to a small subset of runs will
+          produce noisier ratings. The full run set gives the most reliable Elo picture.
         </p>
       </section>
 
       <section className="mb-10">
         <h3 className="text-base font-semibold text-gray-200 mb-3">How It Works</h3>
         <ul className="list-disc list-inside text-gray-400 space-y-2 text-sm">
-          <li>All cards start at an ELO rating of {INITIAL_RATING}</li>
+          <li>All cards start at an Elo rating of {INITIAL_RATING}</li>
           <li>
             Each card reward screen is a pairwise matchup between the picked card and each skipped
             option

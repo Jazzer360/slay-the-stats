@@ -11,8 +11,8 @@ import { AuthModal } from '../auth/AuthModal';
 const NAV_ITEMS: { to: string; label: string; end?: boolean; profilePath?: string }[] = [
   { to: '/', label: 'Home', end: true },
   { to: '/dashboard', label: 'Overview', end: true, profilePath: '' },
-  { to: '/card-elo', label: 'Card ELO', profilePath: '/card-elo' },
-  { to: '/ancient-elo', label: 'Ancient ELO', profilePath: '/ancient-elo' },
+  { to: '/card-elo', label: 'Card Elo', profilePath: '/card-elo' },
+  { to: '/ancient-elo', label: 'Ancient Elo', profilePath: '/ancient-elo' },
   { to: '/combat-stats', label: 'Combat Stats', profilePath: '/combat-stats' },
   { to: '/runs', label: 'Run List', profilePath: '/runs' },
   { to: '/import', label: 'Import' },

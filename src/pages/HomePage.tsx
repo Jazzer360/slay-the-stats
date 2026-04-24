@@ -98,12 +98,12 @@ export function HomePage() {
           />
           <FeatureCard
             icon="🃏"
-            title="Card ELO"
+            title="Card Elo"
             description="Card rewards as head-to-head matchups. Over many runs, ratings surface your preferences. Upgrade and enchantment-aware modes available."
           />
           <FeatureCard
             icon="🏛️"
-            title="Ancient ELO"
+            title="Ancient Elo"
             description="Same pairwise rating system for ancient reward choices, grouped by family."
           />
           <FeatureCard

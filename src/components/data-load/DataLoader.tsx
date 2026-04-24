@@ -55,7 +55,7 @@ export function DataLoader() {
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-100 mb-2">⚔ Slay the Stats</h2>
         <p className="text-gray-400 max-w-lg">
-          Load your Slay the Spire 2 run history to analyze card pick rates, ELO rankings, and run
+          Load your Slay the Spire 2 run history to analyze card pick rates, Elo rankings, and run
           statistics.
         </p>
       </div>

@@ -97,7 +97,7 @@ export function formatPercent(value: number, decimals = 1): string {
 }
 
 /**
- * Format an ELO rating for display
+ * Format an Elo rating for display
  */
 export function formatElo(rating: number): string {
   return Math.round(rating).toString();

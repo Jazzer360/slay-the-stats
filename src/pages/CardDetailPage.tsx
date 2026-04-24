@@ -38,7 +38,7 @@ export function CardDetailPage() {
           to={`${base}/card-elo`}
           className="text-purple-400 hover:text-purple-300 text-sm mt-2 inline-block"
         >
-          ← Back to Card ELO Rankings
+          ← Back to Card Elo Rankings
         </Link>
       </div>
     );
@@ -57,7 +57,7 @@ export function CardDetailPage() {
       {/* Header */}
       <div className="mb-6">
         <Link to={`${base}/card-elo`} className="text-purple-400 hover:text-purple-300 text-sm">
-          ← Back to Card ELO Rankings
+          ← Back to Card Elo Rankings
         </Link>
         <h2 className="text-2xl font-bold text-gray-100 mt-2">{formatId(decodedId)}</h2>
         {meta && (
@@ -69,7 +69,7 @@ export function CardDetailPage() {
         )}
         <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-sm">
           <span className="text-gray-400">
-            ELO:{' '}
+            Elo:{' '}
             <span className={`font-mono font-bold ${ratingColor}`}>{formatElo(entry.rating)}</span>
           </span>
           <span className="text-gray-400">
@@ -89,7 +89,7 @@ export function CardDetailPage() {
         </div>
       </div>
 
-      {/* ELO History Chart */}
+      {/* Elo History Chart */}
       <EloHistoryChart entry={entry} />
 
       {/* Appearances */}

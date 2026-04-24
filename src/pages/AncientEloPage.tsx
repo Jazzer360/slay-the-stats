@@ -77,7 +77,7 @@ export function AncientEloPage() {
       </div>
       <EloTable
         eloMap={filteredElo}
-        title="Ancient Reward ELO Rankings"
+        title="Ancient Reward Elo Rankings"
         entityLabel="Ancient Reward"
         onEntityClick={(id) => toAncientDetail(id)}
       />

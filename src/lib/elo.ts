@@ -31,7 +31,7 @@ function getOrCreateEntry(map: EloMap, id: string): EloEntry {
 }
 
 /**
- * Apply a single ELO match: winner beats loser.
+ * Apply a single Elo match: winner beats loser.
  */
 function applyMatch(winner: EloEntry, loser: EloEntry): void {
   const eW = expectedScore(winner.rating, loser.rating);
@@ -129,7 +129,7 @@ export interface CardEloOptions {
 }
 
 /**
- * Compute ELO ratings for card choices across all provided runs.
+ * Compute Elo ratings for card choices across all provided runs.
  * Runs should already be filtered and sorted chronologically.
  */
 export function computeCardElo(
@@ -184,7 +184,7 @@ export function computeCardElo(
 
         if (!stats?.card_choices || stats.card_choices.length === 0) continue;
 
-        // Exclude floor 1 bonus picks (e.g. Leaded Paperweight) from ELO
+        // Exclude floor 1 bonus picks (e.g. Leaded Paperweight) from Elo
         if (currentFloor === 1) continue;
 
         // Skip shop floors — buying cards is not a competitive choice like card rewards
@@ -200,7 +200,7 @@ export function computeCardElo(
         const total = choices.length;
         if (total % cardGroupSize !== 0) {
           console.warn(
-            `[ELO] Ungroupable card choices: ${run.fileName} floor ${currentFloor} — ` +
+            `[Elo] Ungroupable card choices: ${run.fileName} floor ${currentFloor} — ` +
               `${total} choices, expected groups of ${cardGroupSize}` +
               (lastingCandyActive ? ' (Lasting Candy active)' : '') +
               ` | skipping floor`,
@@ -266,7 +266,7 @@ function getCardId(choice: CardChoice, options: CardEloOptions): string {
  * Filter out the stolen card from Thieving Hopper encounters.
  * Thieving Hopper steals a card during combat and places it in cards_removed,
  * but also adds it to card_choices as a recovery option. We remove one instance
- * of each stolen card from the choices so grouping and ELO work on the real rewards.
+ * of each stolen card from the choices so grouping and Elo work on the real rewards.
  */
 function filterThievingHopperCards(
   choices: CardChoice[],
@@ -401,7 +401,7 @@ function processCardChoices(
 }
 
 /**
- * Compute ELO ratings for ancient (post-boss) reward choices.
+ * Compute Elo ratings for ancient (post-boss) reward choices.
  * Also builds a mapping of reward TextKey -> ancient event name.
  */
 export function computeAncientElo(runs: ParsedRun[]): {

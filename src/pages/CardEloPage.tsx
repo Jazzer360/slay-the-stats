@@ -49,7 +49,7 @@ export function CardEloPage() {
   return (
     <EloTable
       eloMap={cardElo}
-      title="Card ELO Rankings"
+      title="Card Elo Rankings"
       entityLabel="Card"
       showCardMeta
       onEntityClick={(id) => toCardDetail(id)}

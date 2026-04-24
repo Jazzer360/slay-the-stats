@@ -39,7 +39,7 @@ export function RunCard({
             className={`font-mono text-xs ${totalEloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}
           >
             {totalEloChange >= 0 ? '+' : ''}
-            {totalEloChange.toFixed(1)} ELO
+            {totalEloChange.toFixed(1)} Elo
           </span>
         </div>
         <Link to={runPath} className="text-purple-400 hover:text-purple-300 text-xs shrink-0">

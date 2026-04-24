@@ -6,8 +6,8 @@ A personal analytics dashboard for [Slay the Spire 2](https://store.steampowered
 
 ## Features
 
-- **Card ELO Ratings** — Every card reward screen is treated as a head-to-head matchup. ELO ratings surface the cards you pick most often, with optional upgrade-aware and enchantment-aware modes.
-- **Ancient Reward ELO** — The same ranking system applied to ancient reward choices, grouped by family.
+- **Card Elo Ratings** — Every card reward screen is treated as a head-to-head matchup. Elo ratings surface the cards you pick most often, with optional upgrade-aware and enchantment-aware modes.
+- **Ancient Reward Elo** — The same ranking system applied to ancient reward choices, grouped by family.
 - **Combat Stats** — Win rates broken down by encounter, act, elites, and bosses.
 - **Run Timeline** — HP progression chart with act boundaries, elite encounters, and boss markers. Floor-by-floor event breakdown showing card rewards, relics, gold changes, potions, and more.
 - **Dashboard** — Win rate moving average, character distribution, floor depth tracking, and run duration metrics.
