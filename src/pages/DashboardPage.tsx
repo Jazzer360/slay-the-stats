@@ -406,10 +406,10 @@ export function DashboardPage() {
       {runEndsByFloor.data.length > 0 && (
         <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-10">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-gray-200">Run Endings by Floor</h3>
+            <h3 className="text-base font-semibold text-gray-200">Losses by Floor</h3>
             <span className="text-xs text-gray-500">
-              Number of runs that ended on each floor, stacked by character (abandoned runs
-              excluded)
+              Number of runs that ended in a loss on each floor, stacked by character (wins and
+              abandoned runs excluded)
             </span>
           </div>
           <ResponsiveContainer width="100%" height={256}>

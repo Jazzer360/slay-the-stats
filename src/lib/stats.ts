@@ -268,10 +268,10 @@ export interface RunEndsByFloor {
 }
 
 /**
- * Count the number of runs that ended on each floor, broken down by character.
- * The "ending floor" is the total number of floors reached (length sum of
- * map_point_history). Abandoned runs are excluded since their ending floor
- * isn't meaningful. Wins are included and will cluster on the final boss floor.
+ * Count the number of losses per floor, broken down by character. Wins and
+ * abandoned runs are excluded — wins cluster on the final boss floor and
+ * aren't meaningful data about where runs fail. The "ending floor" is the
+ * total number of floors reached (length sum of map_point_history).
  */
 export function computeRunEndsByFloor(runs: ParsedRun[]): RunEndsByFloor {
   if (runs.length === 0) return { data: [], characters: [] };
@@ -282,6 +282,7 @@ export function computeRunEndsByFloor(runs: ParsedRun[]): RunEndsByFloor {
 
   for (const run of runs) {
     if (run.data.was_abandoned) continue;
+    if (run.data.win) continue;
     const character = run.data.players[0]?.character ?? 'Unknown';
     let floor = 0;
     for (const act of run.data.map_point_history) floor += act.length;
