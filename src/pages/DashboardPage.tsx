@@ -360,25 +360,27 @@ export function DashboardPage() {
               />
               <Legend
                 wrapperStyle={{ fontSize: 12, color: '#9ca3af' }}
-                iconType="plainline"
-                formatter={(v) =>
-                  v === 'avgSize'
-                    ? 'Average'
-                    : v === 'medianSize'
-                      ? 'Median'
-                      : v === 'band'
-                        ? '20–80th percentile'
-                        : v
-                }
+                formatter={(v) => (
+                  <span style={{ color: '#9ca3af' }}>
+                    {v === 'avgSize'
+                      ? 'Average'
+                      : v === 'medianSize'
+                        ? 'Median'
+                        : v === 'band'
+                          ? '20–80th percentile'
+                          : v}
+                  </span>
+                )}
               />
               <Area
                 type="monotone"
                 dataKey="band"
                 stroke="none"
-                fill="#c084fc"
-                fillOpacity={0.15}
+                fill="#2b2847"
+                fillOpacity={1}
                 isAnimationActive={false}
                 activeDot={false}
+                legendType="rect"
               />
               <Line
                 type="monotone"
@@ -387,6 +389,7 @@ export function DashboardPage() {
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}
+                legendType="plainline"
               />
               <Line
                 type="monotone"
@@ -396,6 +399,7 @@ export function DashboardPage() {
                 strokeDasharray="4 3"
                 dot={false}
                 isAnimationActive={false}
+                legendType="plainline"
               />
             </ComposedChart>
           </ResponsiveContainer>
