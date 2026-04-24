@@ -195,13 +195,62 @@ function deckSizeTrace(run: ParsedRun): number[] {
   const netAdditions = deltas.reduce((a, b) => a + b, 0);
   const startingSize = finalDeckSize - netAdditions;
 
+  // Golden Compass adds two bonus floors (a campfire at floor 24 and a bonus
+  // chest at floor 26). Neither changes deck size in meaningful ways, but
+  // their presence shifts every subsequent floor number by 2. For per-floor
+  // aggregation we merge these two floors into the prior floor so compass
+  // and non-compass runs align. See adjustedFloor() for the mirror logic.
+  const mergedDeltas = hasGoldenCompass(run) ? mergeCompassFloors(deltas) : deltas;
+
   const trace: number[] = [];
   let size = startingSize;
-  for (const d of deltas) {
+  for (const d of mergedDeltas) {
     size += d;
     trace.push(size);
   }
   return trace;
+}
+
+/** True when the run has Golden Compass equipped (extra campfire + chest). */
+export function hasGoldenCompass(run: ParsedRun): boolean {
+  const relics = run.data.players[0]?.relics;
+  if (!relics) return false;
+  return relics.some((r) => r.id === 'RELIC.GOLDEN_COMPASS');
+}
+
+/**
+ * Merge the two Golden Compass bonus floors (raw floors 24 and 26 — a bonus
+ * campfire and bonus chest) into the previous floor by adding their deltas
+ * and dropping those indices. The result has 2 fewer entries and each
+ * subsequent raw floor's value now sits at the floor number it would have
+ * occupied without Golden Compass.
+ */
+function mergeCompassFloors(deltas: number[]): number[] {
+  // Work on a copy. Raw floor numbers are 1-indexed; array indices 23 and 25.
+  const out = deltas.slice();
+  if (out.length > 25) {
+    out[24] += out[25]; // floor 26 merges into (post-removal) floor 24
+    out.splice(25, 1);
+  }
+  if (out.length > 23) {
+    out[22] += out[23]; // floor 24 merges into floor 23
+    out.splice(23, 1);
+  }
+  return out;
+}
+
+/**
+ * Map a raw ending-floor number (1-indexed) to an "adjusted" floor number
+ * that aligns Golden Compass runs with non-compass runs. Bonus floors (raw
+ * 24 and 26) collapse into the prior floor; floors beyond them shift down by 2.
+ */
+export function adjustedFloor(rawFloor: number, compass: boolean): number {
+  if (!compass) return rawFloor;
+  if (rawFloor <= 23) return rawFloor;
+  if (rawFloor === 24) return 23; // bonus campfire → merged into 23
+  if (rawFloor === 25) return 24; // post-campfire floor becomes 24
+  if (rawFloor === 26) return 24; // bonus chest → merged into 24
+  return rawFloor - 2;
 }
 
 function median(sorted: number[]): number {
@@ -284,9 +333,10 @@ export function computeRunEndsByFloor(runs: ParsedRun[]): RunEndsByFloor {
     if (run.data.was_abandoned) continue;
     if (run.data.win) continue;
     const character = run.data.players[0]?.character ?? 'Unknown';
-    let floor = 0;
-    for (const act of run.data.map_point_history) floor += act.length;
-    if (floor <= 0) continue;
+    let rawFloor = 0;
+    for (const act of run.data.map_point_history) rawFloor += act.length;
+    if (rawFloor <= 0) continue;
+    const floor = adjustedFloor(rawFloor, hasGoldenCompass(run));
     if (floor > maxFloor) maxFloor = floor;
     characterSet.add(character);
     const bucket = byFloor.get(floor) ?? new Map<string, number>();
