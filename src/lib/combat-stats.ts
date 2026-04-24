@@ -3,8 +3,8 @@ import type { ParsedRun } from '../types/run';
 export type CombatTier = 'weak' | 'normal' | 'elite' | 'boss';
 
 export interface CombatBucket {
-  act: number;       // 1-indexed act number
-  actName: string;   // e.g. "OVERGROWTH", "HIVE", "GLORY"
+  act: number; // 1-indexed act number
+  actName: string; // e.g. "OVERGROWTH", "HIVE", "GLORY"
   tier: CombatTier;
 }
 
@@ -72,7 +72,10 @@ interface Accum {
   damages: number[];
   fights: number;
   deaths: number;
-  encounterMap: Map<string, { totalDamage: number; damages: number[]; fights: number; deaths: number }>;
+  encounterMap: Map<
+    string,
+    { totalDamage: number; damages: number[]; fights: number; deaths: number }
+  >;
 }
 
 export function computeCombatStats(runs: ParsedRun[]): CombatBucketStats[] {
@@ -197,4 +200,75 @@ export function formatEncounterName(encounterId: string): string {
     .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// ─── Deadliest enemies by tier ──────────────────────────────────────────────
+
+export interface DeadlyEncounter {
+  encounterId: string;
+  timesFought: number;
+  timesDied: number;
+  deathRate: number;
+  avgDamageTaken: number;
+}
+
+/**
+ * Aggregate encounter stats across all acts and group the deadliest fights by
+ * tier. Encounters are ranked by death rate, with a minimum-sample threshold to
+ * avoid spurious 100% rates from single fights.
+ */
+export function computeDeadliestByTier(
+  combatStats: CombatBucketStats[],
+  minFights = 3,
+): Record<CombatTier, DeadlyEncounter[]> {
+  // Aggregate encounters across acts (same encounter can appear in multiple act buckets)
+  const acc = new Map<
+    string,
+    { tier: CombatTier; totalDamage: number; fights: number; deaths: number }
+  >();
+
+  for (const bucket of combatStats) {
+    for (const enc of bucket.encounters) {
+      const existing = acc.get(enc.encounterId);
+      if (existing) {
+        existing.totalDamage += enc.totalDamageTaken;
+        existing.fights += enc.timesFought;
+        existing.deaths += enc.timesDied;
+      } else {
+        acc.set(enc.encounterId, {
+          tier: bucket.bucket.tier,
+          totalDamage: enc.totalDamageTaken,
+          fights: enc.timesFought,
+          deaths: enc.timesDied,
+        });
+      }
+    }
+  }
+
+  const byTier: Record<CombatTier, DeadlyEncounter[]> = {
+    weak: [],
+    normal: [],
+    elite: [],
+    boss: [],
+  };
+
+  for (const [encounterId, { tier, totalDamage, fights, deaths }] of acc) {
+    if (fights < minFights) continue;
+    byTier[tier].push({
+      encounterId,
+      timesFought: fights,
+      timesDied: deaths,
+      deathRate: fights > 0 ? deaths / fights : 0,
+      avgDamageTaken: fights > 0 ? totalDamage / fights : 0,
+    });
+  }
+
+  for (const tier of Object.keys(byTier) as CombatTier[]) {
+    byTier[tier].sort((a, b) => {
+      if (b.deathRate !== a.deathRate) return b.deathRate - a.deathRate;
+      return b.timesDied - a.timesDied;
+    });
+  }
+
+  return byTier;
 }
