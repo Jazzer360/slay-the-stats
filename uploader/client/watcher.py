@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import queue
 import threading
+import time
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class _RunFileHandler(FileSystemEventHandler):
-    """Queue newly created .run files."""
+    """Queue newly created/renamed/modified .run files."""
 
     def __init__(
         self,
@@ -35,14 +36,45 @@ class _RunFileHandler(FileSystemEventHandler):
     ) -> None:
         super().__init__()
         self._queue = upload_queue
+        self._seen: set[str] = set()
+        self._seen_lock = threading.Lock()
+
+    def _enqueue(self, path: Path, reason: str) -> None:
+        if path.suffix != ".run":
+            return
+        key = str(path)
+        with self._seen_lock:
+            if key in self._seen:
+                return
+            self._seen.add(key)
+        logger.info(
+            "Detected %s file: %s",
+            reason,
+            path.name,
+        )
+        self._queue.put(path)
 
     def on_created(self, event) -> None:
         if event.is_directory:
             return
-        path = Path(event.src_path)
-        if path.suffix == ".run":
-            logger.info("Detected new file: %s", path.name)
-            self._queue.put(path)
+        self._enqueue(Path(event.src_path), "new")
+
+    def on_moved(self, event) -> None:
+        if event.is_directory:
+            return
+        dest = getattr(event, "dest_path", None)
+        if dest:
+            self._enqueue(Path(dest), "moved")
+
+    def on_modified(self, event) -> None:
+        if event.is_directory:
+            return
+        self._enqueue(Path(event.src_path), "modified")
+
+    def on_closed(self, event) -> None:
+        if event.is_directory:
+            return
+        self._enqueue(Path(event.src_path), "closed")
 
 
 class RunWatcher:
@@ -185,6 +217,9 @@ class RunWatcher:
             if file_path.name in uploaded:
                 continue
 
+            if not self._wait_until_stable(file_path):
+                continue
+
             ok = upload_run_file(
                 cf_url,
                 api_key,
@@ -192,3 +227,34 @@ class RunWatcher:
             )
             if ok:
                 mark_uploaded(file_path.name)
+
+    def _wait_until_stable(
+        self,
+        file_path: Path,
+        checks: int = 5,
+        interval: float = 0.5,
+    ) -> bool:
+        """Block until the file size stops changing.
+
+        Avoids uploading a partial file while the game is
+        still writing it. Returns False if the file vanishes
+        or the watcher is shutting down.
+        """
+        last_size = -1
+        stable_hits = 0
+        while self._running and stable_hits < 2:
+            try:
+                size = file_path.stat().st_size
+            except OSError:
+                return False
+            if size == last_size and size > 0:
+                stable_hits += 1
+            else:
+                stable_hits = 0
+                last_size = size
+            time.sleep(interval)
+            checks -= 1
+            if checks <= 0 and stable_hits < 2:
+                # Give up waiting; try the upload anyway.
+                return True
+        return self._running
