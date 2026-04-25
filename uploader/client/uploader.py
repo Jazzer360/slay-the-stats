@@ -16,16 +16,17 @@ logger = logging.getLogger(__name__)
 MAX_RETRIES = 3
 RETRY_BACKOFF_S = 2
 REQUEST_TIMEOUT_S = 30
+DEFAULT_CACHE_CONTROL = "public, max-age=31536000, immutable"
 
 
 def _request_signed_url(
     cloud_function_url: str,
     api_key: str,
     filename: str,
-) -> str | None:
+) -> tuple[str | None, str]:
     """Request a signed upload URL from the CF.
 
-    Returns the URL string or None on failure.
+    Returns (url, cache_control). url is None on failure.
     """
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -43,10 +44,14 @@ def _request_signed_url(
             )
             if resp.status_code == 200:
                 data = resp.json()
-                return data.get("url")
+                cc = data.get(
+                    "cache_control",
+                    DEFAULT_CACHE_CONTROL,
+                )
+                return data.get("url"), cc
             if resp.status_code == 403:
                 logger.error("Authorization failed (403). Check your API key.")
-                return None
+                return None, DEFAULT_CACHE_CONTROL
             logger.warning(
                 "Signed URL request failed: %d %s",
                 resp.status_code,
@@ -68,7 +73,7 @@ def _request_signed_url(
         filename,
         MAX_RETRIES,
     )
-    return None
+    return None, DEFAULT_CACHE_CONTROL
 
 
 def _read_file_with_retry(
@@ -102,6 +107,7 @@ def _put_file(
     signed_url: str,
     content: bytes,
     filename: str,
+    cache_control: str,
 ) -> bool:
     """PUT file content to the signed URL.
 
@@ -109,6 +115,7 @@ def _put_file(
     """
     headers = {
         "Content-Type": "application/json",
+        "Cache-Control": cache_control,
     }
 
     for attempt in range(MAX_RETRIES):
@@ -165,11 +172,13 @@ def upload_run_file(
     if content is None:
         return False
 
-    signed_url = _request_signed_url(cloud_function_url, api_key, filename)
+    signed_url, cache_control = _request_signed_url(
+        cloud_function_url, api_key, filename
+    )
     if not signed_url:
         return False
 
-    success = _put_file(signed_url, content, filename)
+    success = _put_file(signed_url, content, filename, cache_control)
     if success:
         logger.info("Successfully uploaded %s", filename)
     return success

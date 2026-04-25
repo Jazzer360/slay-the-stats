@@ -21,6 +21,7 @@ BUCKET = os.environ.get(
     "slay-the-stats.firebasestorage.app",
 )
 URL_EXPIRY_MINUTES = 15
+CACHE_CONTROL = "public, max-age=31536000, immutable"
 ALLOWED_ORIGINS = [
     "https://slay-the-stats.web.app",
     "https://slay-the-stats.firebaseapp.com",
@@ -115,6 +116,7 @@ def _generate_signed_url(
         ),
         method="PUT",
         content_type="application/json",
+        headers={"Cache-Control": CACHE_CONTROL},
         service_account_email=sa_email,
         access_token=credentials.token,
     )
@@ -174,7 +176,13 @@ def generate_signed_url(request: Request):
 
     blob_path = f"users/{uid}/runs/{filename}"
     return (
-        jsonify({"url": url, "path": blob_path}),
+        jsonify(
+            {
+                "url": url,
+                "path": blob_path,
+                "cache_control": CACHE_CONTROL,
+            }
+        ),
         200,
         _cors_headers(origin),
     )
