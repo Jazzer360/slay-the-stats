@@ -10,6 +10,8 @@ from __future__ import annotations
 import logging
 import subprocess
 import sys
+import threading
+from pathlib import Path
 from typing import Any
 
 import pystray
@@ -57,16 +59,48 @@ class TrayApp:
     # ── actions ────────────────────────────────────
 
     def _open_settings(self) -> None:
-        """Launch settings GUI as a subprocess."""
+        """Launch settings GUI as a subprocess.
+
+        Waits for the GUI to close in a background thread so
+        the watcher can be (re)started with the saved config
+        without requiring user action in the tray menu.
+        """
         exe = sys.executable
         args = [exe]
         if not getattr(sys, "frozen", False):
-            args.append(str(__import__("pathlib").Path(__file__).parent / "main.py"))
+            args.append(str(Path(__file__).parent / "main.py"))
         args.append("--settings")
-        subprocess.Popen(
+        proc = subprocess.Popen(
             args,
             creationflags=0x00000008,
         )
+        threading.Thread(
+            target=self._await_settings_close,
+            args=(proc,),
+            daemon=True,
+        ).start()
+
+    def _await_settings_close(
+        self,
+        proc: subprocess.Popen,
+    ) -> None:
+        """Apply new settings once the GUI subprocess exits."""
+        proc.wait()
+        config = load_config()
+        if not config.get("api_key") or not config.get("profiles"):
+            logger.info(
+                "Settings closed without complete config; "
+                "watcher not started.",
+            )
+            return
+        if self._watcher.is_running:
+            logger.info("Restarting watcher with updated config.")
+            self._watcher.restart()
+        else:
+            logger.info("Starting watcher after settings save.")
+            self._watcher.start()
+        if self._icon is not None:
+            self._icon.update_menu()
 
     def _toggle_pause(
         self,
@@ -163,8 +197,11 @@ class TrayApp:
         icon.visible = True
         refresh_startup_path()
         config = load_config()
-        if not config.get("api_key"):
-            logger.info("No API key. Opening settings.")
+        if not config.get("api_key") or not config.get("profiles"):
+            logger.info(
+                "Incomplete config. Opening settings.",
+            )
             self._open_settings()
             return
         self._watcher.start()
+        icon.update_menu()
