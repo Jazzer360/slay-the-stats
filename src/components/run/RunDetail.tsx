@@ -273,9 +273,11 @@ export function RunDetail({ run }: { run: ParsedRun }) {
         </div>
       </div>
 
+      {/* HP Chart + Energy Cost Profile — side-by-side on sm+ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
       {/* HP Chart */}
       {hpData.length > 0 && (
-        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-8">
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
           <h3 className="text-base font-semibold text-gray-200 mb-3">Health Over Time</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height={256}>
@@ -388,7 +390,7 @@ export function RunDetail({ run }: { run: ParsedRun }) {
 
       {/* Energy cost profile */}
       {costProfileData.length > 0 && activeCostBuckets.length > 0 && (
-        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-8">
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <h3 className="text-base font-semibold text-gray-200">Deck Energy Cost Profile</h3>
             <div className="flex items-center gap-3 text-xs text-gray-400">
@@ -492,6 +494,7 @@ export function RunDetail({ run }: { run: ParsedRun }) {
           </p>
         </div>
       )}
+      </div>{/* end charts grid */}
 
       {/* Final deck, relics, potions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
