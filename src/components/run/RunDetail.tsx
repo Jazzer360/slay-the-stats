@@ -17,20 +17,34 @@ import { parseRunTimeline } from '../../lib/floor-parser';
 import { buildDeckByFloor } from '../../lib/deck-by-floor';
 import type { ParsedRun, DeckCard, FloorSummary, FloorEvent } from '../../types/run';
 
-const COST_BUCKETS = ['costX', 'cost0', 'cost1', 'cost2', 'cost3', 'cost4', 'cost5plus'] as const;
+const COST_BUCKETS = [
+  'curse',
+  'quest',
+  'costX',
+  'cost0',
+  'cost1',
+  'cost2',
+  'cost3',
+  'cost4',
+  'cost5plus',
+] as const;
 type CostBucket = (typeof COST_BUCKETS)[number];
 
 const COST_BUCKET_LABEL: Record<CostBucket, string> = {
-  costX: 'X',
-  cost0: '0',
-  cost1: '1',
-  cost2: '2',
-  cost3: '3',
-  cost4: '4',
-  cost5plus: '5+',
+  curse: 'Curse',
+  quest: 'Quest',
+  costX: 'X-Cost',
+  cost0: '0-Cost',
+  cost1: '1-Cost',
+  cost2: '2-Cost',
+  cost3: '3-Cost',
+  cost4: '4-Cost',
+  cost5plus: '5+-Cost',
 };
 
 const COST_BUCKET_COLOR: Record<CostBucket, string> = {
+  curse: '#7c3aed88',
+  quest: '#d9770688',
   costX: '#88888888',
   cost0: '#0066ff88',
   cost1: '#00ff0088',
@@ -53,6 +67,8 @@ function bucketForCost(cost: number): CostBucket {
 interface CostProfilePoint {
   floor: number;
   total: number;
+  curse: number;
+  quest: number;
   costX: number;
   cost0: number;
   cost1: number;
@@ -164,6 +180,8 @@ export function RunDetail({ run }: { run: ParsedRun }) {
       const point: CostProfilePoint = {
         floor: snap.globalFloor,
         total: 0,
+        curse: 0,
+        quest: 0,
         costX: 0,
         cost0: 0,
         cost1: 0,
@@ -178,8 +196,12 @@ export function RunDetail({ run }: { run: ParsedRun }) {
         const meta = getCardMeta(card.id);
         if (cost === undefined) continue;
         const isXCost = meta?.isXCost || meta?.isXStarCost;
-        if (!isXCost && cost < 0) continue; // unplayable curse/status — skip
-        const bucket = isXCost ? 'costX' : bucketForCost(cost);
+        let bucket: CostBucket;
+        if (meta?.type === 'Curse') bucket = 'curse';
+        else if (meta?.type === 'Quest') bucket = 'quest';
+        else if (isXCost) bucket = 'costX';
+        else if (cost < 0) continue; // unplayable status — skip
+        else bucket = bucketForCost(cost);
         point[bucket] += 1;
         point.total += 1;
       }
@@ -429,11 +451,12 @@ export function RunDetail({ run }: { run: ParsedRun }) {
                   formatter={(value, _name, item) => {
                     const pt = item.payload as CostProfilePoint | undefined;
                     const count = Number(value);
+                    if (count === 0) return null;
                     const total = pt?.total ?? 0;
                     const pct = total > 0 ? Math.round((count / total) * 100) : 0;
                     return [
                       `${count} (${pct}%)`,
-                      `Cost ${COST_BUCKET_LABEL[item.dataKey as CostBucket]}`,
+                      COST_BUCKET_LABEL[item.dataKey as CostBucket],
                     ];
                   }}
                 />
@@ -464,8 +487,8 @@ export function RunDetail({ run }: { run: ParsedRun }) {
             </ResponsiveContainer>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Share of deck by base energy cost at the end of each floor (excludes curses, statuses,
-            and X-cost cards). Higher costs stack on top.
+            Share of deck by base energy cost at the end of each floor (excludes statuses). Curses
+            and quest cards are bucketed separately. Higher costs stack on top.
           </p>
         </div>
       )}
