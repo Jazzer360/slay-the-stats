@@ -1,4 +1,4 @@
-// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.103.0)
+// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.104.0)
 // 63 potions — regenerate with: node scripts/generate-meta.mjs
 
 export type PotionRarity = 'Common' | 'Event' | 'Rare' | 'Token' | 'Uncommon';

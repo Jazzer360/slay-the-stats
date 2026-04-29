@@ -34,7 +34,6 @@ const COLOR_DOTS: Partial<Record<CardColor, string>> = {
   Event: 'bg-orange-400',
   Status: 'bg-gray-600',
   Token: 'bg-gray-600',
-  Unknown: 'bg-gray-700',
 };
 
 interface EloTableProps {

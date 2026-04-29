@@ -1,4 +1,4 @@
-// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.103.0)
+// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.104.0)
 // 293 relics — regenerate with: node scripts/generate-meta.mjs
 
 export type RelicRarity = 'Ancient' | 'Common' | 'Event' | 'None' | 'Rare' | 'Shop' | 'Starter' | 'Uncommon';

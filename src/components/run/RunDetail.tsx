@@ -10,11 +10,57 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { formatId, formatDate, formatDuration } from '../../lib/format';
-import { getCardMeta } from '../../lib/card-meta';
+import { getCardMeta, getCardCost } from '../../lib/card-meta';
 import { getRelicMeta } from '../../lib/relic-meta';
 import { getPotionMeta } from '../../lib/potion-meta';
 import { parseRunTimeline } from '../../lib/floor-parser';
+import { buildDeckByFloor } from '../../lib/deck-by-floor';
 import type { ParsedRun, DeckCard, FloorSummary, FloorEvent } from '../../types/run';
+
+const COST_BUCKETS = ['costX', 'cost0', 'cost1', 'cost2', 'cost3', 'cost4', 'cost5plus'] as const;
+type CostBucket = (typeof COST_BUCKETS)[number];
+
+const COST_BUCKET_LABEL: Record<CostBucket, string> = {
+  costX: 'X',
+  cost0: '0',
+  cost1: '1',
+  cost2: '2',
+  cost3: '3',
+  cost4: '4',
+  cost5plus: '5+',
+};
+
+const COST_BUCKET_COLOR: Record<CostBucket, string> = {
+  costX: '#88888888',
+  cost0: '#0066ff88',
+  cost1: '#00ff0088',
+  cost2: '#ffee0088',
+  cost3: '#ff990088',
+  cost4: '#ff880088',
+  cost5plus: '#ff000088',
+};
+
+function bucketForCost(cost: number): CostBucket {
+  if (cost < 0) return 'costX';
+  if (cost === 0) return 'cost0';
+  if (cost === 1) return 'cost1';
+  if (cost === 2) return 'cost2';
+  if (cost === 3) return 'cost3';
+  if (cost === 4) return 'cost4';
+  return 'cost5plus';
+}
+
+interface CostProfilePoint {
+  floor: number;
+  total: number;
+  costX: number;
+  cost0: number;
+  cost1: number;
+  cost2: number;
+  cost3: number;
+  cost4: number;
+  cost5plus: number;
+}
 
 interface ConsolidatedCard {
   id: string;
@@ -111,6 +157,39 @@ export function RunDetail({ run }: { run: ParsedRun }) {
     }
     return floors;
   }, [timeline]);
+
+  const costProfileData = useMemo((): CostProfilePoint[] => {
+    const snapshots = buildDeckByFloor(run);
+    return snapshots.map((snap) => {
+      const point: CostProfilePoint = {
+        floor: snap.globalFloor,
+        total: 0,
+        costX: 0,
+        cost0: 0,
+        cost1: 0,
+        cost2: 0,
+        cost3: 0,
+        cost4: 0,
+        cost5plus: 0,
+      };
+      for (const card of snap.deck) {
+        const id = card.upgraded ? `${card.id}+` : card.id;
+        const cost = getCardCost(id);
+        const meta = getCardMeta(card.id);
+        if (cost === undefined) continue;
+        const isXCost = meta?.isXCost || meta?.isXStarCost;
+        if (!isXCost && cost < 0) continue; // unplayable curse/status — skip
+        const bucket = isXCost ? 'costX' : bucketForCost(cost);
+        point[bucket] += 1;
+        point.total += 1;
+      }
+      return point;
+    });
+  }, [run]);
+
+  const activeCostBuckets = useMemo<CostBucket[]>(() => {
+    return COST_BUCKETS.filter((b) => costProfileData.some((p) => p[b] > 0));
+  }, [costProfileData]);
 
   if (!player) return null;
 
@@ -282,6 +361,112 @@ export function RunDetail({ run }: { run: ParsedRun }) {
               </AreaChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      )}
+
+      {/* Energy cost profile */}
+      {costProfileData.length > 0 && activeCostBuckets.length > 0 && (
+        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-8">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 className="text-base font-semibold text-gray-200">Deck Energy Cost Profile</h3>
+            <div className="flex items-center gap-3 text-xs text-gray-400">
+              {activeCostBuckets
+                .slice()
+                .reverse()
+                .map((b) => (
+                  <span key={b} className="inline-flex items-center gap-1.5">
+                    <span
+                      className="inline-block w-2.5 h-2.5 rounded-sm"
+                      style={{ backgroundColor: COST_BUCKET_COLOR[b] }}
+                    />
+                    {COST_BUCKET_LABEL[b]}
+                  </span>
+                ))}
+            </div>
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height={256}>
+              <AreaChart
+                data={costProfileData}
+                stackOffset="expand"
+                margin={{ top: 16, right: 20, bottom: 5, left: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
+                <XAxis
+                  dataKey="floor"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  stroke="#6b7280"
+                  tick={{ fill: '#9ca3af', fontSize: 11 }}
+                  label={{
+                    value: 'Floor',
+                    position: 'insideBottomRight',
+                    offset: -5,
+                    fill: '#6b7280',
+                    fontSize: 11,
+                  }}
+                />
+                <YAxis
+                  stroke="#6b7280"
+                  tick={{ fill: '#9ca3af', fontSize: 11 }}
+                  tickFormatter={(v: number) => `${Math.round(v * 100)}%`}
+                  domain={[0, 1]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#1f2937',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#e5e7eb',
+                    fontSize: '12px',
+                  }}
+                  labelFormatter={(label) => {
+                    const floor = Number(label);
+                    const pt = costProfileData.find((p) => p.floor === floor);
+                    const suffix = pt ? ` — ${pt.total} cards` : '';
+                    return floor === 0 ? `Starting deck${suffix}` : `Floor ${floor}${suffix}`;
+                  }}
+                  formatter={(value, _name, item) => {
+                    const pt = item.payload as CostProfilePoint | undefined;
+                    const count = Number(value);
+                    const total = pt?.total ?? 0;
+                    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                    return [
+                      `${count} (${pct}%)`,
+                      `Cost ${COST_BUCKET_LABEL[item.dataKey as CostBucket]}`,
+                    ];
+                  }}
+                />
+                {actBoundaries.map((b) => (
+                  <ReferenceLine
+                    key={`cost-act-${b.floor}`}
+                    x={b.floor}
+                    stroke="#7c3aed"
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.5}
+                    ifOverflow="discard"
+                  />
+                ))}
+                {COST_BUCKETS.map((bucket) => (
+                  <Area
+                    key={bucket}
+                    type="stepAfter"
+                    dataKey={bucket}
+                    stackId="cost"
+                    stroke={COST_BUCKET_COLOR[bucket]}
+                    fill={COST_BUCKET_COLOR[bucket]}
+                    fillOpacity={0.85}
+                    strokeWidth={0}
+                    isAnimationActive={false}
+                  />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Share of deck by base energy cost at the end of each floor (excludes curses, statuses,
+            and X-cost cards). Higher costs stack on top.
+          </p>
         </div>
       )}
 
