@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router';
+import { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router';
 import { useActiveRuns } from '../hooks/useActiveRuns';
+import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { useProfileNav } from '../hooks/useProfileNav';
 import { useProfileRunsStore } from '../store/profileRuns';
 import { useAuthStore } from '../store/auth';
@@ -9,17 +10,29 @@ import { RunDetail } from '../components/run/RunDetail';
 
 export function RunDetailPage() {
   const { fileName } = useParams<{ fileName: string }>();
-  const runs = useActiveRuns();
+  const allRuns = useActiveRuns();
+  const filteredRuns = useFilteredRuns();
   const user = useAuthStore((s) => s.user);
   const isProfileView = useProfileRunsStore((s) => s.profileRuns !== null);
   const { toRunDetail, runsPath } = useProfileNav();
+  const navigate = useNavigate();
   const decodedName = fileName ? decodeURIComponent(fileName) : '';
-  const runIndex = runs.findIndex(
-    (r) => r.fileName === `${decodedName}.run` || r.fileName === decodedName,
-  );
-  const run = runIndex >= 0 ? runs[runIndex] : undefined;
-  const prevRun = runIndex > 0 ? runs[runIndex - 1] : undefined;
-  const nextRun = runIndex >= 0 && runIndex < runs.length - 1 ? runs[runIndex + 1] : undefined;
+  const matchesName = (r: { fileName: string }) =>
+    r.fileName === `${decodedName}.run` || r.fileName === decodedName;
+  const runExists = allRuns.some(matchesName);
+  const filteredIndex = filteredRuns.findIndex(matchesName);
+  const run = filteredIndex >= 0 ? filteredRuns[filteredIndex] : allRuns.find(matchesName);
+  const prevRun = filteredIndex > 0 ? filteredRuns[filteredIndex - 1] : undefined;
+  const nextRun =
+    filteredIndex >= 0 && filteredIndex < filteredRuns.length - 1
+      ? filteredRuns[filteredIndex + 1]
+      : undefined;
+
+  useEffect(() => {
+    if (runExists && filteredIndex === -1) {
+      navigate(runsPath, { replace: true });
+    }
+  }, [runExists, filteredIndex, navigate, runsPath]);
 
   const [shareState, setShareState] = useState<'idle' | 'sharing' | 'copied' | 'error'>('idle');
 
@@ -84,7 +97,7 @@ export function RunDetailPage() {
             ← Previous
           </button>
           <span className="text-xs text-gray-600">
-            {runIndex + 1} / {runs.length}
+            {filteredIndex >= 0 ? filteredIndex + 1 : '—'} / {filteredRuns.length}
           </span>
           <button
             onClick={() => nextRun && toRunDetail(nextRun.fileName)}

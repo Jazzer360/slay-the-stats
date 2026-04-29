@@ -36,7 +36,7 @@ const COST_BUCKET_COLOR: Record<CostBucket, string> = {
   cost1: '#00ff0088',
   cost2: '#ffee0088',
   cost3: '#ff990088',
-  cost4: '#ff880088',
+  cost4: '#ff5e0088',
   cost5plus: '#ff000088',
 };
 
@@ -525,15 +525,20 @@ export function RunDetail({ run }: { run: ParsedRun }) {
                 Badges ({player.badges.length})
               </h3>
               <div className="flex flex-wrap gap-1.5">
-                {player.badges.map((badge, i) => (
-                  <span
-                    key={i}
-                    className="bg-gray-800 text-purple-400/80 text-xs px-2 py-1 rounded"
-                  >
-                    {formatId(badge.id)}
-                    <span className="text-gray-600 ml-1">({badge.rarity})</span>
-                  </span>
-                ))}
+                {player.badges.map((badge, i) => {
+                  const badgeColor =
+                    badge.rarity === 'gold'
+                      ? 'text-yellow-400'
+                      : badge.rarity === 'silver'
+                        ? 'text-slate-300'
+                        : 'text-yellow-700';
+                  return (
+                    <span key={i} className={`bg-gray-800 text-xs px-2 py-1 rounded ${badgeColor}`}>
+                      {formatId(badge.id)}
+                      <span className="text-gray-600 ml-1">({badge.rarity})</span>
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
