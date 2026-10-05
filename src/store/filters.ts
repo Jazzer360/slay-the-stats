@@ -7,6 +7,7 @@ interface FilterStore extends FilterState {
   setProfile: (profile: string | null) => void;
   setCharacter: (character: string | null) => void;
   setPlayerMode: (playerMode: 'all' | 'solo' | 'multi') => void;
+  setCustomRuns: (customRuns: FilterState['customRuns']) => void;
   setAscensionRange: (min: number | null, max: number | null) => void;
   setResult: (result: 'all' | 'win' | 'loss') => void;
   setDateRange: (from: number | null, to: number | null) => void;
@@ -20,6 +21,7 @@ export const useFilterStore = create<FilterStore>((set) => ({
   setProfile: (profile) => set({ profile }),
   setCharacter: (character) => set({ character }),
   setPlayerMode: (playerMode) => set({ playerMode }),
+  setCustomRuns: (customRuns) => set({ customRuns }),
   setAscensionRange: (ascensionMin, ascensionMax) => set({ ascensionMin, ascensionMax }),
   setResult: (result) => set({ result }),
   setDateRange: (dateFrom, dateTo) => set({ dateFrom, dateTo }),
@@ -30,6 +32,7 @@ export const useFilterStore = create<FilterStore>((set) => ({
       ...DEFAULT_FILTERS,
       character: defaults.character,
       playerMode: defaults.playerMode,
+      customRuns: defaults.customRuns ?? 'exclude',
       ascensionMin: defaults.ascensionMin,
       ascensionMax: defaults.ascensionMax,
       result: defaults.result,

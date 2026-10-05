@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
 import { useActiveRuns } from '../hooks/useActiveRuns';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
@@ -7,6 +7,7 @@ import { useProfileRunsStore } from '../store/profileRuns';
 import { useAuthStore } from '../store/auth';
 import { createShare, createPublicShare } from '../lib/firestore';
 import { RunDetail } from '../components/run/RunDetail';
+import { useFilterStore } from '../store/filters';
 
 export function RunDetailPage() {
   const { fileName } = useParams<{ fileName: string }>();
@@ -17,6 +18,8 @@ export function RunDetailPage() {
   const { toRunDetail, runsPath } = useProfileNav();
   const navigate = useNavigate();
   const decodedName = fileName ? decodeURIComponent(fileName) : '';
+  const filterKey = JSON.stringify(useFilterStore());
+  const previousView = useRef({ decodedName, filterKey });
   const matchesName = (r: { fileName: string }) =>
     r.fileName === `${decodedName}.run` || r.fileName === decodedName;
   const runExists = allRuns.some(matchesName);
@@ -29,10 +32,15 @@ export function RunDetailPage() {
       : undefined;
 
   useEffect(() => {
-    if (runExists && filteredIndex === -1) {
+    const filtersChanged =
+      previousView.current.decodedName === decodedName &&
+      previousView.current.filterKey !== filterKey;
+    previousView.current = { decodedName, filterKey };
+    // Direct links can open excluded runs; changing filters still returns to the list.
+    if (filtersChanged && runExists && filteredIndex === -1) {
       navigate(runsPath, { replace: true });
     }
-  }, [runExists, filteredIndex, navigate, runsPath]);
+  }, [decodedName, filterKey, runExists, filteredIndex, navigate, runsPath]);
 
   const [shareState, setShareState] = useState<'idle' | 'sharing' | 'copied' | 'error'>('idle');
 

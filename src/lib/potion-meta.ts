@@ -1,5 +1,5 @@
-// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.104.0)
-// 63 potions — regenerate with: node scripts/generate-meta.mjs
+// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.111.0)
+// 64 potions — regenerate with: node scripts/generate-meta.mjs
 
 export type PotionRarity = 'Common' | 'Event' | 'Rare' | 'Token' | 'Uncommon';
 export type PotionCharacter = 'Colorless' | 'Defect' | 'Ironclad' | 'Necrobinder' | 'Regent' | 'Silent';
@@ -11,6 +11,7 @@ export interface PotionMeta {
 }
 
 const POTION_META: Record<string, PotionMeta> = {
+  'POTION.AMBERGRIS': { name: 'Ambergris', character: 'Colorless', rarity: 'Event' },
   'POTION.ASHWATER': { name: 'Ashwater', character: 'Ironclad', rarity: 'Uncommon' },
   'POTION.ATTACK_POTION': { name: 'Attack Potion', character: 'Colorless', rarity: 'Common' },
   'POTION.BEETLE_JUICE': { name: 'Beetle Juice', character: 'Colorless', rarity: 'Rare' },

@@ -1,5 +1,5 @@
+import { RunEmptyState } from '../components/run/RunEmptyState';
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
 import {
   useReactTable,
   getCoreRowModel,
@@ -18,6 +18,7 @@ import { useProfileNav } from '../hooks/useProfileNav';
 import { summarizeRun, type RunSummary } from '../lib/stats';
 import { formatId, formatDate, formatDuration } from '../lib/format';
 import type { ParsedRun } from '../types/run';
+import { CustomRunBadge } from '../components/run/CustomRunBadge';
 
 function runHasPickedCard(run: ParsedRun, cardId: string): boolean {
   const isUpgraded = cardId.endsWith('+');
@@ -84,7 +85,12 @@ export function RunListPage() {
       }),
       columnHelper.accessor('character', {
         header: 'Character',
-        cell: (info) => <span className="text-gray-200">{formatId(info.getValue())}</span>,
+        cell: (info) => (
+          <span className="flex items-center gap-2 text-gray-200">
+            {formatId(info.getValue())}
+            {info.row.original.isCustom && <CustomRunBadge />}
+          </span>
+        ),
       }),
       columnHelper.accessor('ascension', {
         header: 'Asc',
@@ -175,17 +181,7 @@ export function RunListPage() {
         </div>
       );
     }
-    return (
-      <div className="text-center text-gray-500 py-20">
-        <p>
-          No runs loaded.{' '}
-          <Link to="/import" className="text-purple-400 hover:text-purple-300">
-            Import your runs
-          </Link>{' '}
-          to get started.
-        </p>
-      </div>
-    );
+    return <RunEmptyState />;
   }
 
   return (

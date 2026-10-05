@@ -1,5 +1,5 @@
-// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.104.0)
-// 293 relics — regenerate with: node scripts/generate-meta.mjs
+// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.111.0)
+// 298 relics — regenerate with: node scripts/generate-meta.mjs
 
 export type RelicRarity = 'Ancient' | 'Common' | 'Event' | 'None' | 'Rare' | 'Shop' | 'Starter' | 'Uncommon';
 export type RelicCharacter = 'Colorless' | 'Defect' | 'Ironclad' | 'Necrobinder' | 'Regent' | 'Silent';
@@ -77,6 +77,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.DIVINE_DESTINY': { name: 'Divine Destiny', character: 'Regent', rarity: 'Starter' },
   'RELIC.DIVINE_RIGHT': { name: 'Divine Right', character: 'Regent', rarity: 'Starter' },
   'RELIC.DOLLYS_MIRROR': { name: 'Dolly\'s Mirror', character: 'Colorless', rarity: 'Shop' },
+  'RELIC.DOWSING_ROD': { name: 'Dowsing Rod', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.DRAGON_FRUIT': { name: 'Dragon Fruit', character: 'Colorless', rarity: 'Shop' },
   'RELIC.DREAM_CATCHER': { name: 'Dream Catcher', character: 'Colorless', rarity: 'Event' },
   'RELIC.DRIFTWOOD': { name: 'Driftwood', character: 'Colorless', rarity: 'Ancient' },
@@ -90,6 +91,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.FENCING_MANUAL': { name: 'Fencing Manual', character: 'Regent', rarity: 'Common' },
   'RELIC.FESTIVE_POPPER': { name: 'Festive Popper', character: 'Colorless', rarity: 'Common' },
   'RELIC.FIDDLE': { name: 'Fiddle', character: 'Colorless', rarity: 'Ancient' },
+  'RELIC.FISHING_ROD': { name: 'Fishing Rod', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.FORGOTTEN_SOUL': { name: 'Forgotten Soul', character: 'Colorless', rarity: 'Event' },
   'RELIC.FRAGRANT_MUSHROOM': { name: 'Fragrant Mushroom', character: 'Colorless', rarity: 'Event' },
   'RELIC.FRESNEL_LENS': { name: 'Fresnel Lens', character: 'Colorless', rarity: 'Event' },
@@ -125,6 +127,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.JEWELRY_BOX': { name: 'Jewelry Box', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.JOSS_PAPER': { name: 'Joss Paper', character: 'Colorless', rarity: 'Uncommon' },
   'RELIC.JUZU_BRACELET': { name: 'Juzu Bracelet', character: 'Colorless', rarity: 'Common' },
+  'RELIC.KALEIDOSCOPE': { name: 'Kaleidoscope', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.KIFUDA': { name: 'Kifuda', character: 'Colorless', rarity: 'Shop' },
   'RELIC.KUNAI': { name: 'Kunai', character: 'Colorless', rarity: 'Rare' },
   'RELIC.KUSARIGAMA': { name: 'Kusarigama', character: 'Colorless', rarity: 'Uncommon' },
@@ -164,6 +167,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.MUSIC_BOX': { name: 'Music Box', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.MYSTIC_LIGHTER': { name: 'Mystic Lighter', character: 'Colorless', rarity: 'Shop' },
   'RELIC.NEOWS_BONES': { name: 'Neow\'s Bones', character: 'Colorless', rarity: 'Ancient' },
+  'RELIC.NEOWS_SACRIFICE': { name: 'Neow\'s Sacrifice', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.NEOWS_TALISMAN': { name: 'Neow\'s Talisman', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.NEOWS_TORMENT': { name: 'Neow\'s Torment', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.NEW_LEAF': { name: 'New Leaf', character: 'Colorless', rarity: 'Ancient' },
@@ -242,6 +246,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.SHOVEL': { name: 'Shovel', character: 'Colorless', rarity: 'Rare' },
   'RELIC.SHURIKEN': { name: 'Shuriken', character: 'Colorless', rarity: 'Rare' },
   'RELIC.SIGNET_RING': { name: 'Signet Ring', character: 'Colorless', rarity: 'Ancient' },
+  'RELIC.SILKEN_TRESS': { name: 'Silken Tress', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.SILVER_CRUCIBLE': { name: 'Silver Crucible', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.SLING_OF_COURAGE': { name: 'Sling of Courage', character: 'Colorless', rarity: 'Shop' },
   'RELIC.SMALL_CAPSULE': { name: 'Small Capsule', character: 'Colorless', rarity: 'Ancient' },

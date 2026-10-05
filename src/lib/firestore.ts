@@ -14,22 +14,10 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { UserProfile, DefaultProfileFilters } from '../types/user';
-import { EMPTY_DEFAULT_FILTERS } from '../types/user';
+import type { UserProfile } from '../types/user';
+import { parseDefaultFilters } from '../types/user';
 
 // ─── User Profile ────────────────────────────────────────────────
-
-function parseDefaultFilters(raw: unknown): DefaultProfileFilters {
-  if (!raw || typeof raw !== 'object') return { ...EMPTY_DEFAULT_FILTERS };
-  const r = raw as Record<string, unknown>;
-  return {
-    character: typeof r.character === 'string' ? r.character : null,
-    playerMode: r.playerMode === 'solo' || r.playerMode === 'multi' ? r.playerMode : 'all',
-    ascensionMin: typeof r.ascensionMin === 'number' ? r.ascensionMin : null,
-    ascensionMax: typeof r.ascensionMax === 'number' ? r.ascensionMax : null,
-    result: r.result === 'win' || r.result === 'loss' ? r.result : 'all',
-  };
-}
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const snap = await getDoc(doc(db, 'users', uid));

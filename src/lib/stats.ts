@@ -1,7 +1,9 @@
 import type { ParsedRun } from '../types/run';
 import { CHARACTER_ORDER } from './filters';
+import { isCustomRun } from './run-mode';
 
 export interface RunSummary {
+  isCustom: boolean;
   fileName: string;
   character: string;
   ascension: number;
@@ -40,6 +42,7 @@ export function summarizeRun(run: ParsedRun): RunSummary {
   }
 
   return {
+    isCustom: isCustomRun(d),
     fileName: run.fileName,
     character: player?.character ?? 'Unknown',
     ascension: d.ascension,

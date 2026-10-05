@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { isCustomRun } from '../../lib/run-mode';
+import { CustomRunBadge } from './CustomRunBadge';
 import {
   AreaChart,
   Area,
@@ -222,8 +224,9 @@ export function RunDetail({ run }: { run: ParsedRun }) {
       {/* Run header */}
       <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mb-8">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-lg font-semibold text-gray-100">{formatId(player.character)}</h2>
+            {isCustomRun(d) && <CustomRunBadge />}
             <span className="text-sm text-gray-500">Ascension {d.ascension}</span>
             {d.modifiers.length > 0 && (
               <span className="text-xs text-gray-600">{d.modifiers.map(formatId).join(', ')}</span>

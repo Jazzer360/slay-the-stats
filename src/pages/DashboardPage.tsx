@@ -1,5 +1,5 @@
+import { RunEmptyState } from '../components/run/RunEmptyState';
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
 import { useFilteredRuns } from '../hooks/useFilteredRuns';
 import { useRunsStore } from '../store/runs';
 import { useAuthStore } from '../store/auth';
@@ -96,17 +96,7 @@ export function DashboardPage() {
         </div>
       );
     }
-    return (
-      <div className="text-center text-gray-500 py-20">
-        <p>
-          No runs loaded.{' '}
-          <Link to="/import" className="text-purple-400 hover:text-purple-300">
-            Import your runs
-          </Link>{' '}
-          to get started.
-        </p>
-      </div>
-    );
+    return <RunEmptyState />;
   }
 
   return (

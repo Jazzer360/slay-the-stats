@@ -13,6 +13,7 @@ import {
 import { deleteRunFile, listUserRunFiles, deleteAllRunFiles } from '../lib/cloudStorage';
 import type { DefaultProfileFilters } from '../types/user';
 import { EMPTY_DEFAULT_FILTERS } from '../types/user';
+import { CUSTOM_RUN_OPTIONS } from '../lib/run-mode';
 
 type AvailabilityState = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
@@ -433,6 +434,26 @@ export function SettingsPage() {
                 }`}
               >
                 {m === 'all' ? 'All' : m === 'solo' ? 'Solo' : 'Multiplayer'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div role="group" aria-label="Default custom runs">
+          <span className="block text-xs text-gray-400 mb-1.5">Custom Runs</span>
+          <div className="flex gap-2">
+            {CUSTOM_RUN_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setDefaultFilters({ ...defaultFilters, customRuns: value })}
+                aria-pressed={defaultFilters.customRuns === value}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  defaultFilters.customRuns === value
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {label}
               </button>
             ))}
           </div>

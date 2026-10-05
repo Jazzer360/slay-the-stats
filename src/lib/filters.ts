@@ -1,4 +1,5 @@
 import type { ParsedRun } from '../types/run';
+import { isCustomRun, type CustomRunFilter } from './run-mode';
 
 /** Canonical in-game character pick order. */
 export const CHARACTER_ORDER = [
@@ -13,6 +14,7 @@ export interface FilterState {
   profile: string | null; // single-select, null = all
   character: string | null; // single-select, null = all
   playerMode: 'all' | 'solo' | 'multi';
+  customRuns: CustomRunFilter;
   ascensionMin: number | null;
   ascensionMax: number | null;
   result: 'all' | 'win' | 'loss';
@@ -25,6 +27,7 @@ export const DEFAULT_FILTERS: FilterState = {
   profile: null,
   character: null,
   playerMode: 'all',
+  customRuns: 'exclude',
   ascensionMin: null,
   ascensionMax: null,
   result: 'all',
@@ -36,6 +39,10 @@ export const DEFAULT_FILTERS: FilterState = {
 export function applyFilters(runs: ParsedRun[], filters: FilterState): ParsedRun[] {
   return runs.filter((run) => {
     const d = run.data;
+
+    const custom = isCustomRun(d);
+    if (filters.customRuns === 'exclude' && custom) return false;
+    if (filters.customRuns === 'only' && !custom) return false;
 
     // Profile filter
     if (filters.profile !== null && run.profile !== filters.profile) {

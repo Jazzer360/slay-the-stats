@@ -58,7 +58,7 @@ export function ProfilePage() {
 
         if (cancelled) return;
 
-        setProfileRuns(runs, foundProfile.screenName ?? screenName!);
+        setProfileRuns(runs, foundProfile.screenName ?? screenName!, foundProfile.defaultFilters);
         setLoadProgress(null);
         setPageState('loaded');
       } catch (err) {

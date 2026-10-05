@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "metadata:generate": "node scripts/generate-meta.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:fixtures": "node scripts/download-fixtures.js"

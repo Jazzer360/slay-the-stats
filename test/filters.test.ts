@@ -1,12 +1,54 @@
 import { describe, it, expect } from 'vitest';
 import { applyFilters, extractFilterOptions, DEFAULT_FILTERS } from '../src/lib/filters';
-import { loadAllFixtures } from './helpers';
+import { buildMockRun, loadAllFixtures } from './helpers';
 
 describe('applyFilters', () => {
-  it('returns all runs with default filters', () => {
+  it('returns all standard fixtures with default filters', () => {
     const runs = loadAllFixtures();
     const filtered = applyFilters(runs, DEFAULT_FILTERS);
     expect(filtered.length).toBe(runs.length);
+  });
+
+  it('excludes custom runs by default even without modifiers', () => {
+    const standard = buildMockRun();
+    const custom = buildMockRun({ game_mode: 'custom', modifiers: [] });
+    expect(applyFilters([standard, custom], DEFAULT_FILTERS)).toEqual([standard]);
+  });
+
+  it('includes custom runs optionally and preserves chronological order', () => {
+    const runs = [buildMockRun(), buildMockRun({ game_mode: 'custom' })];
+    expect(applyFilters(runs, { ...DEFAULT_FILTERS, customRuns: 'include' })).toEqual(runs);
+  });
+
+  it('shows only custom runs case-insensitively', () => {
+    const customs = ['custom', 'CUSTOM', 'Custom'].map((game_mode) => buildMockRun({ game_mode }));
+    expect(applyFilters([buildMockRun(), ...customs], {
+      ...DEFAULT_FILTERS, customRuns: 'only',
+    })).toEqual(customs);
+  });
+
+  it('does not treat another game mode or standard modifiers as custom', () => {
+    const runs = [
+      buildMockRun({ game_mode: 'daily' }),
+      buildMockRun({ modifiers: ['MODIFIER.TEST'] }),
+      buildMockRun({ game_mode: undefined }),
+    ];
+    expect(applyFilters(runs, DEFAULT_FILTERS)).toEqual(runs);
+    expect(applyFilters(runs, { ...DEFAULT_FILTERS, customRuns: 'only' })).toEqual([]);
+  });
+
+  it('intersects custom mode with existing filters', () => {
+    const matching = buildMockRun({ game_mode: 'custom', ascension: 10, win: true });
+    const runs = [
+      matching,
+      buildMockRun({ game_mode: 'custom', ascension: 5, win: true }),
+      buildMockRun({ game_mode: 'custom', ascension: 10, win: false }),
+      buildMockRun({ ascension: 10, win: true }),
+    ];
+    expect(applyFilters(runs, {
+      ...DEFAULT_FILTERS, customRuns: 'only', ascensionMin: 10, result: 'win',
+      character: 'IRONCLAD', profile: 'test-profile', playerMode: 'solo',
+    })).toEqual([matching]);
   });
 
   it('filters by character', () => {

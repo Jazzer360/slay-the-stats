@@ -11,7 +11,7 @@ A personal analytics dashboard for [Slay the Spire 2](https://store.steampowered
 - **Combat Stats** — Win rates broken down by encounter, act, elites, and bosses.
 - **Run Timeline** — HP progression chart with act boundaries, elite encounters, and boss markers. Floor-by-floor event breakdown showing card rewards, relics, gold changes, potions, and more.
 - **Dashboard** — Win rate moving average, character distribution, floor depth tracking, and run duration metrics.
-- **Filtering** — Filter runs by character, ascension, date range, or individual card/ancient picks. All stats recalculate dynamically.
+- **Filtering** — Filter runs by character, ascension, date range, or individual card/ancient picks. Custom runs are excluded by default, with options to include them or show only custom runs. All stats recalculate dynamically.
 
 ## Data Loading
 
@@ -50,3 +50,14 @@ Run tests:
 ```bash
 npm test
 ```
+
+Refresh card, relic, and potion metadata from the latest English beta dataset in
+[Spire Codex](https://github.com/ptrlrd/spire-codex):
+
+```bash
+npm run metadata:generate
+```
+
+This requires network access and regenerates `src/lib/card-meta.ts`,
+`src/lib/relic-meta.ts`, and `src/lib/potion-meta.ts`. Run `npm test` and
+`npm run build` afterward to check compatibility with the refreshed data.

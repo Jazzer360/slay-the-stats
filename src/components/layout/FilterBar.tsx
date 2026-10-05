@@ -1,5 +1,6 @@
 import { useFilterStore } from '../../store/filters';
-import { useAuthStore } from '../../store/auth';
+import { useActiveDefaultFilters } from '../../hooks/useActiveDefaultFilters';
+import { CUSTOM_RUN_OPTIONS } from '../../lib/run-mode';
 import { useFilterOptions } from '../../hooks/useFilteredRuns';
 import { formatId } from '../../lib/format';
 
@@ -8,25 +9,27 @@ export function FilterBar() {
     profile,
     character,
     playerMode,
+    customRuns,
     ascensionMin,
     ascensionMax,
     result,
     setProfile,
     setCharacter,
     setPlayerMode,
+    setCustomRuns,
     setAscensionRange,
     setResult,
     resetFilters,
     applyDefaults,
   } = useFilterStore();
   const options = useFilterOptions();
-  const userProfile = useAuthStore((s) => s.userProfile);
-  const defaults = userProfile?.defaultFilters;
+  const defaults = useActiveDefaultFilters();
 
   const hasActiveFilters =
     profile !== null ||
     character !== (defaults?.character ?? null) ||
     playerMode !== (defaults?.playerMode ?? 'all') ||
+    customRuns !== (defaults?.customRuns ?? 'exclude') ||
     ascensionMin !== (defaults?.ascensionMin ?? null) ||
     ascensionMax !== (defaults?.ascensionMax ?? null) ||
     result !== (defaults?.result ?? 'all');
@@ -164,6 +167,24 @@ export function FilterBar() {
             ))}
           </div>
         )}
+
+        <div role="group" aria-label="Custom runs" className="flex items-center gap-1">
+          <span className="text-xs text-gray-500">Custom runs:</span>
+          {CUSTOM_RUN_OPTIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setCustomRuns(value)}
+              aria-pressed={customRuns === value}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                customRuns === value
+                  ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
+                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         {/* Reset */}
         {hasActiveFilters && (
