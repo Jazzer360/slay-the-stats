@@ -8,6 +8,7 @@ export const CHARACTER_ORDER = [
   'CHARACTER.REGENT',
   'CHARACTER.NECROBINDER',
   'CHARACTER.DEFECT',
+  'CHARACTER.FOOL',
 ] as const;
 
 export interface FilterState {

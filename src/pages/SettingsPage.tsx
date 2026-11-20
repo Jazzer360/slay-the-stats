@@ -354,6 +354,7 @@ export function SettingsPage() {
             <option value="CHARACTER.REGENT">Regent</option>
             <option value="CHARACTER.NECROBINDER">Necrobinder</option>
             <option value="CHARACTER.DEFECT">Defect</option>
+            <option value="CHARACTER.FOOL">Fool</option>
           </select>
         </div>
 
