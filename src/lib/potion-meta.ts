@@ -1,8 +1,8 @@
-// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.111.0)
-// 64 potions — regenerate with: node scripts/generate-meta.mjs
+// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.113.1)
+// 67 potions (0 retained from earlier versions) — regenerate with: node scripts/generate-meta.mjs
 
 export type PotionRarity = 'Common' | 'Event' | 'Rare' | 'Token' | 'Uncommon';
-export type PotionCharacter = 'Colorless' | 'Defect' | 'Ironclad' | 'Necrobinder' | 'Regent' | 'Silent';
+export type PotionCharacter = 'Colorless' | 'Defect' | 'Fool' | 'Ironclad' | 'Necrobinder' | 'Regent' | 'Silent';
 
 export interface PotionMeta {
   name: string;
@@ -20,9 +20,11 @@ const POTION_META: Record<string, PotionMeta> = {
   'POTION.BLOOD_POTION': { name: 'Blood Potion', character: 'Ironclad', rarity: 'Common' },
   'POTION.BONE_BREW': { name: 'Bone Brew', character: 'Necrobinder', rarity: 'Uncommon' },
   'POTION.BOTTLED_POTENTIAL': { name: 'Bottled Potential', character: 'Colorless', rarity: 'Rare' },
+  'POTION.BOTTLED_SONG': { name: 'Bottled Song', character: 'Fool', rarity: 'Uncommon' },
   'POTION.CLARITY': { name: 'Clarity Extract', character: 'Colorless', rarity: 'Uncommon' },
   'POTION.COLORLESS_POTION': { name: 'Colorless Potion', character: 'Colorless', rarity: 'Common' },
   'POTION.COSMIC_CONCOCTION': { name: 'Cosmic Concoction', character: 'Regent', rarity: 'Rare' },
+  'POTION.CRYSTALLINE_EUPHORIA': { name: 'Crystalline Euphoria', character: 'Fool', rarity: 'Rare' },
   'POTION.CUNNING_POTION': { name: 'Cunning Potion', character: 'Silent', rarity: 'Uncommon' },
   'POTION.CURE_ALL': { name: 'Cure All', character: 'Colorless', rarity: 'Uncommon' },
   'POTION.DEXTERITY_POTION': { name: 'Dexterity Potion', character: 'Colorless', rarity: 'Common' },
@@ -60,6 +62,7 @@ const POTION_META: Record<string, PotionMeta> = {
   'POTION.POTION_SHAPED_ROCK': { name: 'Potion-Shaped Rock', character: 'Colorless', rarity: 'Token' },
   'POTION.POWDERED_DEMISE': { name: 'Powdered Demise', character: 'Colorless', rarity: 'Uncommon' },
   'POTION.POWER_POTION': { name: 'Power Potion', character: 'Colorless', rarity: 'Common' },
+  'POTION.PRECISION_POTION': { name: 'Precision Potion', character: 'Fool', rarity: 'Common' },
   'POTION.RADIANT_TINCTURE': { name: 'Radiant Tincture', character: 'Colorless', rarity: 'Uncommon' },
   'POTION.REGEN_POTION': { name: 'Regen Potion', character: 'Colorless', rarity: 'Uncommon' },
   'POTION.SHACKLING_POTION': { name: 'Shackling Potion', character: 'Colorless', rarity: 'Rare' },

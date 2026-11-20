@@ -621,6 +621,7 @@ const CARDPOOL_COLORS: Record<string, string> = {
   Defect: '#3b82f6',
   Regent: '#f59e0b',
   Necrobinder: '#a855f7',
+  Fool: '#ec4899',
   Colorless: '#9ca3af',
   Curse: '#7c3aed',
   Event: '#9ca3af',

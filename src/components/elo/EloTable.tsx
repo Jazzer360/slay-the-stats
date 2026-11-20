@@ -29,6 +29,7 @@ const COLOR_DOTS: Partial<Record<CardColor, string>> = {
   Defect: 'bg-blue-400',
   Regent: 'bg-amber-400',
   Necrobinder: 'bg-violet-500',
+  Fool: 'bg-pink-500',
   Colorless: 'bg-gray-400',
   Curse: 'bg-red-900',
   Event: 'bg-orange-400',
@@ -256,6 +257,7 @@ export function EloTable({
               <option value="Regent">Regent</option>
               <option value="Necrobinder">Necrobinder</option>
               <option value="Defect">Defect</option>
+              <option value="Fool">Fool</option>
               <option value="Colorless">Colorless</option>
             </select>
           )}

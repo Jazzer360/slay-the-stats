@@ -2,7 +2,7 @@
 // Generates card-meta.ts, relic-meta.ts, potion-meta.ts from ptrlrd/spire-codex
 // Usage: node scripts/generate-meta.mjs
 
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -28,8 +28,22 @@ function titleCase(s) {
 }
 
 function poolToCharacter(pool) {
-  const map = { shared: 'Colorless', event: 'Colorless', ironclad: 'Ironclad', silent: 'Silent', defect: 'Defect', necrobinder: 'Necrobinder', regent: 'Regent' };
+  const map = { shared: 'Colorless', event: 'Colorless', ironclad: 'Ironclad', silent: 'Silent', defect: 'Defect', necrobinder: 'Necrobinder', regent: 'Regent', fool: 'Fool' };
   return map[pool] || 'Colorless';
+}
+
+// Entries in the existing generated file that the new dataset no longer has
+// (cards/relics/potions removed by a patch). Kept so older runs still resolve.
+function retainedEntries(file, prefix, newIds) {
+  const path = join(SRC, file);
+  if (!existsSync(path)) return [];
+  const re = new RegExp(`^  '${prefix}\\.([^']+)': \\{.*\\},$`);
+  const kept = [];
+  for (const line of readFileSync(path, 'utf-8').split('\n')) {
+    const m = line.match(re);
+    if (m && !newIds.has(m[1])) kept.push(line);
+  }
+  return kept;
 }
 
 function esc(s) {
@@ -95,6 +109,20 @@ async function generateCards(cards, version) {
     return buildCardEntry(c);
   });
 
+  const retained = retainedEntries('card-meta.ts', 'CARD', new Set(cards.map((c) => c.id)));
+  for (const line of retained) {
+    // Keep the type unions valid for retained entries.
+    const field = (k) => line.match(new RegExp(`\\b${k}: '([^']+)'`))?.[1];
+    const list = (k) => [...(line.match(new RegExp(`\\b${k}: \\[([^\\]]*)\\]`))?.[1].matchAll(/'([^']+)'/g) ?? [])].map((m) => m[1]);
+    if (field('color')) colorSet.add(field('color'));
+    if (field('rarity')) raritySet.add(field('rarity'));
+    if (field('type')) typeSet.add(field('type'));
+    if (field('target')) targetSet.add(field('target'));
+    for (const k of list('keywords')) keywordSet.add(k);
+    for (const t of list('tags')) tagSet.add(t);
+  }
+  entries.push(...retained);
+
   const union = (set) => [...set].sort().map((v) => `'${v}'`).join(' | ');
   const colors = union(colorSet);
   const rarities = union(raritySet);
@@ -104,7 +132,7 @@ async function generateCards(cards, version) {
   const tags = tagSet.size ? union(tagSet) : 'never';
 
   const out = `// Auto-generated from https://github.com/ptrlrd/spire-codex (${version})
-// ${cards.length} cards — regenerate with: node scripts/generate-meta.mjs
+// ${entries.length} cards (${retained.length} retained from earlier versions) — regenerate with: node scripts/generate-meta.mjs
 
 export type CardColor = ${colors};
 export type CardRarity = ${rarities};
@@ -187,11 +215,20 @@ async function generateRelics(relics, version) {
     return `  'RELIC.${r.id}': { name: '${esc(r.name)}', character: '${character}', rarity: '${rarity}' },`;
   });
 
+  const retained = retainedEntries('relic-meta.ts', 'RELIC', new Set(relics.map((x) => x.id)));
+  for (const line of retained) {
+    const rarity = line.match(/rarity: '([^']+)'/)?.[1];
+    const character = line.match(/character: '([^']+)'/)?.[1];
+    if (rarity) raritySet.add(rarity);
+    if (character) charSet.add(character);
+  }
+  entries.push(...retained);
+
   const rarities = [...raritySet].sort().map((r) => `'${r}'`).join(' | ');
   const chars = [...charSet].sort().map((c) => `'${c}'`).join(' | ');
 
   const out = `// Auto-generated from https://github.com/ptrlrd/spire-codex (${version})
-// ${relics.length} relics — regenerate with: node scripts/generate-meta.mjs
+// ${entries.length} relics (${retained.length} retained from earlier versions) — regenerate with: node scripts/generate-meta.mjs
 
 export type RelicRarity = ${rarities};
 export type RelicCharacter = ${chars};
@@ -227,11 +264,20 @@ async function generatePotions(potions, version) {
     return `  'POTION.${p.id}': { name: '${esc(p.name)}', character: '${character}', rarity: '${rarity}' },`;
   });
 
+  const retained = retainedEntries('potion-meta.ts', 'POTION', new Set(potions.map((x) => x.id)));
+  for (const line of retained) {
+    const rarity = line.match(/rarity: '([^']+)'/)?.[1];
+    const character = line.match(/character: '([^']+)'/)?.[1];
+    if (rarity) raritySet.add(rarity);
+    if (character) charSet.add(character);
+  }
+  entries.push(...retained);
+
   const rarities = [...raritySet].sort().map((r) => `'${r}'`).join(' | ');
   const chars = [...charSet].sort().map((c) => `'${c}'`).join(' | ');
 
   const out = `// Auto-generated from https://github.com/ptrlrd/spire-codex (${version})
-// ${potions.length} potions — regenerate with: node scripts/generate-meta.mjs
+// ${entries.length} potions (${retained.length} retained from earlier versions) — regenerate with: node scripts/generate-meta.mjs
 
 export type PotionRarity = ${rarities};
 export type PotionCharacter = ${chars};

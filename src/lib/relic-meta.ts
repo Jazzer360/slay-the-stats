@@ -1,8 +1,8 @@
-// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.111.0)
-// 298 relics — regenerate with: node scripts/generate-meta.mjs
+// Auto-generated from https://github.com/ptrlrd/spire-codex (v0.113.1)
+// 315 relics (0 retained from earlier versions) — regenerate with: node scripts/generate-meta.mjs
 
 export type RelicRarity = 'Ancient' | 'Common' | 'Event' | 'None' | 'Rare' | 'Shop' | 'Starter' | 'Uncommon';
-export type RelicCharacter = 'Colorless' | 'Defect' | 'Ironclad' | 'Necrobinder' | 'Regent' | 'Silent';
+export type RelicCharacter = 'Colorless' | 'Defect' | 'Fool' | 'Ironclad' | 'Necrobinder' | 'Regent' | 'Silent';
 
 export interface RelicMeta {
   name: string;
@@ -22,6 +22,8 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.ASTROLABE': { name: 'Astrolabe', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.BAG_OF_MARBLES': { name: 'Bag of Marbles', character: 'Colorless', rarity: 'Common' },
   'RELIC.BAG_OF_PREPARATION': { name: 'Bag of Preparation', character: 'Colorless', rarity: 'Common' },
+  'RELIC.BATH_ROBES': { name: 'Bath Robes', character: 'Colorless', rarity: 'Event' },
+  'RELIC.BATH_TOWEL': { name: 'Bath Towel', character: 'Colorless', rarity: 'Event' },
   'RELIC.BEATING_REMNANT': { name: 'Beating Remnant', character: 'Colorless', rarity: 'Rare' },
   'RELIC.BEAUTIFUL_BRACELET': { name: 'Beautiful Bracelet', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.BELLOWS': { name: 'Bellows', character: 'Colorless', rarity: 'Rare' },
@@ -30,6 +32,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.BIG_MUSHROOM': { name: 'Big Mushroom', character: 'Colorless', rarity: 'Event' },
   'RELIC.BIIIG_HUG': { name: 'Biiig Hug', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.BING_BONG': { name: 'Bing Bong', character: 'Colorless', rarity: 'Event' },
+  'RELIC.BIZARRE_LAMP': { name: 'Bizarre Lamp', character: 'Fool', rarity: 'Shop' },
   'RELIC.BLACK_BLOOD': { name: 'Black Blood', character: 'Ironclad', rarity: 'Starter' },
   'RELIC.BLACK_STAR': { name: 'Black Star', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.BLESSED_ANTLER': { name: 'Blessed Antler', character: 'Colorless', rarity: 'Ancient' },
@@ -50,6 +53,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.BRONZE_SCALES': { name: 'Bronze Scales', character: 'Colorless', rarity: 'Common' },
   'RELIC.BURNING_BLOOD': { name: 'Burning Blood', character: 'Ironclad', rarity: 'Starter' },
   'RELIC.BURNING_STICKS': { name: 'Burning Sticks', character: 'Colorless', rarity: 'Shop' },
+  'RELIC.BYRDINE': { name: 'Byrdine', character: 'Colorless', rarity: 'Event' },
   'RELIC.BYRDPIP': { name: 'Byrdpip', character: 'Colorless', rarity: 'Event' },
   'RELIC.CALLING_BELL': { name: 'Calling Bell', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.CANDELABRA': { name: 'Candelabra', character: 'Colorless', rarity: 'Uncommon' },
@@ -63,6 +67,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.CIRCLET': { name: 'Circlet', character: 'Colorless', rarity: 'None' },
   'RELIC.CLAWS': { name: 'Claws', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.CLOAK_CLASP': { name: 'Cloak Clasp', character: 'Colorless', rarity: 'Rare' },
+  'RELIC.CONDUCTORS_BATON': { name: 'Conductor\'s Baton', character: 'Fool', rarity: 'Rare' },
   'RELIC.CRACKED_CORE': { name: 'Cracked Core', character: 'Defect', rarity: 'Starter' },
   'RELIC.CROSSBOW': { name: 'Crossbow', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.CURSED_PEARL': { name: 'Cursed Pearl', character: 'Colorless', rarity: 'Ancient' },
@@ -88,7 +93,9 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.EMOTION_CHIP': { name: 'Emotion Chip', character: 'Defect', rarity: 'Rare' },
   'RELIC.EMPTY_CAGE': { name: 'Empty Cage', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.ETERNAL_FEATHER': { name: 'Eternal Feather', character: 'Colorless', rarity: 'Uncommon' },
+  'RELIC.EXERCISE_MAT': { name: 'Exercise Mat', character: 'Fool', rarity: 'Common' },
   'RELIC.FENCING_MANUAL': { name: 'Fencing Manual', character: 'Regent', rarity: 'Common' },
+  'RELIC.FERTILIZER': { name: 'Fertilizer', character: 'Fool', rarity: 'Rare' },
   'RELIC.FESTIVE_POPPER': { name: 'Festive Popper', character: 'Colorless', rarity: 'Common' },
   'RELIC.FIDDLE': { name: 'Fiddle', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.FISHING_ROD': { name: 'Fishing Rod', character: 'Colorless', rarity: 'Ancient' },
@@ -158,6 +165,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.MEMBERSHIP_CARD': { name: 'Membership Card', character: 'Colorless', rarity: 'Shop' },
   'RELIC.MERCURY_HOURGLASS': { name: 'Mercury Hourglass', character: 'Colorless', rarity: 'Uncommon' },
   'RELIC.METRONOME': { name: 'Metronome', character: 'Defect', rarity: 'Rare' },
+  'RELIC.MIGHTY_WINGS': { name: 'Mighty Wings', character: 'Colorless', rarity: 'Event' },
   'RELIC.MINI_REGENT': { name: 'Mini Regent', character: 'Regent', rarity: 'Rare' },
   'RELIC.MINIATURE_CANNON': { name: 'Miniature Cannon', character: 'Colorless', rarity: 'Uncommon' },
   'RELIC.MINIATURE_TENT': { name: 'Miniature Tent', character: 'Colorless', rarity: 'Shop' },
@@ -175,6 +183,8 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.NUNCHAKU': { name: 'Nunchaku', character: 'Colorless', rarity: 'Uncommon' },
   'RELIC.NUTRITIOUS_OYSTER': { name: 'Nutritious Oyster', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.NUTRITIOUS_SOUP': { name: 'Nutritious Soup', character: 'Colorless', rarity: 'Ancient' },
+  'RELIC.OBSIDIAN_VICE': { name: 'Obsidian Vice', character: 'Colorless', rarity: 'Event' },
+  'RELIC.OCARINA': { name: 'Ocarina', character: 'Fool', rarity: 'Uncommon' },
   'RELIC.ODDLY_SMOOTH_STONE': { name: 'Oddly Smooth Stone', character: 'Colorless', rarity: 'Common' },
   'RELIC.OLD_COIN': { name: 'Old Coin', character: 'Colorless', rarity: 'Rare' },
   'RELIC.ORANGE_DOUGH': { name: 'Orange Dough', character: 'Regent', rarity: 'Rare' },
@@ -253,6 +263,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.SNECKO_EYE': { name: 'Snecko Eye', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.FAKE_SNECKO_EYE': { name: 'Snecko Eye???', character: 'Colorless', rarity: 'Event' },
   'RELIC.SNECKO_SKULL': { name: 'Snecko Skull', character: 'Silent', rarity: 'Common' },
+  'RELIC.SONG_BOW': { name: 'Song Bow', character: 'Fool', rarity: 'Starter' },
   'RELIC.SOZU': { name: 'Sozu', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.SPARKLING_ROUGE': { name: 'Sparkling Rouge', character: 'Colorless', rarity: 'Uncommon' },
   'RELIC.SPIKED_GAUNTLETS': { name: 'Spiked Gauntlets', character: 'Colorless', rarity: 'Ancient' },
@@ -260,6 +271,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.STONE_CRACKER': { name: 'Stone Cracker', character: 'Colorless', rarity: 'Uncommon' },
   'RELIC.STONE_HUMIDIFIER': { name: 'Stone Humidifier', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.STORYBOOK': { name: 'Storybook', character: 'Colorless', rarity: 'Ancient' },
+  'RELIC.STORYTELLER': { name: 'Storyteller', character: 'Fool', rarity: 'Starter' },
   'RELIC.STRAWBERRY': { name: 'Strawberry', character: 'Colorless', rarity: 'Common' },
   'RELIC.STRIKE_DUMMY': { name: 'Strike Dummy', character: 'Colorless', rarity: 'Common' },
   'RELIC.FAKE_STRIKE_DUMMY': { name: 'Strike Dummy???', character: 'Colorless', rarity: 'Event' },
@@ -275,10 +287,12 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.THE_COURIER': { name: 'The Courier', character: 'Colorless', rarity: 'Rare' },
   'RELIC.FAKE_MERCHANTS_RUG': { name: 'The Merchant\'s Rug???', character: 'Colorless', rarity: 'Event' },
   'RELIC.THROWING_AXE': { name: 'Throwing Axe', character: 'Colorless', rarity: 'Ancient' },
+  'RELIC.THUMBSCREW': { name: 'Thumbscrew', character: 'Colorless', rarity: 'Event' },
   'RELIC.TINGSHA': { name: 'Tingsha', character: 'Silent', rarity: 'Uncommon' },
   'RELIC.TINY_MAILBOX': { name: 'Tiny Mailbox', character: 'Colorless', rarity: 'Uncommon' },
   'RELIC.TOASTY_MITTENS': { name: 'Toasty Mittens', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.TOOLBOX': { name: 'Toolbox', character: 'Colorless', rarity: 'Shop' },
+  'RELIC.TORMENTOUS_COLLAR': { name: 'Tormentous Collar', character: 'Colorless', rarity: 'Event' },
   'RELIC.TOUCH_OF_OROBAS': { name: 'Touch of Orobas', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.TOUGH_BANDAGES': { name: 'Tough Bandages', character: 'Silent', rarity: 'Rare' },
   'RELIC.TOXIC_EGG': { name: 'Toxic Egg', character: 'Colorless', rarity: 'Rare' },
@@ -286,6 +300,7 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.TRI_BOOMERANG': { name: 'Tri-Boomerang', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.TUNGSTEN_ROD': { name: 'Tungsten Rod', character: 'Colorless', rarity: 'Rare' },
   'RELIC.TUNING_FORK': { name: 'Tuning Fork', character: 'Colorless', rarity: 'Uncommon' },
+  'RELIC.TWINE': { name: 'Twine', character: 'Fool', rarity: 'Rare' },
   'RELIC.TWISTED_FUNNEL': { name: 'Twisted Funnel', character: 'Silent', rarity: 'Uncommon' },
   'RELIC.UNCEASING_TOP': { name: 'Unceasing Top', character: 'Colorless', rarity: 'Rare' },
   'RELIC.UNDYING_SIGIL': { name: 'Undying Sigil', character: 'Necrobinder', rarity: 'Shop' },
@@ -304,10 +319,12 @@ const RELIC_META: Record<string, RelicMeta> = {
   'RELIC.WHISPERING_EARRING': { name: 'Whispering Earring', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.WHITE_BEAST_STATUE': { name: 'White Beast Statue', character: 'Colorless', rarity: 'Rare' },
   'RELIC.WHITE_STAR': { name: 'White Star', character: 'Colorless', rarity: 'Rare' },
+  'RELIC.WHITTLING_KNIFE': { name: 'Whittling Knife', character: 'Fool', rarity: 'Uncommon' },
   'RELIC.WING_CHARM': { name: 'Wing Charm', character: 'Colorless', rarity: 'Shop' },
   'RELIC.WINGED_BOOTS': { name: 'Winged Boots', character: 'Colorless', rarity: 'Ancient' },
   'RELIC.WONGO_CUSTOMER_APPRECIATION_BADGE': { name: 'Wongo Customer Appreciation Badge', character: 'Colorless', rarity: 'Event' },
   'RELIC.WONGOS_MYSTERY_TICKET': { name: 'Wongo\'s Mystery Ticket', character: 'Colorless', rarity: 'Event' },
+  'RELIC.WUPPY': { name: 'Wuppy', character: 'Colorless', rarity: 'Event' },
   'RELIC.YUMMY_COOKIE': { name: 'Yummy Cookie', character: 'Colorless', rarity: 'Ancient' },
 };
 

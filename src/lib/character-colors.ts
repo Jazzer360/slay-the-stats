@@ -6,6 +6,7 @@ export const CHARACTER_COLORS: Record<string, string> = {
   'CHARACTER.DEFECT': '#3b82f6', // blue
   'CHARACTER.REGENT': '#f59e0b', // amber
   'CHARACTER.NECROBINDER': '#a855f7', // purple
+  'CHARACTER.FOOL': '#ec4899', // pink
 };
 
 const FALLBACK = '#9ca3af';
