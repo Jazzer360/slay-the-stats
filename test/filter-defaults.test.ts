@@ -21,10 +21,19 @@ describe('saved filter defaults', () => {
       useFilterStore.getState())).toEqual([]);
   });
 
-  it.each(['exclude', 'include', 'only'] as const)('restores saved custom preference %s', (customRuns) => {
+  it.each([
+    ['exclude', ['custom']],
+    ['include', []],
+    ['only', ['standard', 'daily', 'dread', 'blitz']],
+  ] as const)('migrates legacy custom preference %s', (customRuns, expected) => {
     const defaults = parseDefaultFilters({ customRuns });
     useFilterStore.getState().applyDefaults(defaults);
-    expect(useFilterStore.getState().customRuns).toBe(customRuns);
+    expect(useFilterStore.getState().excludedModes).toEqual(expected);
+  });
+
+  it('prefers saved excluded modes over the legacy field', () => {
+    expect(parseDefaultFilters({ excludedModes: ['Dread', 'custom', 7], customRuns: 'only' }).excludedModes)
+      .toEqual(['dread', 'custom']);
   });
 
   it.each([undefined, null, {}, { customRuns: 'invalid' }])('uses safe defaults for %j', (raw) => {
@@ -32,18 +41,18 @@ describe('saved filter defaults', () => {
   });
 
   it('reset restores exclusion and clears other filters', () => {
-    useFilterStore.getState().setCustomRuns('only');
+    useFilterStore.getState().setExcludedModes([]);
     useFilterStore.getState().setResult('win');
     useFilterStore.getState().resetFilters();
     expect(useFilterStore.getState()).toMatchObject(DEFAULT_FILTERS);
   });
 
   it('retains the viewed profile defaults for Reset and clears them on exit', () => {
-    const ownerDefaults = { ...EMPTY_DEFAULT_FILTERS, customRuns: 'only' as const };
+    const ownerDefaults = { ...EMPTY_DEFAULT_FILTERS, excludedModes: ['standard'] };
     useProfileRunsStore.getState().setProfileRuns([], 'custom-player', ownerDefaults);
-    useFilterStore.getState().setCustomRuns('include');
+    useFilterStore.getState().setExcludedModes([]);
     useFilterStore.getState().applyDefaults(useProfileRunsStore.getState().defaultFilters!);
-    expect(useFilterStore.getState().customRuns).toBe('only');
+    expect(useFilterStore.getState().excludedModes).toEqual(['standard']);
     useProfileRunsStore.getState().clearProfileRuns();
     expect(useProfileRunsStore.getState().defaultFilters).toBeNull();
   });
