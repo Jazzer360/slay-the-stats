@@ -18,6 +18,7 @@ import { getPotionMeta } from '../../lib/potion-meta';
 import { parseRunTimeline } from '../../lib/floor-parser';
 import { buildDeckByFloor } from '../../lib/deck-by-floor';
 import type { ParsedRun, DeckCard, FloorSummary, FloorEvent } from '../../types/run';
+import { CLASS_COLORS } from '../../lib/character-colors';
 
 const COST_BUCKETS = [
   'curse',
@@ -616,12 +617,7 @@ const RARITY_COLORS: Record<string, string> = {
 };
 
 const CARDPOOL_COLORS: Record<string, string> = {
-  Ironclad: '#ef4444',
-  Silent: '#22c55e',
-  Defect: '#3b82f6',
-  Regent: '#f59e0b',
-  Necrobinder: '#a855f7',
-  Fool: '#ec4899',
+  ...CLASS_COLORS,
   Colorless: '#9ca3af',
   Curse: '#7c3aed',
   Event: '#9ca3af',

@@ -12,6 +12,7 @@ import {
 import type { EloEntry, EloMap } from '../../types/elo';
 import { formatId, formatElo, formatPercent } from '../../lib/format';
 import { getCardMeta, type CardColor, type CardRarity } from '../../lib/card-meta';
+import { CLASS_COLORS } from '../../lib/character-colors';
 
 const RARITY_COLORS: Partial<Record<CardRarity, string>> = {
   Common: 'bg-gray-500 text-gray-100',
@@ -23,18 +24,12 @@ const RARITY_COLORS: Partial<Record<CardRarity, string>> = {
   Status: 'bg-gray-700 text-gray-300',
 };
 
-const COLOR_DOTS: Partial<Record<CardColor, string>> = {
-  Ironclad: 'bg-red-500',
-  Silent: 'bg-green-500',
-  Defect: 'bg-blue-400',
-  Regent: 'bg-amber-400',
-  Necrobinder: 'bg-violet-500',
-  Fool: 'bg-pink-500',
-  Colorless: 'bg-gray-400',
-  Curse: 'bg-red-900',
-  Event: 'bg-orange-400',
-  Status: 'bg-gray-600',
-  Token: 'bg-gray-600',
+const NON_CLASS_DOTS: Partial<Record<CardColor, string>> = {
+  Colorless: '#9ca3af',
+  Curse: '#7f1d1d',
+  Event: '#fb923c',
+  Status: '#4b5563',
+  Token: '#4b5563',
 };
 
 interface EloTableProps {
@@ -120,10 +115,14 @@ export function EloTable({
               cell: (info) => {
                 const meta = getCardMeta(info.row.original.id);
                 if (!meta) return null;
-                const dotClass = COLOR_DOTS[meta.color] ?? 'bg-gray-600';
+                const dotColor =
+                  CLASS_COLORS[meta.color] ?? NON_CLASS_DOTS[meta.color] ?? '#4b5563';
                 return (
                   <span className="flex items-center gap-1.5">
-                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${dotClass}`} />
+                    <span
+                      className="inline-block w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: dotColor }}
+                    />
                     <span className="text-gray-400 text-xs">{meta.color}</span>
                   </span>
                 );
