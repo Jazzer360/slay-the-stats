@@ -5,6 +5,8 @@ export interface RunData {
   ascension: number;
   build_id: string;
   game_mode: string;
+  /** Schema 11+: custom runs are flagged here and may record game_mode 'standard'. */
+  is_custom_game?: boolean;
   killed_by_encounter: string;
   killed_by_event: string;
   map_point_history: MapPoint[][];

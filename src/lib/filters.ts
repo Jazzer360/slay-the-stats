@@ -1,5 +1,5 @@
 import type { ParsedRun } from '../types/run';
-import { isCustomRun, type CustomRunFilter } from './run-mode';
+import { DEFAULT_EXCLUDED_MODES, runGameMode, sortGameModes } from './run-mode';
 
 /** Canonical in-game character pick order. */
 export const CHARACTER_ORDER = [
@@ -15,7 +15,7 @@ export interface FilterState {
   profile: string | null; // single-select, null = all
   character: string | null; // single-select, null = all
   playerMode: 'all' | 'solo' | 'multi';
-  customRuns: CustomRunFilter;
+  excludedModes: string[]; // lower-cased game_mode IDs to hide
   ascensionMin: number | null;
   ascensionMax: number | null;
   result: 'all' | 'win' | 'loss';
@@ -28,7 +28,7 @@ export const DEFAULT_FILTERS: FilterState = {
   profile: null,
   character: null,
   playerMode: 'all',
-  customRuns: 'exclude',
+  excludedModes: DEFAULT_EXCLUDED_MODES,
   ascensionMin: null,
   ascensionMax: null,
   result: 'all',
@@ -41,9 +41,7 @@ export function applyFilters(runs: ParsedRun[], filters: FilterState): ParsedRun
   return runs.filter((run) => {
     const d = run.data;
 
-    const custom = isCustomRun(d);
-    if (filters.customRuns === 'exclude' && custom) return false;
-    if (filters.customRuns === 'only' && !custom) return false;
+    if (filters.excludedModes.includes(runGameMode(d))) return false;
 
     // Profile filter
     if (filters.profile !== null && run.profile !== filters.profile) {
@@ -96,6 +94,7 @@ export function extractFilterOptions(runs: ParsedRun[]) {
   const characters = new Set<string>();
   const ascensions = new Set<number>();
   const buildIds = new Set<string>();
+  const gameModes = new Set<string>();
   let hasMultiplayer = false;
 
   for (const run of runs) {
@@ -104,6 +103,7 @@ export function extractFilterOptions(runs: ParsedRun[]) {
     if (d.players[0]?.character) characters.add(d.players[0].character);
     ascensions.add(d.ascension);
     buildIds.add(d.build_id);
+    gameModes.add(runGameMode(d));
     if (d.players.length > 1) hasMultiplayer = true;
   }
 
@@ -122,6 +122,7 @@ export function extractFilterOptions(runs: ParsedRun[]) {
     characters: sortedCharacters,
     ascensions: [...ascensions].sort((a, b) => a - b),
     buildIds: [...buildIds].sort(),
+    gameModes: sortGameModes(gameModes),
     hasMultiplayer,
   };
 }

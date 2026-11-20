@@ -1,9 +1,9 @@
-import type { CustomRunFilter } from '../lib/run-mode';
+import { DEFAULT_EXCLUDED_MODES, parseExcludedModes } from '../lib/run-mode';
 
 export interface DefaultProfileFilters {
   character: string | null;
   playerMode: 'all' | 'solo' | 'multi';
-  customRuns: CustomRunFilter;
+  excludedModes: string[];
   ascensionMin: number | null;
   ascensionMax: number | null;
   result: 'all' | 'win' | 'loss';
@@ -12,7 +12,7 @@ export interface DefaultProfileFilters {
 export const EMPTY_DEFAULT_FILTERS: DefaultProfileFilters = {
   character: null,
   playerMode: 'all',
-  customRuns: 'exclude',
+  excludedModes: DEFAULT_EXCLUDED_MODES,
   ascensionMin: null,
   ascensionMax: null,
   result: 'all',
@@ -26,14 +26,14 @@ export interface UserProfile {
   createdAt: number;
 }
 
-/** Read saved preferences, including profiles created before custom-run filtering. */
+/** Read saved preferences, migrating profiles saved before game-mode filtering. */
 export function parseDefaultFilters(raw: unknown): DefaultProfileFilters {
   if (!raw || typeof raw !== 'object') return { ...EMPTY_DEFAULT_FILTERS };
   const r = raw as Record<string, unknown>;
   return {
     character: typeof r.character === 'string' ? r.character : null,
     playerMode: r.playerMode === 'solo' || r.playerMode === 'multi' ? r.playerMode : 'all',
-    customRuns: r.customRuns === 'include' || r.customRuns === 'only' ? r.customRuns : 'exclude',
+    excludedModes: parseExcludedModes(r.excludedModes, r.customRuns),
     ascensionMin: typeof r.ascensionMin === 'number' ? r.ascensionMin : null,
     ascensionMax: typeof r.ascensionMax === 'number' ? r.ascensionMax : null,
     result: r.result === 'win' || r.result === 'loss' ? r.result : 'all',

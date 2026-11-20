@@ -18,7 +18,7 @@ import { useProfileNav } from '../hooks/useProfileNav';
 import { summarizeRun, type RunSummary } from '../lib/stats';
 import { formatId, formatDate, formatDuration } from '../lib/format';
 import type { ParsedRun } from '../types/run';
-import { CustomRunBadge } from '../components/run/CustomRunBadge';
+import { GameModeBadge } from '../components/run/GameModeBadge';
 
 function runHasPickedCard(run: ParsedRun, cardId: string): boolean {
   const isUpgraded = cardId.endsWith('+');
@@ -88,7 +88,7 @@ export function RunListPage() {
         cell: (info) => (
           <span className="flex items-center gap-2 text-gray-200">
             {formatId(info.getValue())}
-            {info.row.original.isCustom && <CustomRunBadge />}
+            <GameModeBadge mode={info.row.original.gameMode} />
           </span>
         ),
       }),

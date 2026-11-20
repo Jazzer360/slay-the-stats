@@ -1,6 +1,6 @@
 import { useFilterStore } from '../../store/filters';
 import { useActiveDefaultFilters } from '../../hooks/useActiveDefaultFilters';
-import { CUSTOM_RUN_OPTIONS } from '../../lib/run-mode';
+import { DEFAULT_EXCLUDED_MODES, gameModeLabel, sameModes } from '../../lib/run-mode';
 import { useFilterOptions } from '../../hooks/useFilteredRuns';
 import { formatId } from '../../lib/format';
 
@@ -9,14 +9,14 @@ export function FilterBar() {
     profile,
     character,
     playerMode,
-    customRuns,
+    excludedModes,
     ascensionMin,
     ascensionMax,
     result,
     setProfile,
     setCharacter,
     setPlayerMode,
-    setCustomRuns,
+    toggleMode,
     setAscensionRange,
     setResult,
     resetFilters,
@@ -29,7 +29,7 @@ export function FilterBar() {
     profile !== null ||
     character !== (defaults?.character ?? null) ||
     playerMode !== (defaults?.playerMode ?? 'all') ||
-    customRuns !== (defaults?.customRuns ?? 'exclude') ||
+    !sameModes(excludedModes, defaults?.excludedModes ?? DEFAULT_EXCLUDED_MODES) ||
     ascensionMin !== (defaults?.ascensionMin ?? null) ||
     ascensionMax !== (defaults?.ascensionMax ?? null) ||
     result !== (defaults?.result ?? 'all');
@@ -168,23 +168,29 @@ export function FilterBar() {
           </div>
         )}
 
-        <div role="group" aria-label="Custom runs" className="flex items-center gap-1">
-          <span className="text-xs text-gray-500">Custom runs:</span>
-          {CUSTOM_RUN_OPTIONS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setCustomRuns(value)}
-              aria-pressed={customRuns === value}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                customRuns === value
-                  ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
-                  : 'bg-gray-800 text-gray-400 border border-gray-700 hover:border-gray-600'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {/* Game mode multi-select */}
+        {options.gameModes.length > 0 && (
+          <div role="group" aria-label="Game modes" className="flex items-center gap-1">
+            <span className="text-xs text-gray-500">Mode:</span>
+            {options.gameModes.map((mode) => {
+              const on = !excludedModes.includes(mode);
+              return (
+                <button
+                  key={mode}
+                  onClick={() => toggleMode(mode)}
+                  aria-pressed={on}
+                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                    on
+                      ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
+                      : 'bg-gray-800 text-gray-500 border border-gray-700 hover:border-gray-600'
+                  }`}
+                >
+                  {gameModeLabel(mode)}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Reset */}
         {hasActiveFilters && (

@@ -14,7 +14,7 @@ import { buildMockRun } from './helpers';
 // Keep component checks local; authentication initializes browser-only Firebase services.
 vi.mock('../src/store/auth', () => ({
   useAuthStore: (selector: (state: unknown) => unknown) => selector({
-    userProfile: { defaultFilters: { customRuns: 'exclude' } },
+    userProfile: { defaultFilters: { excludedModes: ['custom'] } },
   }),
 }));
 
@@ -80,17 +80,35 @@ describe('custom run presentation', () => {
     const standard = renderToStaticMarkup(createElement(RunDetail, { run: buildMockRun() }));
     expect(custom).toContain('>Custom</span>');
     expect(standard).not.toContain('>Custom</span>');
+    expect(standard).not.toContain('>Normal</span>');
+  });
+
+  it.each([['dread', 'Dread'], ['blitz', 'Blitz'], ['daily', 'Daily']])('badges %s runs', (game_mode, label) => {
+    const html = renderToStaticMarkup(createElement(RunDetail, { run: buildMockRun({ game_mode }) }));
+    expect(html).toContain(`>${label}</span>`);
+  });
+
+  it('shows a toggle per game mode present in the runs', () => {
+    useRunsStore.getState().setRuns(['standard', 'dread', 'custom'].map((game_mode) => buildMockRun({ game_mode })));
+    const html = renderToStaticMarkup(createElement(FilterBar));
+    expect(html).toContain('aria-label="Game modes"');
+    for (const label of ['Normal', 'Dread', 'Custom']) expect(html).toContain(`>${label}</button>`);
+    expect(html).not.toContain('>Blitz</button>');
   });
 
   it('uses the viewed owner defaults when determining whether Reset is available', () => {
-    const defaults = { ...EMPTY_DEFAULT_FILTERS, customRuns: 'only' as const };
-    useProfileRunsStore.getState().setProfileRuns([], 'custom-player', defaults);
+    const defaults = { ...EMPTY_DEFAULT_FILTERS, excludedModes: ['standard', 'daily'] };
+    useProfileRunsStore.getState().setProfileRuns(
+      [buildMockRun({ game_mode: 'custom' })], 'custom-player', defaults);
     useFilterStore.getState().applyDefaults(defaults);
     const atDefaults = renderToStaticMarkup(createElement(FilterBar));
-    expect(atDefaults).toContain('aria-label="Custom runs"');
+    expect(atDefaults).toContain('aria-label="Game modes"');
     expect(atDefaults).toContain('aria-pressed="true"');
     expect(atDefaults).not.toContain('Reset');
-    useFilterStore.getState().setCustomRuns('include');
+    // Same set in a different order is still the default.
+    useFilterStore.getState().setExcludedModes(['daily', 'standard']);
+    expect(renderToStaticMarkup(createElement(FilterBar))).not.toContain('Reset');
+    useFilterStore.getState().setExcludedModes([]);
     expect(renderToStaticMarkup(createElement(FilterBar))).toContain('Reset');
   });
 });

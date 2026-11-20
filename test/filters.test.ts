@@ -15,29 +15,45 @@ describe('applyFilters', () => {
     expect(applyFilters([standard, custom], DEFAULT_FILTERS)).toEqual([standard]);
   });
 
-  it('includes custom runs optionally and preserves chronological order', () => {
-    const runs = [buildMockRun(), buildMockRun({ game_mode: 'custom' })];
-    expect(applyFilters(runs, { ...DEFAULT_FILTERS, customRuns: 'include' })).toEqual(runs);
+  it('includes every mode when nothing is excluded and preserves order', () => {
+    const runs = ['standard', 'daily', 'dread', 'blitz', 'custom'].map((game_mode) =>
+      buildMockRun({ game_mode }));
+    expect(applyFilters(runs, { ...DEFAULT_FILTERS, excludedModes: [] })).toEqual(runs);
   });
 
-  it('shows only custom runs case-insensitively', () => {
+  it('matches modes case-insensitively and treats a missing mode as standard', () => {
     const customs = ['custom', 'CUSTOM', 'Custom'].map((game_mode) => buildMockRun({ game_mode }));
-    expect(applyFilters([buildMockRun(), ...customs], {
-      ...DEFAULT_FILTERS, customRuns: 'only',
+    const missing = buildMockRun({ game_mode: undefined });
+    const runs = [buildMockRun(), missing, ...customs];
+    expect(applyFilters(runs, {
+      ...DEFAULT_FILTERS, excludedModes: ['standard', 'daily', 'dread', 'blitz'],
     })).toEqual(customs);
+    expect(applyFilters(runs, { ...DEFAULT_FILTERS, excludedModes: ['custom'] }))
+      .toEqual([runs[0], missing]);
   });
 
-  it('does not treat another game mode or standard modifiers as custom', () => {
-    const runs = [
-      buildMockRun({ game_mode: 'daily' }),
-      buildMockRun({ modifiers: ['MODIFIER.TEST'] }),
-      buildMockRun({ game_mode: undefined }),
-    ];
-    expect(applyFilters(runs, DEFAULT_FILTERS)).toEqual(runs);
-    expect(applyFilters(runs, { ...DEFAULT_FILTERS, customRuns: 'only' })).toEqual([]);
+  it('treats schema 11 is_custom_game as custom even when game_mode is standard', () => {
+    const flagged = buildMockRun({ game_mode: 'standard', is_custom_game: true });
+    const plain = buildMockRun({ game_mode: 'standard', is_custom_game: false });
+    expect(applyFilters([flagged, plain], DEFAULT_FILTERS)).toEqual([plain]);
+    expect(extractFilterOptions([flagged, plain]).gameModes).toEqual(['standard', 'custom']);
   });
 
-  it('intersects custom mode with existing filters', () => {
+  it('excludes individual modes such as dread or blitz', () => {
+    const daily = buildMockRun({ game_mode: 'daily' });
+    const dread = buildMockRun({ game_mode: 'dread' });
+    const blitz = buildMockRun({ game_mode: 'blitz' });
+    expect(applyFilters([daily, dread, blitz], {
+      ...DEFAULT_FILTERS, excludedModes: ['dread', 'custom'],
+    })).toEqual([daily, blitz]);
+  });
+
+  it('does not treat standard modifiers as custom', () => {
+    const run = buildMockRun({ modifiers: ['MODIFIER.TEST'] });
+    expect(applyFilters([run], DEFAULT_FILTERS)).toEqual([run]);
+  });
+
+  it('intersects the mode filter with existing filters', () => {
     const matching = buildMockRun({ game_mode: 'custom', ascension: 10, win: true });
     const runs = [
       matching,
@@ -46,9 +62,15 @@ describe('applyFilters', () => {
       buildMockRun({ ascension: 10, win: true }),
     ];
     expect(applyFilters(runs, {
-      ...DEFAULT_FILTERS, customRuns: 'only', ascensionMin: 10, result: 'win',
+      ...DEFAULT_FILTERS, excludedModes: ['standard'], ascensionMin: 10, result: 'win',
       character: 'IRONCLAD', profile: 'test-profile', playerMode: 'solo',
     })).toEqual([matching]);
+  });
+
+  it('lists game modes present in the data in canonical order', () => {
+    const runs = ['custom', 'BLITZ', 'weird', 'daily', undefined].map((game_mode) =>
+      buildMockRun({ game_mode }));
+    expect(extractFilterOptions(runs).gameModes).toEqual(['standard', 'daily', 'blitz', 'custom', 'weird']);
   });
 
   it('filters by character', () => {
